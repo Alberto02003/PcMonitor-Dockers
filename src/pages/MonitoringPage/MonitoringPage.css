@@ -1,0 +1,247 @@
+﻿.monitoring-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 2.5rem;
+  min-height: 100vh;
+  background: var(--medium-blue);
+  color: var(--text-primary);
+}
+
+.monitoring-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.monitoring-header-main {
+  flex: 1;
+}
+
+.monitoring-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(100, 255, 218, 0.25);
+  border-radius: 999px;
+  background: rgba(10, 25, 47, 0.35);
+  padding: 0.2rem;
+}
+
+.view-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.view-tab.is-active {
+  background: rgba(100, 255, 218, 0.2);
+  color: var(--accent-blue);
+}
+
+.monitoring-title {
+  margin: 0;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+}
+
+.monitoring-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.monitoring-hero {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+}
+
+.hero-main,
+.hero-side {
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-card {
+  background: rgba(10, 25, 47, 0.25);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.4rem;
+}
+
+.hero-card--accent {
+  border-color: rgba(100, 255, 218, 0.35);
+  background: rgba(48, 63, 96, 0.35);
+}
+
+.hero-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.hero-value {
+  margin: 0.45rem 0 0.2rem;
+  font-size: 1.6rem;
+}
+
+.hero-subtle {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.monitoring-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.monitoring-card,
+.monitoring-docker {
+  background: rgba(10, 25, 47, 0.2);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.card-value {
+  color: var(--accent-blue);
+  font-size: 0.95rem;
+}
+
+.card-footnote {
+  margin: 0.75rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.progress {
+  margin-top: 1rem;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(100, 255, 218, 0.08);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(100, 255, 218, 0.7), rgba(100, 255, 218, 0.25));
+}
+
+.sparkline {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.3rem;
+  margin-top: 1rem;
+  height: 48px;
+  align-items: end;
+}
+
+.sparkline span {
+  display: block;
+  background: rgba(100, 255, 218, 0.35);
+  border-radius: 6px 6px 2px 2px;
+  height: 100%;
+}
+
+.sparkline span:nth-child(2) {
+  height: 70%;
+}
+
+.sparkline span:nth-child(3) {
+  height: 45%;
+}
+
+.sparkline span:nth-child(4) {
+  height: 85%;
+}
+
+.sparkline span:nth-child(5) {
+  height: 60%;
+}
+
+.sparkline span:nth-child(6) {
+  height: 30%;
+}
+
+.monitoring-docker {
+  display: grid;
+  gap: 1rem;
+}
+
+.docker-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.docker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: rgba(23, 42, 69, 0.35);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+}
+
+.docker-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.docker-meta {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1080px) {
+  .monitoring-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .monitoring-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .monitoring-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .monitoring-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

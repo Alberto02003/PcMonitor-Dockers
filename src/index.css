@@ -23,6 +23,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 * {
   box-sizing: border-box;
 }
@@ -36,6 +37,31 @@ body,
 body {
   margin: 0;
   background: var(--medium-blue);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-soft) var(--dark-blue);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--dark-blue);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-soft);
+  border-radius: 999px;
+  border: 2px solid var(--dark-blue);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 255, 218, 0.2);
+  border-color: var(--dark-blue);
 }
 
 img {
