@@ -140,7 +140,7 @@ export function MetricsCharts({ metricsHistory }) {
           data={cpuData}
           title="CPU"
           label="CPU"
-          color="#3b82f6"
+          color="#60a5fa"
           unit="%"
           maxValue={100}
           stats={cpuStats}
@@ -150,7 +150,7 @@ export function MetricsCharts({ metricsHistory }) {
           data={ramData}
           title="RAM"
           label="RAM"
-          color="#10b981"
+          color="#4ade80"
           unit="%"
           maxValue={100}
           stats={ramStats}
@@ -160,7 +160,7 @@ export function MetricsCharts({ metricsHistory }) {
           data={networkInData}
           title="Red - Entrada"
           label="Entrada"
-          color="#8b5cf6"
+          color="#64ffda"
           unit=" MB/s"
           maxValue={networkMaxValue}
           stats={networkInStats}
@@ -170,7 +170,7 @@ export function MetricsCharts({ metricsHistory }) {
           data={networkOutData}
           title="Red - Salida"
           label="Salida"
-          color="#f59e0b"
+          color="#fbbf24"
           unit=" MB/s"
           maxValue={networkMaxValue}
           stats={networkOutStats}
