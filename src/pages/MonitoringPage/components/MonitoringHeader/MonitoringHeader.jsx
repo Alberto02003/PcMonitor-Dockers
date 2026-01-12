@@ -24,6 +24,15 @@ function MonitoringHeader({ view, onViewChange, onBack, onOpenAlerts, connection
           <button
             type="button"
             role="tab"
+            aria-selected={view === 'charts'}
+            className={`view-tab ${view === 'charts' ? 'is-active' : ''}`}
+            onClick={() => onViewChange('charts')}
+          >
+            Gráficos
+          </button>
+          <button
+            type="button"
+            role="tab"
             aria-selected={view === 'dockers'}
             className={`view-tab ${view === 'dockers' ? 'is-active' : ''}`}
             onClick={() => onViewChange('dockers')}

@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRealTimeMetrics, useRealTimeContainers } from '../../hooks/useRealTimeData.js'
+import { useMetricsHistory } from '../../hooks/useMetricsHistory.js'
 import MonitoringHeader from './components/MonitoringHeader/MonitoringHeader.jsx'
 import SystemWidgets from './components/SystemWidgets/SystemWidgets.jsx'
 import DockersSection from './components/DockersSection/DockersSection.jsx'
 import DockerModal from './components/DockerModal/DockerModal.jsx'
 import AlertsModal from './components/AlertsModal/AlertsModal.jsx'
+import MetricsCharts from '../../components/MetricsCharts/MetricsCharts.jsx'
 import './MonitoringPage.css'
 
 const ALERTS_KEY_PREFIX = 'pcmd.alerts.v1'
@@ -61,6 +63,13 @@ function MonitoringPage({ connection, onBack }) {
     error: containersError,
     refresh: refreshContainers,
   } = useRealTimeContainers(connection?.id, 10000)
+
+  // Metrics history for charts (24h retention, 1000 max points)
+  const metricsHistory = useMetricsHistory(connection?.id, {
+    retention: 24 * 60 * 60 * 1000, // 24 hours
+    maxPoints: 1000,
+    autoSave: true
+  })
   
   const connectionLabel = connection
     ? `${connection.name} - ${connection.username}@${connection.host}:${connection.port || 22}`
@@ -192,6 +201,13 @@ function MonitoringPage({ connection, onBack }) {
     setTimeout(refreshContainers, 1000)
   }
 
+  // Add metrics to history when they are updated
+  useEffect(() => {
+    if (metrics && !metricsLoading && !metricsError) {
+      metricsHistory.addMetrics(metrics)
+    }
+  }, [metrics, metricsLoading, metricsError, metricsHistory])
+
   return (
     <div className="monitoring-page">
       <MonitoringHeader
@@ -222,6 +238,8 @@ function MonitoringPage({ connection, onBack }) {
           metricsError={metricsError}
           lastUpdate={lastUpdate}
         />
+      ) : view === 'charts' ? (
+        <MetricsCharts metricsHistory={metricsHistory} />
       ) : (
         <DockersSection 
           onOpenDocker={handleOpenDocker} 
