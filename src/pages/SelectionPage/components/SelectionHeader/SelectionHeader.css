@@ -1,0 +1,22 @@
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.main-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.main-title {
+  display: inline-block;
+  color: var(--text-primary);
+}
+
+.header-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}

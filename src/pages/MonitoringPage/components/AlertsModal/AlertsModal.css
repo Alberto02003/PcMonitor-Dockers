@@ -1,0 +1,57 @@
+.alerts-grid {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.alert-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(100, 255, 218, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+  background: rgba(10, 25, 47, 0.35);
+}
+
+.alert-label {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.alert-label span {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.alert-label small {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+}
+
+.alert-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.alert-controls input[type='number'] {
+  width: 90px;
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.35rem 0.5rem;
+}
+
+.alert-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.alert-toggle input {
+  accent-color: var(--accent-blue);
+}

@@ -1,0 +1,36 @@
+.system-details {
+  display: grid;
+  gap: 1rem;
+}
+
+.system-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1rem;
+}
+
+.system-services {
+  display: grid;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.system-services p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.system-services small {
+  color: var(--text-secondary);
+}
+
+.mini-table {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.3rem 0.6rem;
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}

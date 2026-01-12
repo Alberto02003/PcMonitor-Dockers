@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNotification } from '../../components/Notification/Notification.jsx'
 import { useSettings } from '../../components/Settings/Settings.jsx'
+import { sshConnect, sshTest, isTauri } from '../../services/tauri.js'
+import SelectionSidebar from './components/SelectionSidebar/SelectionSidebar.jsx'
+import SelectionTopNav from './components/SelectionTopNav/SelectionTopNav.jsx'
+import SelectionHeader from './components/SelectionHeader/SelectionHeader.jsx'
+import ConnectionForm from './components/ConnectionForm/ConnectionForm.jsx'
+import SettingsModal from './components/SettingsModal/SettingsModal.jsx'
+import UndoSnackbar from './components/UndoSnackbar/UndoSnackbar.jsx'
+import SelectionLoading from './components/SelectionLoading/SelectionLoading.jsx'
 import './SelectionPage.css'
 
 const STORAGE_KEY = 'pcmd.connections.v1'
@@ -29,6 +37,7 @@ const copy = {
     newConnection: 'Nueva conexion',
     headerHint: 'Agrega una conexion para empezar a monitorear.',
     formHint: 'Completa los campos y guarda para crear tu primera conexion.',
+    copySuffix: 'copia',
     name: 'Nombre',
     host: 'Host',
     port: 'Puerto',
@@ -47,6 +56,10 @@ const copy = {
     setDefault: 'Establecer como predeterminada',
     settings: 'Ajustes',
     addNew: 'Nueva conexion',
+    exportJson: 'Exportar JSON',
+    importJson: 'Importar JSON',
+    favorite: 'Favorito',
+    duplicate: 'Duplicar',
     required: 'Requerido',
     invalidPort: 'Puerto invalido',
     statusOnline: 'Online',
@@ -57,9 +70,16 @@ const copy = {
     notifDeleted: 'Conexion eliminada.',
     notifDefaultOn: 'Conexion predeterminada actualizada.',
     notifDefaultOff: 'Conexion predeterminada desactivada.',
+    notifFavoriteOn: 'Conexion marcada como favorita.',
+    notifFavoriteOff: 'Conexion quitada de favoritos.',
+    notifDuplicate: 'Conexion duplicada.',
+    notifExportOk: 'Conexiones exportadas.',
+    notifImportOk: 'Conexiones importadas.',
+    notifImportFail: 'No se pudo importar el archivo.',
+    notifImportEmpty: 'No se encontraron conexiones en el archivo.',
     notifConnect: 'Conectando a',
     notifTestStart: 'Probando conexion...',
-    notifTestOk: 'Conexion simulada: en linea.',
+    notifTestOk: 'Conexion exitosa.',
     notifLoadFail: 'No se pudieron cargar las conexiones guardadas.',
     notifSaveFail: 'No se pudo guardar la informacion cifrada.',
     notifRequired: 'Completa los campos requeridos.',
@@ -93,6 +113,7 @@ const copy = {
     newConnection: 'New connection',
     headerHint: 'Add a connection to start monitoring.',
     formHint: 'Complete the fields and save to create your first connection.',
+    copySuffix: 'copy',
     name: 'Name',
     host: 'Host',
     port: 'Port',
@@ -111,6 +132,10 @@ const copy = {
     setDefault: 'Set as default',
     settings: 'Settings',
     addNew: 'New connection',
+    exportJson: 'Export JSON',
+    importJson: 'Import JSON',
+    favorite: 'Favorite',
+    duplicate: 'Duplicate',
     required: 'Required',
     invalidPort: 'Invalid port',
     statusOnline: 'Online',
@@ -121,9 +146,16 @@ const copy = {
     notifDeleted: 'Connection deleted.',
     notifDefaultOn: 'Default connection updated.',
     notifDefaultOff: 'Default connection cleared.',
+    notifFavoriteOn: 'Connection marked as favorite.',
+    notifFavoriteOff: 'Connection removed from favorites.',
+    notifDuplicate: 'Connection duplicated.',
+    notifExportOk: 'Connections exported.',
+    notifImportOk: 'Connections imported.',
+    notifImportFail: 'Could not import the file.',
+    notifImportEmpty: 'No connections found in the file.',
     notifConnect: 'Connecting to',
     notifTestStart: 'Testing connection...',
-    notifTestOk: 'Simulated connection: online.',
+    notifTestOk: 'Connection successful.',
     notifLoadFail: 'Could not load saved connections.',
     notifSaveFail: 'Could not save encrypted data.',
     notifRequired: 'Please complete required fields.',
@@ -148,7 +180,7 @@ const copy = {
   },
 }
 
-function SelectionPage({ onConnect }) {
+function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const [connections, setConnections] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [formData, setFormData] = useState(emptyForm)
@@ -159,11 +191,12 @@ function SelectionPage({ onConnect }) {
   const [errors, setErrors] = useState({})
   const [undoState, setUndoState] = useState(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const hasMounted = useRef(false)
   const undoTimerRef = useRef(null)
-  const autoConnectRef = useRef(false)
+  const importInputRef = useRef(null)
   const { showNotification } = useNotification()
-  const { settings, updateSettings } = useSettings()
+  const { settings, updateSettings, loaded: settingsLoaded } = useSettings()
   const t = copy[settings.language] || copy.es
 
   const selectedConnection = useMemo(
@@ -173,6 +206,7 @@ function SelectionPage({ onConnect }) {
 
   useEffect(() => {
     loadConnections()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -229,19 +263,25 @@ function SelectionPage({ onConnect }) {
   }, [connections, search])
 
   useEffect(() => {
-    if (!settings.autoConnectDefault || autoConnectRef.current) return
+    if (!allowAutoConnect || !hasLoaded || !settingsLoaded) return
+    if (!settings.autoConnectDefault) {
+      if (onAutoConnectUsed) onAutoConnectUsed()
+      return
+    }
     const defaultConnection = connections.find((item) => item.isDefault)
     if (defaultConnection) {
-      autoConnectRef.current = true
       handleConnect(defaultConnection.id)
     }
-  }, [connections, settings.autoConnectDefault])
-
-  useEffect(() => {
-    if (!settings.autoConnectDefault) {
-      autoConnectRef.current = false
-    }
-  }, [settings.autoConnectDefault])
+    if (onAutoConnectUsed) onAutoConnectUsed()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    allowAutoConnect,
+    hasLoaded,
+    settingsLoaded,
+    settings.autoConnectDefault,
+    connections,
+    onAutoConnectUsed,
+  ])
 
   useEffect(() => {
     if (!settings.storeCredentials) {
@@ -275,14 +315,21 @@ function SelectionPage({ onConnect }) {
 
   useEffect(() => () => clearTimeout(undoTimerRef.current), [])
 
+  if (!settingsLoaded || !hasLoaded) {
+    return <SelectionLoading />
+  }
+
   async function loadConnections() {
     try {
       const encrypted = localStorage.getItem(STORAGE_KEY)
       if (!encrypted) return
       const parsed = await decryptPayload(encrypted)
-      setConnections(Array.isArray(parsed) ? parsed : [])
-    } catch (error) {
+      const normalized = Array.isArray(parsed) ? parsed.map(normalizeConnection) : []
+      setConnections(normalized)
+    } catch {
       showNotification(t.notifLoadFail, 'error')
+    } finally {
+      setHasLoaded(true)
     }
   }
 
@@ -290,7 +337,7 @@ function SelectionPage({ onConnect }) {
     try {
       const encrypted = await encryptPayload(nextConnections)
       localStorage.setItem(STORAGE_KEY, encrypted)
-    } catch (error) {
+    } catch {
       showNotification(t.notifSaveFail, 'error')
     }
   }
@@ -338,6 +385,7 @@ function SelectionPage({ onConnect }) {
           ? formData.keyPath
           : '',
       notes: formData.notes,
+      isFavorite: selectedConnection?.isFavorite || false,
       isDefault: selectedConnection?.isDefault || false,
       status: selectedConnection?.status || 'unknown',
       updatedAt: new Date().toISOString(),
@@ -393,15 +441,133 @@ function SelectionPage({ onConnect }) {
     showNotification(isCurrentlyDefault ? t.notifDefaultOff : t.notifDefaultOn, 'success')
   }
 
-  function handleConnect(id) {
+  async function handleToggleFavorite(id) {
+    let nextFavorite = false
+    let found = false
+    const next = connections.map((item) => {
+      if (item.id !== id) return item
+      found = true
+      nextFavorite = !item.isFavorite
+      return { ...item, isFavorite: nextFavorite }
+    })
+    if (!found) return
+    setConnections(next)
+    await persistConnections(next)
+    showNotification(nextFavorite ? t.notifFavoriteOn : t.notifFavoriteOff, 'success')
+  }
+
+  function handleDuplicate(id) {
+    const target = connections.find((item) => item.id === id)
+    if (!target) return
+    const duplicated = {
+      ...target,
+      id: crypto.randomUUID(),
+      name: `${target.name} (${t.copySuffix})`,
+      isDefault: false,
+      status: 'unknown',
+      updatedAt: new Date().toISOString(),
+    }
+    const next = [...connections, duplicated]
+    setConnections(next)
+    setSelectedId(duplicated.id)
+    persistConnections(next)
+    showNotification(t.notifDuplicate, 'success')
+  }
+
+  function handleExport() {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      connections,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `pcmd-connections-${new Date().toISOString().slice(0, 10)}.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+    showNotification(t.notifExportOk, 'success')
+  }
+
+  function handleImportClick() {
+    importInputRef.current?.click()
+  }
+
+  async function handleImportFile(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const text = await file.text()
+      const payload = JSON.parse(text)
+      const imported = Array.isArray(payload) ? payload : payload?.connections
+      if (!Array.isArray(imported) || imported.length === 0) {
+        showNotification(t.notifImportEmpty, 'warning')
+        return
+      }
+      const existingIds = new Set(connections.map((item) => item.id))
+      let hasDefault = connections.some((item) => item.isDefault)
+      const importedConnections = imported.map((item) => {
+        const normalized = normalizeConnection(item, {
+          storeCredentials: settings.storeCredentials,
+        })
+        let nextId = normalized.id
+        if (!nextId || existingIds.has(nextId)) {
+          nextId = crypto.randomUUID()
+        }
+        existingIds.add(nextId)
+        const isDefault = !hasDefault && normalized.isDefault
+        if (isDefault) {
+          hasDefault = true
+        }
+        return {
+          ...normalized,
+          id: nextId,
+          isDefault,
+          status: 'unknown',
+          updatedAt: new Date().toISOString(),
+        }
+      })
+      const next = [...connections, ...importedConnections]
+      setConnections(next)
+      await persistConnections(next)
+      showNotification(t.notifImportOk, 'success')
+    } catch {
+      showNotification(t.notifImportFail, 'error')
+    }
+  }
+
+  async function handleConnect(id) {
     const target = connections.find((item) => item.id === id)
     if (!target) return
     setSelectedId(id)
-    showNotification(`${t.notifConnect} ${target.name}...`, 'success')
+    showNotification(`${t.notifConnect} ${target.name}...`, 'warning')
     updateConnectionStatus(id, 'checking')
-    setTimeout(() => updateConnectionStatus(id, 'online'), 1200)
-    if (onConnect) {
-      onConnect(target)
+
+    if (isTauri()) {
+      try {
+        await sshConnect(target)
+        updateConnectionStatus(id, 'online')
+        showNotification(t.notifTestOk, 'success')
+        if (onConnect) {
+          onConnect(target)
+        }
+      } catch (error) {
+        updateConnectionStatus(id, 'offline')
+        showNotification(`Error: ${error}`, 'error')
+      }
+    } else {
+      // Fallback for browser development
+      setTimeout(() => {
+        updateConnectionStatus(id, 'online')
+        showNotification(t.notifTestOk, 'success')
+        if (onConnect) {
+          onConnect(target)
+        }
+      }, 1200)
     }
   }
 
@@ -416,7 +582,7 @@ function SelectionPage({ onConnect }) {
     setUndoState(null)
   }
 
-  function handleTestConnection() {
+  async function handleTestConnection() {
     const nextErrors = validateForm(formData, t)
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) {
@@ -428,13 +594,41 @@ function SelectionPage({ onConnect }) {
     if (selectedConnection) {
       updateConnectionStatus(selectedConnection.id, 'checking')
     }
-    setTimeout(() => {
-      setIsTesting(false)
-      showNotification(t.notifTestOk, 'success')
-      if (selectedConnection) {
-        updateConnectionStatus(selectedConnection.id, 'online')
+
+    if (isTauri()) {
+      try {
+        const testConfig = {
+          id: selectedConnection?.id || crypto.randomUUID(),
+          host: formData.host.trim(),
+          port: Number(formData.port) || 22,
+          username: formData.username.trim(),
+          authType: formData.authType,
+          password: formData.password || null,
+          keyPath: formData.keyPath || null,
+        }
+        await sshTest(testConfig)
+        setIsTesting(false)
+        showNotification(t.notifTestOk, 'success')
+        if (selectedConnection) {
+          updateConnectionStatus(selectedConnection.id, 'online')
+        }
+      } catch (error) {
+        setIsTesting(false)
+        showNotification(`Error: ${error}`, 'error')
+        if (selectedConnection) {
+          updateConnectionStatus(selectedConnection.id, 'offline')
+        }
       }
-    }, 1200)
+    } else {
+      // Fallback for browser development
+      setTimeout(() => {
+        setIsTesting(false)
+        showNotification(t.notifTestOk, 'success')
+        if (selectedConnection) {
+          updateConnectionStatus(selectedConnection.id, 'online')
+        }
+      }, 1200)
+    }
   }
 
   function updateConnectionStatus(id, status) {
@@ -458,366 +652,99 @@ function SelectionPage({ onConnect }) {
 
   return (
     <div className="selection-layout">
-      <aside className="selection-sidebar">
-        <div className="sidebar-header">
-          <h1 className="sidebar-title">{t.connections}</h1>
-        </div>
-
-        <div className="sidebar-summary">
-          <span>
-            {connections.length} {t.saved}
-          </span>
-          {defaultId && <span className="summary-dot">{t.defaultLabel}</span>}
-        </div>
-
-        <div className="sidebar-search">
-          <SearchIcon />
-          <input
-            type="text"
-            value={search}
-            placeholder={t.searchPlaceholder}
-            onChange={(event) => setSearch(event.target.value)}
-            aria-label={t.searchPlaceholder}
-          />
-        </div>
-
-        <div className="sidebar-list" role="list">
-          {filteredConnections.length === 0 ? (
-            <p className="sidebar-empty">{t.noConnections}</p>
-          ) : (
-            filteredConnections.map((item, index) => (
-              <div
-                key={item.id}
-                className={`sidebar-item ${item.id === selectedId ? 'is-active' : ''} ${item.id === defaultId ? 'is-default' : ''}`}
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <div className="item-content">
-                  <div className="item-top">
-                    <button
-                      type="button"
-                      className="item-main"
-                      onClick={() => handleSelect(item.id)}
-                    >
-                      <div className="item-title">
-                        <p className="item-name">{item.name}</p>
-                        {item.id === defaultId && <span className="default-dot" />}
-                        <span className={`status-pill status-${item.status || 'unknown'}`}>
-                          {getStatusLabel(item.status, t)}
-                        </span>
-                      </div>
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    className="item-main item-main-meta"
-                    onClick={() => handleSelect(item.id)}
-                  >
-                    <div className="item-meta">
-                      <div className="meta-block">
-                        <span className="meta-label">{t.username}</span>
-                        <span className="meta-value">
-                          <UserIcon />
-                          {item.username}
-                        </span>
-                      </div>
-                      <div className="meta-block">
-                        <span className="meta-label">IP</span>
-                        <span className="meta-value">
-                          <ServerIcon />
-                          {item.host}:{item.port || 22}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                  <div className="item-actions item-actions-bottom">
-                    <button
-                      type="button"
-                      className={`icon-button ${item.id === defaultId ? 'is-active' : ''}`}
-                      onClick={() => handleSetDefault(item.id)}
-                      title={t.setDefault}
-                    >
-                      <StarIcon />
-                    </button>
-                    <button
-                      type="button"
-                      className={`icon-button ${item.id === selectedId ? 'is-primary' : ''}`}
-                      onClick={() => handleConnect(item.id)}
-                      title={t.connect}
-                    >
-                      <PlugIcon />
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-button is-danger"
-                      onClick={() => handleDelete(item.id)}
-                      title={t.delete}
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </aside>
+      <SelectionSidebar
+        connections={connections}
+        filteredConnections={filteredConnections}
+        selectedId={selectedId}
+        defaultId={defaultId}
+        search={search}
+        onSearchChange={(event) => setSearch(event.target.value)}
+        onSelect={handleSelect}
+        onSetDefault={handleSetDefault}
+        onToggleFavorite={handleToggleFavorite}
+        onDuplicate={handleDuplicate}
+        onConnect={handleConnect}
+        onDelete={handleDelete}
+        t={t}
+      />
 
       <main className="selection-main">
-        <div className="top-nav">
-          <span className="top-nav-title">{t.panel}</span>
-          <div className="top-nav-actions">
-            <button type="button" className="nav-button" onClick={handleAddNew}>
-              <PlusIcon />
-              {t.addNew}
-            </button>
-            <button
-              type="button"
-              className="nav-button nav-button-muted"
-              onClick={() => setIsSettingsOpen(true)}
-            >
-              <SettingsIcon />
-              {t.settings}
-            </button>
-          </div>
-        </div>
+        <SelectionTopNav
+          t={t}
+          onAddNew={handleAddNew}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
 
-        <header className="main-header">
-          <div>
-            <h2 className="main-title">
-              {displayedConnection ? t.editConnection : t.newConnection}
-            </h2>
-            <p className="header-hint">
-              {t.headerHint}
-            </p>
-          </div>
-        </header>
+        <input
+          ref={importInputRef}
+          className="sr-only"
+          type="file"
+          accept="application/json"
+          onChange={handleImportFile}
+        />
 
-        <form className="connection-form" onSubmit={handleSave}>
-          <div className="form-grid">
-            <label className="field">
-              <span>{t.name}</span>
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.name)}
-              />
-              {errors.name && <span className="field-error">{errors.name}</span>}
-            </label>
-            <label className="field">
-              <span>{t.host}</span>
-              <input
-                name="host"
-                list="host-suggestions"
-                value={formData.host}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.host)}
-              />
-              {errors.host && <span className="field-error">{errors.host}</span>}
-            </label>
-            <label className="field">
-              <span>{t.port}</span>
-              <input
-                name="port"
-                value={formData.port}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.port)}
-              />
-              {errors.port && <span className="field-error">{errors.port}</span>}
-            </label>
-            <label className="field">
-              <span>{t.username}</span>
-              <input
-                name="username"
-                list="user-suggestions"
-                value={formData.username}
-                onChange={handleChange}
-                aria-invalid={Boolean(errors.username)}
-              />
-              {errors.username && <span className="field-error">{errors.username}</span>}
-            </label>
-          </div>
+        <SelectionHeader t={t} isEditing={Boolean(displayedConnection)} />
 
-          <div className="field-group">
-            <label className="field">
-              <span>{t.authMethod}</span>
-              <select name="authType" value={formData.authType} onChange={handleChange}>
-                <option value="password">{t.password}</option>
-                <option value="key">{t.sshKey}</option>
-              </select>
-            </label>
+        <ConnectionForm
+          formData={formData}
+          errors={errors}
+          onChange={handleChange}
+          onSave={handleSave}
+          onTest={handleTestConnection}
+          onDelete={handleDelete}
+          isSaving={isSaving}
+          isTesting={isTesting}
+          selectedConnection={selectedConnection}
+          t={t}
+          hostSuggestions={hostSuggestions}
+          userSuggestions={userSuggestions}
+        />
 
-            {formData.authType === 'password' ? (
-              <label className="field">
-                <span>{t.password}</span>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </label>
-            ) : (
-              <label className="field">
-                <span>{t.keyPath}</span>
-                <input name="keyPath" value={formData.keyPath} onChange={handleChange} />
-              </label>
-            )}
-          </div>
+        <UndoSnackbar
+          open={Boolean(undoState)}
+          message={t.notifDeleted}
+          actionLabel={t.undo}
+          onUndo={handleUndoDelete}
+        />
 
-          <p className="form-placeholder">{t.formHint}</p>
-
-          <label className="field field-notes">
-            <span>{t.notes}</span>
-            <textarea name="notes" rows="3" value={formData.notes} onChange={handleChange} />
-          </label>
-
-          <div className="form-actions">
-            <button className="btn btn-accent" type="submit" disabled={isSaving}>
-              {isSaving ? t.saving : t.save}
-            </button>
-            <button
-              className="btn btn-outline"
-              type="button"
-              onClick={handleTestConnection}
-              disabled={isTesting}
-            >
-              {isTesting ? t.testing : t.test}
-            </button>
-            {selectedConnection && (
-              <button className="btn btn-ghost" type="button" onClick={handleDelete}>
-                {t.delete}
-              </button>
-            )}
-          </div>
-        </form>
-
-        <datalist id="host-suggestions">
-          {hostSuggestions.map((host) => (
-            <option key={host} value={host} />
-          ))}
-        </datalist>
-
-        <datalist id="user-suggestions">
-          {userSuggestions.map((user) => (
-            <option key={user} value={user} />
-          ))}
-        </datalist>
-
-        {undoState && (
-          <div className="undo-snackbar" role="status">
-            <span>{t.notifDeleted}</span>
-            <button type="button" onClick={handleUndoDelete}>
-              {t.undo}
-            </button>
-          </div>
-        )}
-
-        {isSettingsOpen && (
-          <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
-            <div
-              className="modal-panel"
-              role="dialog"
-              aria-modal="true"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h3>{t.settingsTitle}</h3>
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={() => setIsSettingsOpen(false)}
-                  title={t.settingsClose}
-                >
-                  <CloseIcon />
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="modal-section">
-                  <span>{t.settingsSectionGeneral}</span>
-                  <label className="modal-field">
-                    <span>{t.settingNotifications}</span>
-                    <select
-                      value={settings.notificationDuration}
-                      onChange={(event) =>
-                        updateSettings({ notificationDuration: Number(event.target.value) })
-                      }
-                    >
-                      <option value="800">0.8s</option>
-                      <option value="1000">1s</option>
-                      <option value="1500">1.5s</option>
-                      <option value="2000">2s</option>
-                      <option value="3000">3s</option>
-                    </select>
-                  </label>
-                  <label className="modal-toggle">
-                    <span>{t.settingAutoConnect}</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.autoConnectDefault}
-                      onChange={(event) =>
-                        updateSettings({ autoConnectDefault: event.target.checked })
-                      }
-                    />
-                  </label>
-                </div>
-
-                <div className="modal-section">
-                  <span>{t.settingsSectionSecurity}</span>
-                  <label className="modal-toggle">
-                    <span>{t.settingStoreCreds}</span>
-                    <input
-                      type="checkbox"
-                      checked={settings.storeCredentials}
-                      onChange={(event) => handleStoreCredentialsChange(event.target.checked)}
-                    />
-                  </label>
-                </div>
-
-                <div className="modal-section">
-                  <span>{t.settingsSectionWindow}</span>
-                  <label className="modal-field">
-                    <span>{t.settingWindowSize}</span>
-                    <select
-                      value={settings.windowSize}
-                      onChange={(event) => updateSettings({ windowSize: event.target.value })}
-                    >
-                      <option value="small">{t.sizeSmall}</option>
-                      <option value="medium">{t.sizeMedium}</option>
-                      <option value="large">{t.sizeLarge}</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className="modal-section">
-                  <span>{t.settingsSectionLocale}</span>
-                  <label className="modal-field">
-                    <span>{t.settingLanguage}</span>
-                    <select
-                      value={settings.language}
-                      onChange={(event) => updateSettings({ language: event.target.value })}
-                    >
-                      <option value="es">{t.languageEs}</option>
-                      <option value="en">{t.languageEn}</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => setIsSettingsOpen(false)}
-                >
-                  {t.settingsClose}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <SettingsModal
+          open={isSettingsOpen}
+          settings={settings}
+          t={t}
+          onClose={() => setIsSettingsOpen(false)}
+          onUpdateSettings={updateSettings}
+          onStoreCredentialsChange={handleStoreCredentialsChange}
+          onExport={handleExport}
+          onImport={handleImportClick}
+        />
       </main>
     </div>
   )
+}
+
+function normalizeConnection(raw, options = {}) {
+  const authType = raw?.authType === 'key' ? 'key' : 'password'
+  const port = Number(raw?.port) || 22
+  const normalized = {
+    id: raw?.id || crypto.randomUUID(),
+    name: raw?.name || '',
+    host: raw?.host || '',
+    port,
+    username: raw?.username || '',
+    authType,
+    password: raw?.password || '',
+    keyPath: raw?.keyPath || '',
+    notes: raw?.notes || '',
+    isFavorite: Boolean(raw?.isFavorite),
+    isDefault: Boolean(raw?.isDefault),
+    status: raw?.status || 'unknown',
+    updatedAt: raw?.updatedAt || new Date().toISOString(),
+  }
+  if (options.storeCredentials === false) {
+    normalized.password = ''
+    normalized.keyPath = ''
+  }
+  return normalized
 }
 
 function validateForm(values, t) {
@@ -830,19 +757,6 @@ function validateForm(values, t) {
     nextErrors.port = t.invalidPort
   }
   return nextErrors
-}
-
-function getStatusLabel(status, t) {
-  switch (status) {
-    case 'online':
-      return t.statusOnline
-    case 'offline':
-      return t.statusOffline
-    case 'checking':
-      return t.statusChecking
-    default:
-      return t.statusUnknown
-  }
 }
 
 async function getKey() {
@@ -893,106 +807,3 @@ function base64ToBytes(value) {
 }
 
 export default SelectionPage
-
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function ServerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M4 4h16v6H4Zm0 10h16v6H4Zm2-8v2h2V6Zm0 10v2h2v-2Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function StarIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.2-5.4-2.8-5.4 2.8 1-6.2L3.2 9.4l6.1-.9Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function PlugIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M9 4h2v4h2V4h2v4h2v4a5 5 0 0 1-4 4.9V20h-2v-3.1A5 5 0 0 1 7 12V8h2Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M9 3h6l1 2h4v2H4V5h4Zm1 6h2v9h-2Zm4 0h2v9h-2ZM6 7h12l-1 14H7Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function SearchIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="m21 20-4.3-4.3a7 7 0 1 0-1.4 1.4L20 21ZM5 10a5 5 0 1 1 5 5 5 5 0 0 1-5-5Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function SettingsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="m12 4 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 9.6l-2.2 1.1.4-2.4L8.5 6.6l2.4-.4ZM6 12l1 2.1 2.3.4-1.6 1.6.4 2.3L6 17l-2.1 1 .4-2.3-1.6-1.6 2.3-.4ZM18 12l1 2.1 2.3.4-1.6 1.6.4 2.3-2.1-1-2.1 1 .4-2.3-1.6-1.6 2.3-.4ZM12 14a2 2 0 1 0 2 2 2 2 0 0 0-2-2Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="m7 7 10 10m0-10L7 17"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}

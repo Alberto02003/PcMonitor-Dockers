@@ -1,0 +1,42 @@
+.system-specs {
+  display: grid;
+  gap: 1rem;
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.spec-item {
+  background: rgba(10, 25, 47, 0.35);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.spec-item span {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.spec-item strong {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spec-item-wide {
+  grid-column: span 2;
+}
+
+.spec-item-wide strong {
+  white-space: normal;
+  word-break: break-word;
+}

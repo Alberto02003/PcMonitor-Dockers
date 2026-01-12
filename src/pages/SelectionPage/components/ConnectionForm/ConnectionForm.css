@@ -1,0 +1,138 @@
+.connection-form {
+  background: rgba(10, 25, 47, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  border: 1px solid rgba(100, 255, 218, 0.08);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.12);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.92rem;
+}
+
+.field textarea {
+  resize: none;
+}
+
+.field-error {
+  color: #ff9b9b;
+  font-size: 0.78rem;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: rgba(100, 255, 218, 0.6);
+  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid rgba(100, 255, 218, 0.25);
+  outline-offset: 2px;
+}
+
+.field select:hover {
+  border-color: rgba(100, 255, 218, 0.35);
+  background: var(--light-blue);
+}
+
+.field-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(100, 255, 218, 0.08);
+}
+
+.field-notes {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(100, 255, 218, 0.08);
+}
+
+.form-placeholder {
+  margin: 1rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  padding: 0.6rem 1.1rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.btn:focus-visible {
+  outline: 2px solid rgba(100, 255, 218, 0.4);
+  outline-offset: 2px;
+}
+
+.btn-accent {
+  background: var(--accent-blue);
+  color: var(--dark-blue);
+}
+
+.btn-accent:hover {
+  filter: brightness(0.95);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: rgba(100, 255, 218, 0.5);
+  color: var(--accent-blue);
+}
+
+.btn-outline:hover {
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: rgba(230, 241, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.btn-ghost:hover {
+  border-color: rgba(230, 241, 255, 0.5);
+}
+
+@media (max-width: 960px) {
+  .form-grid,
+  .field-group {
+    grid-template-columns: 1fr;
+  }
+}

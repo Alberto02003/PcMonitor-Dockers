@@ -1,0 +1,27 @@
+.selection-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  background: var(--medium-blue);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(100, 255, 218, 0.2);
+  border-top-color: var(--accent-blue);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

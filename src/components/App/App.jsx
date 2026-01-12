@@ -10,6 +10,7 @@ function App() {
   const [showSplash, setShowSplash] = useState(true)
   const [activeConnection, setActiveConnection] = useState(null)
   const [currentPage, setCurrentPage] = useState('selection')
+  const [allowAutoConnect, setAllowAutoConnect] = useState(true)
 
   useEffect(() => {
     const timerId = setTimeout(() => setShowSplash(false), 2000)
@@ -24,14 +25,20 @@ function App() {
         ) : currentPage === 'monitoring' ? (
           <MonitoringPage
             connection={activeConnection}
-            onBack={() => setCurrentPage('selection')}
+            onBack={() => {
+              setAllowAutoConnect(false)
+              setCurrentPage('selection')
+            }}
           />
         ) : (
           <SelectionPage
             onConnect={(connection) => {
               setActiveConnection(connection)
               setCurrentPage('monitoring')
+              setAllowAutoConnect(false)
             }}
+            allowAutoConnect={allowAutoConnect}
+            onAutoConnectUsed={() => setAllowAutoConnect(false)}
           />
         )}
       </NotificationProvider>

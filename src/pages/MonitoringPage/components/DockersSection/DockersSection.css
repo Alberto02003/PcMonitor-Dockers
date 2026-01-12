@@ -1,0 +1,62 @@
+.monitoring-docker {
+  display: grid;
+  gap: 1rem;
+  background: rgba(10, 25, 47, 0.2);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.docker-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.docker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: rgba(23, 42, 69, 0.35);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+}
+
+.docker-info {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.docker-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.docker-kpis span {
+  background: rgba(10, 25, 47, 0.35);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+}
+
+.docker-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.docker-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.docker-meta {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}

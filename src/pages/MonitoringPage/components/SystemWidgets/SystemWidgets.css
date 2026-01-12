@@ -1,0 +1,70 @@
+.widgets {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.widget-card {
+  position: relative;
+  animation: widget-enter 0.5s ease both;
+  transform-origin: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.widget-card.is-dragging {
+  opacity: 0.75;
+  transform: scale(0.98);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.widget-card.is-over {
+  outline: 2px dashed rgba(100, 255, 218, 0.4);
+  outline-offset: 4px;
+  transform: translateY(-4px);
+}
+
+.widget-handle {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: grab;
+  user-select: none;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  background: rgba(10, 25, 47, 0.6);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  touch-action: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.widget-handle:active {
+  cursor: grabbing;
+}
+
+.widget-card:hover .widget-handle {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+@keyframes widget-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-card {
+    animation: none;
+    transition: none;
+  }
+
+  .widget-handle {
+    transition: none;
+  }
+}

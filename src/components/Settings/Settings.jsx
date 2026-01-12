@@ -16,6 +16,7 @@ const SettingsContext = createContext(null)
 
 function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(defaultSettings)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     try {
@@ -25,8 +26,10 @@ function SettingsProvider({ children }) {
         const next = { ...defaultSettings, ...parsed, theme: 'dark' }
         setSettings(next)
       }
-    } catch (error) {
+    } catch {
       // Ignore invalid stored settings.
+    } finally {
+      setLoaded(true)
     }
   }, [])
 
@@ -45,11 +48,12 @@ function SettingsProvider({ children }) {
   const api = useMemo(
     () => ({
       settings,
+      loaded,
       updateSettings(patch) {
         setSettings((prev) => ({ ...prev, ...patch }))
       },
     }),
-    [settings],
+    [settings, loaded],
   )
 
   return <SettingsContext.Provider value={api}>{children}</SettingsContext.Provider>
@@ -78,9 +82,10 @@ async function applyWindowSize(size) {
     const { appWindow, LogicalSize } = await import('@tauri-apps/api/window')
     await appWindow.setSize(new LogicalSize(target.width, target.height))
     await appWindow.center()
-  } catch (error) {
+  } catch {
     // Ignore errors when Tauri APIs are unavailable.
   }
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { SettingsProvider, useSettings, defaultSettings }
