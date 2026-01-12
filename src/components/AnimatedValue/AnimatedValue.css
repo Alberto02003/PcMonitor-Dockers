@@ -1,0 +1,177 @@
+/**
+ * AnimatedValue - Estilos para valores animados
+ */
+
+.animated-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-normal);
+}
+
+.animated-value__number {
+  font-weight: var(--font-semibold);
+}
+
+.animated-value__suffix {
+  font-size: 0.85em;
+  opacity: 0.8;
+  font-weight: var(--font-normal);
+}
+
+/* Direccion del cambio */
+.animated-value--up {
+  color: var(--color-success);
+}
+
+.animated-value--up .animated-value__number {
+  animation: value-increase 0.3s ease-out;
+}
+
+.animated-value--down {
+  color: var(--color-error);
+}
+
+.animated-value--down .animated-value__number {
+  animation: value-decrease 0.3s ease-out;
+}
+
+/* Colores segun umbral */
+.animated-value--warning {
+  color: var(--color-warning);
+}
+
+.animated-value--danger {
+  color: var(--color-error);
+}
+
+/* Animaciones */
+@keyframes value-increase {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes value-decrease {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Variantes de tamano */
+.animated-value--sm {
+  font-size: var(--text-sm);
+}
+
+.animated-value--lg {
+  font-size: var(--text-xl);
+}
+
+.animated-value--xl {
+  font-size: var(--text-2xl);
+}
+
+.animated-value--2xl {
+  font-size: var(--text-3xl);
+}
+
+/* Variante monospace para alineacion */
+.animated-value--mono {
+  font-family: var(--font-mono);
+}
+
+/* Flash effect on change */
+.animated-value--flash {
+  animation: value-flash 0.4s ease-out;
+}
+
+@keyframes value-flash {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(var(--color-primary-rgb, 59, 130, 246), 0.2);
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Skeleton loading state */
+.animated-value--loading {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-elevated) 25%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius-sm);
+  color: transparent;
+  min-width: 3em;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Compact variant */
+.animated-value--compact {
+  gap: 0;
+}
+
+.animated-value--compact .animated-value__suffix {
+  font-size: 0.75em;
+  margin-left: 1px;
+}
+
+/* With trend indicator */
+.animated-value--with-trend {
+  gap: var(--space-2);
+}
+
+.animated-value__trend {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75em;
+  padding: 1px var(--space-1);
+  border-radius: var(--radius-sm);
+}
+
+.animated-value__trend--up {
+  color: var(--color-success);
+  background-color: rgba(var(--color-success-rgb, 34, 197, 94), 0.1);
+}
+
+.animated-value__trend--down {
+  color: var(--color-error);
+  background-color: rgba(var(--color-error-rgb, 239, 68, 68), 0.1);
+}
+
+.animated-value__trend-icon {
+  font-size: 0.8em;
+  margin-right: 2px;
+}

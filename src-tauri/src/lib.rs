@@ -2,23 +2,93 @@ mod ssh;
 mod metrics;
 mod docker;
 mod websocket;
+mod security;
 
 use ssh::{ConnectionConfig, ConnectionStatus, SshManager};
 use metrics::{MetricsCollector, SystemMetrics};
 use docker::{DockerManager, DockerContainer, DockerImage, DockerVolume, DockerActionResult, DockerInfo};
 use websocket::WebSocketServer;
+use security::{SecureStorage, FullConnection, validate_host, validate_port, validate_username};
 use parking_lot::Mutex;
 use std::sync::Arc;
-use tauri::State;
+use std::path::PathBuf;
+use tauri::{State, Manager};
 
 struct AppState {
     ssh_manager: Arc<SshManager>,
     ws_server: Arc<Mutex<Option<WebSocketServer>>>,
     ws_port: Arc<Mutex<Option<u16>>>,
+    secure_storage: Arc<Mutex<Option<SecureStorage>>>,
 }
 
 // ============================================================================
-// SSH Commands (async to not block UI)
+// Secure Storage Commands
+// ============================================================================
+
+#[tauri::command]
+async fn secure_save_connection(
+    state: State<'_, AppState>,
+    connection: FullConnection,
+) -> Result<(), String> {
+    // Validate inputs
+    validate_host(&connection.host)?;
+    validate_port(connection.port)?;
+    validate_username(&connection.username)?;
+    
+    let storage = state.secure_storage.lock();
+    if let Some(ref storage) = *storage {
+        storage.save_full_connection(&connection)
+            .map_err(|e| e.to_string())
+    } else {
+        Err("Secure storage not initialized".into())
+    }
+}
+
+#[tauri::command]
+async fn secure_load_connections(
+    state: State<'_, AppState>,
+) -> Result<Vec<FullConnection>, String> {
+    let storage = state.secure_storage.lock();
+    if let Some(ref storage) = *storage {
+        storage.load_all_full_connections()
+            .map_err(|e| e.to_string())
+    } else {
+        Err("Secure storage not initialized".into())
+    }
+}
+
+#[tauri::command]
+async fn secure_delete_connection(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+) -> Result<(), String> {
+    let storage = state.secure_storage.lock();
+    if let Some(ref storage) = *storage {
+        storage.delete_connection(&connectionId)
+            .map_err(|e| e.to_string())
+    } else {
+        Err("Secure storage not initialized".into())
+    }
+}
+
+#[tauri::command]
+async fn secure_get_connection(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+) -> Result<FullConnection, String> {
+    let storage = state.secure_storage.lock();
+    if let Some(ref storage) = *storage {
+        storage.load_full_connection(&connectionId)
+            .map_err(|e| e.to_string())
+    } else {
+        Err("Secure storage not initialized".into())
+    }
+}
+
+// ============================================================================
+// SSH Commands (async to not block UI) - with input validation
 // ============================================================================
 
 #[tauri::command]
@@ -34,6 +104,11 @@ async fn ssh_connect(
     #[allow(non_snake_case)]
     keyPath: Option<String>,
 ) -> Result<ConnectionStatus, String> {
+    // Validate inputs before connecting
+    validate_host(&host)?;
+    validate_port(port)?;
+    validate_username(&username)?;
+    
     let ssh_manager = state.ssh_manager.clone();
     let config = ConnectionConfig {
         id,
@@ -79,6 +154,11 @@ async fn ssh_test(
     #[allow(non_snake_case)]
     keyPath: Option<String>,
 ) -> Result<ConnectionStatus, String> {
+    // Validate inputs before testing
+    validate_host(&host)?;
+    validate_port(port)?;
+    validate_username(&username)?;
+    
     let ssh_manager = state.ssh_manager.clone();
     let config = ConnectionConfig {
         id,
@@ -312,11 +392,22 @@ pub fn run() {
         ssh_manager,
         ws_server: Arc::new(Mutex::new(None)),
         ws_port: Arc::new(Mutex::new(None)),
+        secure_storage: Arc::new(Mutex::new(None)),
     };
 
     tauri::Builder::default()
         .manage(app_state)
         .setup(|app| {
+            // Initialize secure storage with app data directory
+            let app_data_dir = app.path().app_data_dir()
+                .unwrap_or_else(|_| PathBuf::from("."));
+            
+            let storage = SecureStorage::new(app_data_dir);
+            let state: State<AppState> = app.state();
+            *state.secure_storage.lock() = Some(storage);
+            
+            log::info!("Secure storage initialized");
+            
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -327,6 +418,11 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Secure storage commands
+            secure_save_connection,
+            secure_load_connections,
+            secure_delete_connection,
+            secure_get_connection,
             // SSH commands
             ssh_connect,
             ssh_disconnect,

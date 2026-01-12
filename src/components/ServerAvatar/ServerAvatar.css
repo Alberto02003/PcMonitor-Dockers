@@ -1,0 +1,250 @@
+/**
+ * ServerAvatar - Estilos para avatares de servidor
+ */
+
+.server-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: white;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  user-select: none;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.server-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* Tamanos */
+.server-avatar--xs {
+  width: 24px;
+  height: 24px;
+  font-size: var(--text-xs);
+}
+
+.server-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: var(--text-sm);
+}
+
+.server-avatar--md {
+  width: 40px;
+  height: 40px;
+  font-size: var(--text-base);
+}
+
+.server-avatar--lg {
+  width: 48px;
+  height: 48px;
+  font-size: var(--text-lg);
+}
+
+.server-avatar--xl {
+  width: 64px;
+  height: 64px;
+  font-size: var(--text-xl);
+}
+
+/* Contenido */
+.server-avatar__content {
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+/* Indicador de estado */
+.server-avatar__status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30%;
+  height: 30%;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-surface);
+  box-sizing: content-box;
+}
+
+.server-avatar__status--online {
+  background-color: var(--color-success);
+  animation: pulse-success 2s infinite;
+}
+
+.server-avatar__status--offline {
+  background-color: var(--color-text-muted);
+}
+
+.server-avatar__status--connecting {
+  background-color: var(--color-warning);
+  animation: pulse-warning 1s infinite;
+}
+
+.server-avatar__status--error {
+  background-color: var(--color-error);
+}
+
+@keyframes pulse-success {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Estados del avatar */
+.server-avatar--online {
+  box-shadow: 0 0 0 2px var(--color-success);
+}
+
+.server-avatar--error {
+  box-shadow: 0 0 0 2px var(--color-error);
+}
+
+.server-avatar--connecting {
+  animation: avatar-connecting 1.5s ease-in-out infinite;
+}
+
+@keyframes avatar-connecting {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Avatar "more" para grupos */
+.server-avatar--more {
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* Grupo de avatares */
+.server-avatar-group {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.server-avatar-group .server-avatar {
+  margin-left: -8px;
+  border: 2px solid var(--color-surface);
+  box-sizing: content-box;
+}
+
+.server-avatar-group .server-avatar:last-child {
+  margin-left: 0;
+}
+
+.server-avatar-group--xs .server-avatar {
+  margin-left: -6px;
+}
+
+.server-avatar-group--sm .server-avatar {
+  margin-left: -8px;
+}
+
+.server-avatar-group--md .server-avatar {
+  margin-left: -10px;
+}
+
+.server-avatar-group--lg .server-avatar {
+  margin-left: -12px;
+}
+
+/* Avatar con info */
+.server-avatar-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.server-avatar-info[role="button"] {
+  cursor: pointer;
+}
+
+.server-avatar-info[role="button"]:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.server-avatar-info[role="button"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.server-avatar-info__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.server-avatar-info__name {
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.server-avatar-info__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Skeleton loading */
+.server-avatar--loading {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-elevated) 25%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.server-avatar--loading .server-avatar__content {
+  visibility: hidden;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Variantes de forma */
+.server-avatar--square {
+  border-radius: var(--radius-md);
+}
+
+.server-avatar--rounded {
+  border-radius: var(--radius-lg);
+}

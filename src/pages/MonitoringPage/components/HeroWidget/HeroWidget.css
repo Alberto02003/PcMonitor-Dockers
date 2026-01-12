@@ -15,6 +15,12 @@
   border: 1px solid rgba(100, 255, 218, 0.1);
   border-radius: var(--radius-md);
   padding: 1.2rem 1.4rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-card:hover {
+  border-color: rgba(100, 255, 218, 0.2);
+  box-shadow: 0 4px 20px rgba(10, 25, 47, 0.3);
 }
 
 .hero-card--accent {
@@ -33,6 +39,40 @@
 .hero-value {
   margin: 0.45rem 0 0.2rem;
   font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-value--mono {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 1.4rem;
+}
+
+/* Estado online con dot animado */
+.hero-status--online {
+  color: var(--color-success, #4ce3a0);
+}
+
+.hero-status--loading {
+  color: var(--text-secondary);
+}
+
+.hero-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-success, #4ce3a0);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(76, 227, 160, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(76, 227, 160, 0);
+  }
 }
 
 .hero-subtle {
@@ -40,8 +80,33 @@
   font-size: 0.8rem;
 }
 
+.hero-subtle .last-update {
+  color: var(--text-secondary);
+}
+
+/* Load average display */
+.hero-load-avg {
+  display: flex;
+  gap: 1rem;
+}
+
+.hero-load-avg span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hero-load-avg .animated-value {
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 1080px) {
   .monitoring-hero {
     grid-template-columns: 1fr;
+  }
+  
+  .hero-load-avg {
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
   }
 }

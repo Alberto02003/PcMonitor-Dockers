@@ -1,6 +1,58 @@
 import { invoke } from '@tauri-apps/api/core'
 
 // ============================================================================
+// Secure Storage API - Encrypted credential storage using Rust backend
+// ============================================================================
+
+/**
+ * Save a connection with encrypted credentials to secure storage
+ * @param {Object} connection - Full connection object with credentials
+ */
+export async function secureStorageSave(connection) {
+  return invoke('secure_save_connection', {
+    connection: {
+      id: connection.id,
+      name: connection.name,
+      host: connection.host,
+      port: connection.port || 22,
+      username: connection.username,
+      authType: connection.authType || 'password',
+      password: connection.password || null,
+      keyPath: connection.keyPath || null,
+      notes: connection.notes || '',
+      isFavorite: connection.isFavorite || false,
+      isDefault: connection.isDefault || false,
+      status: connection.status || 'unknown',
+      updatedAt: connection.updatedAt || new Date().toISOString(),
+    }
+  })
+}
+
+/**
+ * Load all connections with decrypted credentials from secure storage
+ * @returns {Promise<Array>} Array of connection objects
+ */
+export async function secureStorageLoad() {
+  return invoke('secure_load_connections')
+}
+
+/**
+ * Delete a connection from secure storage
+ * @param {string} connectionId - Connection ID to delete
+ */
+export async function secureStorageDelete(connectionId) {
+  return invoke('secure_delete_connection', { connectionId })
+}
+
+/**
+ * Get a single connection with credentials from secure storage
+ * @param {string} connectionId - Connection ID to retrieve
+ */
+export async function secureStorageGet(connectionId) {
+  return invoke('secure_get_connection', { connectionId })
+}
+
+// ============================================================================
 // SSH API
 // ============================================================================
 

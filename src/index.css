@@ -1,23 +1,31 @@
-:root {
-  --dark-blue: #0a192f;
-  --medium-blue: #172a45;
-  --light-blue: #303f60;
-  --accent-blue: #64ffda;
-  --accent-blue-dark: #52d1b2;
-  --text-primary: #e6f1ff;
-  --text-secondary: #8892b0;
-  --text-accent: #ccd6f6;
-  --text-muted: rgba(230, 241, 255, 0.65);
-  --card-bg: rgba(23, 42, 69, 0.85);
-  --border-soft: rgba(100, 255, 218, 0.12);
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 22px 40px rgba(0, 0, 0, 0.35);
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --transition: all 0.3s ease;
+/* Import Design System */
+@import './styles/design-tokens.css';
+@import './styles/components.css';
+@import './styles/animations.css';
 
-  color: var(--text-primary);
-  font-family: 'Segoe UI', sans-serif;
+:root {
+  /* Legacy variables (for backward compatibility) */
+  --dark-blue: var(--color-bg-primary);
+  --medium-blue: var(--color-bg-secondary);
+  --light-blue: var(--color-bg-tertiary);
+  --accent-blue: var(--color-primary);
+  --accent-blue-dark: var(--color-primary-active);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-accent: var(--color-text-primary);
+  --text-muted: var(--color-text-muted);
+  --card-bg: var(--color-surface);
+  --border-soft: var(--color-border);
+  --shadow: var(--shadow-md);
+  --shadow-lg: var(--shadow-xl);
+  --radius-sm: var(--radius-md);
+  --radius-md: var(--radius-lg);
+  --transition: var(--transition-normal);
+
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

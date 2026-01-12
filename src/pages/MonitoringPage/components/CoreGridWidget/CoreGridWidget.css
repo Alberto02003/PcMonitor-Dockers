@@ -9,6 +9,12 @@
   border: 1px solid rgba(100, 255, 218, 0.08);
   border-radius: var(--radius-md);
   padding: 1.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.monitoring-card:hover {
+  border-color: rgba(100, 255, 218, 0.15);
+  box-shadow: 0 4px 20px rgba(10, 25, 47, 0.3);
 }
 
 .card-header {
@@ -26,6 +32,7 @@
 .card-value {
   color: var(--accent-blue);
   font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-footnote {
@@ -34,8 +41,53 @@
   font-size: 0.85rem;
 }
 
-.progress {
+/* Visual area con progress y sparkline */
+.card-visual {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-top: 1rem;
+}
+
+.card-visual .progress {
+  flex: 1;
+  margin-top: 0;
+}
+
+.card-visual .sparkline {
+  flex-shrink: 0;
+}
+
+.card-visual--network {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.network-stats {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.network-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.network-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.network-stat .animated-value {
+  font-size: 0.9rem;
+}
+
+.progress {
   height: 8px;
   border-radius: 999px;
   background: rgba(100, 255, 218, 0.08);
@@ -45,47 +97,21 @@
 .progress span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, rgba(100, 255, 218, 0.7), rgba(100, 255, 218, 0.25));
-}
-
-.sparkline {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.3rem;
-  margin-top: 1rem;
-  height: 48px;
-  align-items: end;
-}
-
-.sparkline span {
-  display: block;
-  background: rgba(100, 255, 218, 0.35);
-  border-radius: 6px 6px 2px 2px;
-  height: 100%;
-}
-
-.sparkline span:nth-child(2) {
-  height: 70%;
-}
-
-.sparkline span:nth-child(3) {
-  height: 45%;
-}
-
-.sparkline span:nth-child(4) {
-  height: 85%;
-}
-
-.sparkline span:nth-child(5) {
-  height: 60%;
-}
-
-.sparkline span:nth-child(6) {
-  height: 30%;
+  border-radius: 999px;
+  transition: width 0.5s ease, background-color 0.3s ease;
 }
 
 @media (max-width: 1080px) {
   .monitoring-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .card-visual {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .card-visual .sparkline {
+    align-self: flex-end;
   }
 }

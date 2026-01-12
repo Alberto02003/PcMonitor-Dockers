@@ -1,0 +1,274 @@
+/**
+ * Design Tokens - Sistema de Diseno Unificado
+ * 
+ * Este archivo define todas las variables CSS del sistema.
+ * Importar en index.css para uso global.
+ */
+
+:root {
+  /* ============================================
+     COLOR PALETTE - Base
+     ============================================ */
+  
+  /* Backgrounds */
+  --color-bg-primary: #0a192f;
+  --color-bg-secondary: #172a45;
+  --color-bg-tertiary: #1e3a5f;
+  --color-bg-elevated: #243b53;
+  
+  /* Surfaces (for cards, modals, etc.) */
+  --color-surface: rgba(23, 42, 69, 0.85);
+  --color-surface-hover: rgba(30, 58, 95, 0.9);
+  --color-surface-active: rgba(36, 59, 83, 0.95);
+  --color-surface-overlay: rgba(10, 25, 47, 0.8);
+  
+  /* Brand/Accent */
+  --color-primary: #64ffda;
+  --color-primary-hover: #7affdf;
+  --color-primary-active: #52d1b2;
+  --color-primary-muted: rgba(100, 255, 218, 0.15);
+  
+  /* ============================================
+     SEMANTIC COLORS
+     ============================================ */
+  
+  /* Success */
+  --color-success: #4ade80;
+  --color-success-hover: #22c55e;
+  --color-success-bg: rgba(74, 222, 128, 0.12);
+  --color-success-border: rgba(74, 222, 128, 0.3);
+  
+  /* Warning */
+  --color-warning: #fbbf24;
+  --color-warning-hover: #f59e0b;
+  --color-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-warning-border: rgba(251, 191, 36, 0.3);
+  
+  /* Error/Danger */
+  --color-error: #f87171;
+  --color-error-hover: #ef4444;
+  --color-error-bg: rgba(248, 113, 113, 0.12);
+  --color-error-border: rgba(248, 113, 113, 0.3);
+  
+  /* Info */
+  --color-info: #60a5fa;
+  --color-info-hover: #3b82f6;
+  --color-info-bg: rgba(96, 165, 250, 0.12);
+  --color-info-border: rgba(96, 165, 250, 0.3);
+  
+  /* ============================================
+     TEXT COLORS
+     ============================================ */
+  
+  --color-text-primary: #e6f1ff;
+  --color-text-secondary: #8892b0;
+  --color-text-tertiary: #5f6b8a;
+  --color-text-muted: rgba(230, 241, 255, 0.5);
+  --color-text-inverse: #0a192f;
+  --color-text-accent: var(--color-primary);
+  
+  /* ============================================
+     BORDERS
+     ============================================ */
+  
+  --color-border: rgba(100, 255, 218, 0.08);
+  --color-border-hover: rgba(100, 255, 218, 0.15);
+  --color-border-active: rgba(100, 255, 218, 0.25);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  
+  /* ============================================
+     SPACING SCALE
+     ============================================ */
+  
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  
+  /* Font Family */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  
+  /* Font Sizes */
+  --text-xs: 0.6875rem;   /* 11px */
+  --text-sm: 0.75rem;     /* 12px */
+  --text-base: 0.8125rem; /* 13px */
+  --text-md: 0.875rem;    /* 14px */
+  --text-lg: 1rem;        /* 16px */
+  --text-xl: 1.125rem;    /* 18px */
+  --text-2xl: 1.25rem;    /* 20px */
+  --text-3xl: 1.5rem;     /* 24px */
+  --text-4xl: 2rem;       /* 32px */
+  
+  /* Font Weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  
+  /* ============================================
+     BORDER RADIUS
+     ============================================ */
+  
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+  
+  /* ============================================
+     SHADOWS
+     ============================================ */
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 20px rgba(100, 255, 218, 0.15);
+  --shadow-glow-sm: 0 0 10px rgba(100, 255, 218, 0.1);
+  
+  /* ============================================
+     TRANSITIONS
+     ============================================ */
+  
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+  
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  --transition-fast: all var(--duration-fast) var(--ease-default);
+  --transition-normal: all var(--duration-normal) var(--ease-default);
+  --transition-slow: all var(--duration-slow) var(--ease-default);
+  
+  /* ============================================
+     Z-INDEX SCALE
+     ============================================ */
+  
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-tooltip: 600;
+  --z-toast: 700;
+  
+  /* ============================================
+     BREAKPOINTS (for reference in JS)
+     ============================================ */
+  
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  
+  /* ============================================
+     COMPONENT-SPECIFIC TOKENS
+     ============================================ */
+  
+  /* Cards */
+  --card-padding: var(--space-4);
+  --card-radius: var(--radius-xl);
+  --card-border: 1px solid var(--color-border);
+  --card-shadow: var(--shadow-md);
+  
+  /* Buttons */
+  --btn-height-sm: 28px;
+  --btn-height-md: 36px;
+  --btn-height-lg: 44px;
+  --btn-padding-x: var(--space-4);
+  --btn-radius: var(--radius-md);
+  
+  /* Inputs */
+  --input-height: 40px;
+  --input-padding-x: var(--space-3);
+  --input-radius: var(--radius-md);
+  --input-border: 1px solid var(--color-border);
+  --input-bg: var(--color-bg-tertiary);
+  
+  /* Sidebar */
+  --sidebar-width: 280px;
+  --sidebar-width-collapsed: 64px;
+  
+  /* Header */
+  --header-height: 56px;
+}
+
+/* ============================================
+   DARK THEME (default)
+   ============================================ */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* ============================================
+   LIGHT THEME (future)
+   ============================================ */
+
+[data-theme="light"] {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-tertiary: #e2e8f0;
+  --color-bg-elevated: #ffffff;
+  
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-surface-hover: rgba(241, 245, 249, 0.95);
+  
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #64748b;
+  --color-text-muted: rgba(15, 23, 42, 0.5);
+  
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-hover: rgba(0, 0, 0, 0.12);
+  
+  --color-primary: #0891b2;
+  --color-primary-hover: #0e7490;
+  
+  color-scheme: light;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}

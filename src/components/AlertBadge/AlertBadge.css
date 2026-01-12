@@ -1,0 +1,247 @@
+/* Alert Badge */
+
+.alert-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.alert-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.alert-badge--warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.alert-badge--warning:hover {
+  background: rgba(245, 158, 11, 0.25);
+}
+
+.alert-badge--critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.alert-badge--critical:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.alert-badge--animate {
+  animation: alertPulse 2s ease-in-out infinite;
+}
+
+@keyframes alertPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.alert-badge__count {
+  min-width: 16px;
+  text-align: center;
+}
+
+/* Alert List */
+
+.alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.alert-list--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 0.875rem;
+}
+
+.alert-list--empty svg {
+  width: 20px;
+  height: 20px;
+  color: #22c55e;
+}
+
+/* Alert Item */
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--color-surface, #1e1e2e);
+}
+
+.alert-item--critical {
+  border-left: 3px solid #ef4444;
+}
+
+.alert-item--warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.alert-item--info {
+  border-left: 3px solid #3b82f6;
+}
+
+.alert-item__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.alert-item__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.alert-item--critical .alert-item__icon {
+  color: #ef4444;
+}
+
+.alert-item--warning .alert-item__icon {
+  color: #f59e0b;
+}
+
+.alert-item--info .alert-item__icon {
+  color: #3b82f6;
+}
+
+.alert-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-item__message {
+  display: block;
+  color: var(--color-text, #fff);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.alert-item__time {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 0.6875rem;
+}
+
+.alert-item__actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.alert-item__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary, #a0a0a0);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.alert-item__btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.alert-item__btn:hover {
+  background: var(--color-surface-hover, #2a2a3e);
+  color: #22c55e;
+}
+
+.alert-item__btn--dismiss:hover {
+  color: #ef4444;
+}
+
+/* Alert Widget */
+
+.alert-widget {
+  padding: 1rem;
+  background: var(--color-surface, #1e1e2e);
+  border-radius: 12px;
+}
+
+.alert-widget__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text-secondary, #a0a0a0);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.alert-widget__header svg {
+  width: 14px;
+  height: 14px;
+}
+
+.alert-widget__stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.alert-widget__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.alert-widget__stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.alert-widget__stat-label {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary, #a0a0a0);
+}
+
+.alert-widget__stat--critical .alert-widget__stat-value {
+  color: #ef4444;
+}
+
+.alert-widget__stat--warning .alert-widget__stat-value {
+  color: #f59e0b;
+}
+
+.alert-widget__stat--ok {
+  flex-direction: row;
+  color: #22c55e;
+  font-size: 0.875rem;
+}
+
+.alert-widget__stat--ok svg {
+  width: 18px;
+  height: 18px;
+}

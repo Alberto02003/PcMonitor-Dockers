@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nMejoras mayores: seguridad, componentes y UI\n\n- Implementado módulo de seguridad en Rust con cifrado de credenciales\n- Agregados componentes reutilizables \\(AlertBadge, AnimatedValue, ConfirmModal, etc.\\)\n- Implementado sistema de hooks personalizados \\(useAlerts, useConnectionStatus, etc.\\)\n- Agregado sistema de internacionalización \\(i18n\\)\n- Mejorados estilos y widgets de monitoreo \\(HeroWidget, CoreGridWidget\\)\n- Implementado sistema de stores y utilidades\n- Actualizadas dependencias del proyecto\n- Actualizado ROADMAP con progreso de seguridad\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import { ServerAvatar } from '../../../../components'
 import './SelectionSidebar.css'
 
 function SelectionSidebar({
@@ -15,6 +16,16 @@ function SelectionSidebar({
   onDuplicate,
   t,
 }) {
+  // Mapear status de conexion a status del avatar
+  const getAvatarStatus = (status) => {
+    switch (status) {
+      case 'online': return 'online'
+      case 'offline': return 'offline'
+      case 'checking': return 'connecting'
+      default: return null
+    }
+  }
+
   return (
     <aside className="selection-sidebar">
       <div className="sidebar-header">
@@ -51,6 +62,13 @@ function SelectionSidebar({
             >
               <div className="item-content">
                 <div className="item-top">
+                  <ServerAvatar
+                    name={item.name}
+                    host={item.host}
+                    size="sm"
+                    status={getAvatarStatus(item.status)}
+                    showStatus={true}
+                  />
                   <button type="button" className="item-main" onClick={() => onSelect(item.id)}>
                     <div className="item-title">
                       <p className="item-name">{item.name}</p>
