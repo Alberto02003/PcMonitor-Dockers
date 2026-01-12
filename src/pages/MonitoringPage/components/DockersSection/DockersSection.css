@@ -60,3 +60,97 @@
   color: var(--text-secondary);
   font-size: 0.8rem;
 }
+
+.docker-ports {
+  margin: 0.3rem 0 0;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+}
+
+/* URLs de acceso */
+.docker-urls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(100, 255, 218, 0.05);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: var(--radius-sm);
+}
+
+.docker-urls-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.docker-urls-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.docker-url-item {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.btn-url {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  background: rgba(100, 255, 218, 0.1);
+  border-color: rgba(100, 255, 218, 0.3);
+  color: var(--accent);
+  transition: all 0.2s ease;
+}
+
+.btn-url:hover {
+  background: rgba(100, 255, 218, 0.2);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(100, 255, 218, 0.3);
+}
+
+.btn-url .url-icon {
+  font-size: 0.9rem;
+}
+
+.btn-url .url-label {
+  font-weight: 500;
+}
+
+.btn-icon {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  min-width: unset;
+  background: rgba(100, 255, 218, 0.05);
+  border-color: rgba(100, 255, 218, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(100, 255, 218, 0.15);
+  border-color: var(--accent);
+}
+
+.btn-sm {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+/* Estado stopped */
+.docker-item.is-stopped {
+  opacity: 0.7;
+}
+
+.docker-item.is-stopped .docker-urls {
+  display: none;
+}

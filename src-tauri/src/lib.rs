@@ -396,6 +396,7 @@ pub fn run() {
     };
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .manage(app_state)
         .setup(|app| {
             // Initialize secure storage with app data directory

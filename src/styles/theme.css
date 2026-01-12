@@ -1,0 +1,185 @@
+/**
+ * Theme CSS Variables - Fase 4.1
+ * 
+ * Variables CSS para soporte de Light/Dark mode
+ */
+
+/* ============================================================================
+   Light Theme (Default)
+   ============================================================================ */
+
+body,
+.theme-light {
+  /* Colores base */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f5f5f5;
+  --color-bg-tertiary: #e8e8e8;
+  
+  /* Colores de texto */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  
+  /* Colores de borde */
+  --color-border-primary: #e0e0e0;
+  --color-border-secondary: #d0d0d0;
+  
+  /* Colores de acento */
+  --color-accent: #007aff;
+  --color-accent-hover: #0051d5;
+  
+  /* Colores de estado */
+  --color-success: #34c759;
+  --color-warning: #ff9500;
+  --color-error: #ff3b30;
+  --color-info: #5ac8fa;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+  
+  /* Opacidades */
+  --opacity-disabled: 0.5;
+  --opacity-hover: 0.8;
+}
+
+/* ============================================================================
+   Dark Theme
+   ============================================================================ */
+
+.theme-dark {
+  /* Colores base */
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #2a2a2a;
+  --color-bg-tertiary: #3a3a3a;
+  
+  /* Colores de texto */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-tertiary: #808080;
+  
+  /* Colores de borde */
+  --color-border-primary: #404040;
+  --color-border-secondary: #505050;
+  
+  /* Colores de acento */
+  --color-accent: #0a84ff;
+  --color-accent-hover: #409cff;
+  
+  /* Colores de estado */
+  --color-success: #30d158;
+  --color-warning: #ff9f0a;
+  --color-error: #ff453a;
+  --color-info: #64d2ff;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  
+  /* Opacidades */
+  --opacity-disabled: 0.4;
+  --opacity-hover: 0.9;
+}
+
+/* ============================================================================
+   Aplicación de temas
+   ============================================================================ */
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Componentes base */
+.card,
+.widget,
+.modal {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.button-primary {
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+}
+
+.button-primary:hover {
+  background-color: var(--color-accent-hover);
+  opacity: var(--opacity-hover);
+}
+
+.button-secondary {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.input,
+.textarea,
+.select {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* Estados */
+.status-success {
+  color: var(--color-success);
+}
+
+.status-warning {
+  color: var(--color-warning);
+}
+
+.status-error {
+  color: var(--color-error);
+}
+
+.status-info {
+  color: var(--color-info);
+}
+
+/* Scrollbar styling para dark mode */
+.theme-dark ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.theme-dark ::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+.theme-dark ::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+  border-radius: 6px;
+}
+
+.theme-dark ::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+/* Transiciones suaves */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+
+/* Evitar transiciones en elementos que no las necesitan */
+button,
+input[type="checkbox"],
+input[type="radio"] {
+  transition: none;
+}

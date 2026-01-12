@@ -3,6 +3,15 @@ use crate::ssh::{SshManager, SshError};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
+pub struct PortMapping {
+    pub container_port: u16,
+    pub host_port: u16,
+    pub protocol: String,
+    pub host_ip: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct DockerContainer {
     pub id: String,
     pub name: String,
@@ -11,6 +20,7 @@ pub struct DockerContainer {
     pub state: String,
     pub created: String,
     pub ports: String,
+    pub port_mappings: Vec<PortMapping>,
     pub cpu_percent: f64,
     pub memory_usage_mb: f64,
     pub memory_limit_mb: f64,
@@ -110,6 +120,9 @@ impl DockerManager {
                 "CONTAINERS" => {
                     let parts: Vec<&str> = line.split('|').collect();
                     if parts.len() >= 5 {
+                        let ports_str = parts.get(6).unwrap_or(&"").to_string();
+                        let port_mappings = Self::parse_port_mappings(&ports_str);
+                        
                         let container = DockerContainer {
                             id: parts[0].to_string(),
                             name: parts[1].to_string(),
@@ -117,7 +130,8 @@ impl DockerManager {
                             status: parts.get(3).unwrap_or(&"").to_string(),
                             state: parts.get(4).unwrap_or(&"").to_string(),
                             created: parts.get(5).unwrap_or(&"").to_string(),
-                            ports: parts.get(6).unwrap_or(&"").to_string(),
+                            ports: ports_str,
+                            port_mappings,
                             ..Default::default()
                         };
                         containers.push(container);
@@ -208,6 +222,62 @@ impl DockerManager {
         } else {
             value // Assume MB/MiB
         }
+    }
+
+    /// Parse Docker port mappings from string
+    /// Examples:
+    ///   "0.0.0.0:8080->80/tcp, 0.0.0.0:8443->443/tcp"
+    ///   "80/tcp, 443/tcp"
+    ///   "0.0.0.0:3000->3000/tcp"
+    fn parse_port_mappings(ports_str: &str) -> Vec<PortMapping> {
+        let mut mappings = Vec::new();
+        
+        if ports_str.is_empty() {
+            return mappings;
+        }
+
+        // Split by comma for multiple port mappings
+        for port_entry in ports_str.split(',') {
+            let port_entry = port_entry.trim();
+            
+            // Check if it's a mapped port (has ->)
+            if port_entry.contains("->") {
+                let parts: Vec<&str> = port_entry.split("->").collect();
+                if parts.len() == 2 {
+                    let host_part = parts[0].trim();
+                    let container_part = parts[1].trim();
+                    
+                    // Parse host part (e.g., "0.0.0.0:8080" or ":::8080" or "8080")
+                    let (host_ip, host_port) = if host_part.contains(':') {
+                        let host_parts: Vec<&str> = host_part.rsplitn(2, ':').collect();
+                        if host_parts.len() == 2 {
+                            (host_parts[1].to_string(), host_parts[0])
+                        } else {
+                            ("0.0.0.0".to_string(), host_part)
+                        }
+                    } else {
+                        ("0.0.0.0".to_string(), host_part)
+                    };
+                    
+                    // Parse container part (e.g., "80/tcp")
+                    let container_parts: Vec<&str> = container_part.split('/').collect();
+                    let container_port = container_parts[0].parse::<u16>().unwrap_or(0);
+                    let protocol = container_parts.get(1).unwrap_or(&"tcp").to_string();
+                    let host_port_num = host_port.parse::<u16>().unwrap_or(0);
+                    
+                    if container_port > 0 && host_port_num > 0 {
+                        mappings.push(PortMapping {
+                            container_port,
+                            host_port: host_port_num,
+                            protocol,
+                            host_ip: if host_ip == ":::" { "0.0.0.0".to_string() } else { host_ip },
+                        });
+                    }
+                }
+            }
+        }
+        
+        mappings
     }
 
     /// Helper script to detect working docker command

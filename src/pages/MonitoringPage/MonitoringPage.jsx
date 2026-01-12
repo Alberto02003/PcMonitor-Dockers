@@ -230,6 +230,7 @@ function MonitoringPage({ connection, onBack }) {
           loading={containersLoading}
           error={containersError}
           onDockerAction={handleDockerAction}
+          serverHost={connection?.host}
         />
       )}
 
