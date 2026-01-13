@@ -53,12 +53,14 @@
 }
 
 /* Variants */
-.btn--primary {
+.btn--primary,
+.btn-primary {
   background: var(--color-primary);
   color: var(--color-text-inverse);
 }
 
-.btn--primary:hover:not(:disabled) {
+.btn--primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
   box-shadow: var(--shadow-glow-sm);
 }
@@ -74,14 +76,18 @@
   border-color: var(--color-border-hover);
 }
 
-.btn--ghost {
+.btn--ghost,
+.btn-ghost {
   background: transparent;
   color: var(--color-text-secondary);
+  border: 1px solid rgba(230, 241, 255, 0.2);
 }
 
-.btn--ghost:hover:not(:disabled) {
+.btn--ghost:hover:not(:disabled),
+.btn-ghost:hover:not(:disabled) {
   background: var(--color-surface);
   color: var(--color-text-primary);
+  border-color: rgba(230, 241, 255, 0.5);
 }
 
 .btn--danger {
@@ -100,6 +106,33 @@
 
 .btn--success:hover:not(:disabled) {
   background: var(--color-success-hover);
+}
+
+/* Accent variant (teal/primary color, dark text) */
+.btn--accent,
+.btn-accent {
+  background: var(--color-primary);
+  color: var(--color-bg-primary);
+}
+
+.btn--accent:hover:not(:disabled),
+.btn-accent:hover:not(:disabled) {
+  filter: brightness(0.95);
+  box-shadow: var(--shadow-glow-sm);
+}
+
+/* Outline variant */
+.btn--outline,
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgba(100, 255, 218, 0.5);
+  color: var(--color-primary);
+}
+
+.btn--outline:hover:not(:disabled),
+.btn-outline:hover:not(:disabled) {
+  background: rgba(100, 255, 218, 0.1);
+  border-color: var(--color-primary);
 }
 
 /* Icon-only button */

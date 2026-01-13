@@ -190,6 +190,68 @@ impl SshManager {
         })
     }
 
+    pub fn execute_streaming<F>(&self, connection_id: &str, command: &str, mut on_output: F) -> Result<i32, SshError>
+    where
+        F: FnMut(&str, bool), // (data, is_stderr)
+    {
+        let connections = self.connections.lock();
+        let connection = connections
+            .get(connection_id)
+            .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+
+        let mut channel = connection.session.channel_session()
+            .map_err(|e| SshError::ExecutionError(format!("Error abriendo canal: {}", e)))?;
+
+        // Set non-blocking mode
+        channel.exec(command)
+            .map_err(|e| SshError::ExecutionError(format!("Error ejecutando comando: {}", e)))?;
+
+        let mut stdout_buf = [0u8; 4096];
+        let mut stderr_buf = [0u8; 4096];
+
+        loop {
+            // Read stdout
+            match channel.read(&mut stdout_buf) {
+                Ok(0) => {},
+                Ok(n) => {
+                    if let Ok(s) = std::str::from_utf8(&stdout_buf[..n]) {
+                        on_output(s, false);
+                    }
+                }
+                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(_) => {}
+            }
+
+            // Read stderr
+            match channel.stderr().read(&mut stderr_buf) {
+                Ok(0) => {},
+                Ok(n) => {
+                    if let Ok(s) = std::str::from_utf8(&stderr_buf[..n]) {
+                        on_output(s, true);
+                    }
+                }
+                Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(_) => {}
+            }
+
+            // Check if channel is closed
+            if channel.eof() {
+                break;
+            }
+
+            // Small sleep to prevent busy loop
+            std::thread::sleep(Duration::from_millis(10));
+        }
+
+        channel.wait_close()
+            .map_err(|e| SshError::ExecutionError(format!("Error cerrando canal: {}", e)))?;
+
+        let exit_code = channel.exit_status()
+            .map_err(|e| SshError::ExecutionError(format!("Error obteniendo exit code: {}", e)))?;
+
+        Ok(exit_code)
+    }
+
     pub fn is_connected(&self, connection_id: &str) -> bool {
         self.connections.lock().contains_key(connection_id)
     }

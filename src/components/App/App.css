@@ -2,3 +2,84 @@
   height: 100%;
   width: 100%;
 }
+
+/* Database Error Screen */
+.db-error-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--dark-blue, #0a192f);
+  color: var(--text-primary, #e6f1ff);
+}
+
+.db-error-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 2rem;
+  background: var(--medium-blue, #172a45);
+  border-radius: 12px;
+  border: 1px solid var(--border-soft, rgba(100, 255, 218, 0.12));
+}
+
+.db-error-content h2 {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+}
+
+.db-error-content p {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary, #8892b0);
+}
+
+.db-error-detail {
+  font-family: monospace;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  word-break: break-all;
+}
+
+.db-error-help {
+  text-align: left;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 8px;
+}
+
+.db-error-help ul {
+  margin: 0.5rem 0 0 1.5rem;
+  padding: 0;
+}
+
+.db-error-help li {
+  margin: 0.5rem 0;
+}
+
+.db-error-help code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--accent-blue, #64ffda);
+}
+
+.db-error-content button {
+  margin-top: 1rem;
+  padding: 0.75rem 2rem;
+  background: var(--accent-blue, #64ffda);
+  color: var(--dark-blue, #0a192f);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.db-error-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(100, 255, 218, 0.3);
+}

@@ -55,3 +55,20 @@
 .alert-toggle input {
   accent-color: var(--accent-blue);
 }
+
+/* Botón secundario para prueba de notificaciones */
+.modal-footer .btn-secondary {
+  background: rgba(100, 255, 218, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  color: var(--accent-blue);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.modal-footer .btn-secondary:hover {
+  background: rgba(100, 255, 218, 0.2);
+  border-color: var(--accent-blue);
+}

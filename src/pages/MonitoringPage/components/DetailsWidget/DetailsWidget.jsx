@@ -1,7 +1,9 @@
 import { Fragment, useMemo } from 'react'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './DetailsWidget.css'
 
 function DetailsWidget({ metrics, lastUpdate }) {
+  const { t } = useTranslation()
   const processes = metrics?.topProcesses || []
   const disks = metrics?.disks || []
   const networks = metrics?.network || []
@@ -24,12 +26,12 @@ function DetailsWidget({ metrics, lastUpdate }) {
   return (
     <section className="monitoring-card system-details">
       <div className="card-header">
-        <h2>Detalles del sistema</h2>
-        <span className="card-value">Actualizado {lastUpdateLabel}</span>
+        <h2>{t('details.title')}</h2>
+        <span className="card-value">{t('details.updated')} {lastUpdateLabel}</span>
       </div>
       <div className="system-columns">
         <div className="mini-table">
-          <div>Proceso</div>
+          <div>{t('details.processes')}</div>
           <div>CPU</div>
           <div>RAM</div>
           {processes.length > 0 ? (
@@ -50,15 +52,15 @@ function DetailsWidget({ metrics, lastUpdate }) {
         </div>
         <div className="system-services">
           <div>
-            <p>Hostname</p>
+            <p>{t('details.hostname')}</p>
             <small>{metrics?.systemInfo?.hostname || '--'}</small>
           </div>
           <div>
-            <p>Discos montados</p>
+            <p>{t('details.mountedDisks')}</p>
             <small>{disks.length > 0 ? disks.map(d => d.mountPoint).join(', ') : '--'}</small>
           </div>
           <div>
-            <p>Interfaces de red</p>
+            <p>{t('details.networkInterfaces')}</p>
             <small>{networks.length > 0 ? networks.map(n => n.interface).join(', ') : '--'}</small>
           </div>
         </div>

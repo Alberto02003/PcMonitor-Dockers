@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatedPercent, AnimatedBytes, Sparkline } from '../../../../components'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './CoreGridWidget.css'
 
 // Hook para mantener historial de valores para sparklines
@@ -24,6 +25,7 @@ function useMetricsHistory(value, maxLength = 20) {
 }
 
 function CoreGridWidget({ metrics }) {
+  const { t } = useTranslation()
   const cpu = metrics?.cpu || {}
   const memory = metrics?.memory || {}
   const disk = metrics?.disks?.[0] || {}
@@ -95,7 +97,7 @@ function CoreGridWidget({ metrics }) {
 
       <section className="monitoring-card">
         <div className="card-header">
-          <h2>Memoria</h2>
+          <h2>{t('core.memory')}</h2>
           <span className="card-value">
             {formatMb(memory.usedMb)} / {formatMb(memory.totalMb)}
           </span>
@@ -125,7 +127,7 @@ function CoreGridWidget({ metrics }) {
 
       <section className="monitoring-card">
         <div className="card-header">
-          <h2>Disco</h2>
+          <h2>{t('core.disk')}</h2>
           <span className="card-value">
             {formatGb(disk.usedGb)} / {formatGb(disk.totalGb)}
           </span>
@@ -155,7 +157,7 @@ function CoreGridWidget({ metrics }) {
 
       <section className="monitoring-card">
         <div className="card-header">
-          <h2>Red</h2>
+          <h2>{t('core.network')}</h2>
           <span className="card-value">{network.interface || '--'}</span>
         </div>
         <div className="card-visual card-visual--network">

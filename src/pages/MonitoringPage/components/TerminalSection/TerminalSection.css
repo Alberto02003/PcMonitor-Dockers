@@ -1,0 +1,228 @@
+/* Terminal Section - Dark hacker theme */
+
+.terminal-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+}
+
+.terminal-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #0b111b;
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(100, 255, 218, 0.05);
+}
+
+/* Terminal Header Bar */
+.terminal-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, #1a2332 0%, #0f1724 100%);
+  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.terminal-dots .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot-red {
+  background: #ff5f57;
+}
+
+.dot-yellow {
+  background: #febc2e;
+}
+
+.dot-green {
+  background: #28c840;
+}
+
+.terminal-title {
+  flex: 1;
+  color: rgba(230, 241, 255, 0.6);
+  font-size: 0.75rem;
+  font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+  letter-spacing: 0.03em;
+}
+
+.terminal-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-action-btn {
+  padding: 0.25rem 0.6rem;
+  background: rgba(100, 255, 218, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: 4px;
+  color: var(--accent-blue);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.terminal-action-btn:hover {
+  background: rgba(100, 255, 218, 0.2);
+  border-color: var(--accent-blue);
+}
+
+/* Terminal Output Area */
+.terminal-output {
+  flex: 1;
+  min-height: 0;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  cursor: text;
+}
+
+/* Welcome Message */
+.terminal-welcome {
+  color: rgba(100, 255, 218, 0.6);
+  margin-bottom: 1rem;
+}
+
+.terminal-welcome p {
+  margin: 0.25rem 0;
+}
+
+.terminal-welcome .highlight {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.terminal-welcome .hint {
+  font-size: 0.75rem;
+  color: rgba(136, 146, 176, 0.7);
+}
+
+/* Terminal Entries */
+.terminal-entry {
+  margin-bottom: 0.25rem;
+}
+
+.terminal-command-line {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-prompt {
+  color: var(--accent-blue);
+  font-weight: 600;
+  user-select: none;
+}
+
+.terminal-cmd {
+  color: #e6f1ff;
+}
+
+.terminal-output-text {
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #ffffff;
+}
+
+/* Entry types */
+.terminal-stderr .terminal-output-text {
+  color: #ff6b6b;
+}
+
+.terminal-error .terminal-output-text {
+  color: #ff5f57;
+}
+
+.terminal-info .terminal-output-text {
+  color: rgba(136, 146, 176, 0.8);
+}
+
+/* Input Line */
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #e6f1ff;
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+  caret-color: var(--accent-blue);
+}
+
+.terminal-input::placeholder {
+  color: rgba(136, 146, 176, 0.4);
+}
+
+.terminal-input:disabled {
+  opacity: 0.6;
+}
+
+/* Spinner */
+.terminal-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(100, 255, 218, 0.2);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar */
+.terminal-output::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+  background: rgba(10, 25, 47, 0.5);
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+  background: rgba(100, 255, 218, 0.2);
+  border-radius: 4px;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 255, 218, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .terminal-section {
+    padding: 0.25rem;
+  }
+  
+  .terminal-output {
+    font-size: 0.8rem;
+  }
+}

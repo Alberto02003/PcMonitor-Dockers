@@ -1,10 +1,10 @@
 /**
- * Hook useNotifications - Gestión de notificaciones desktop
+ * Hook useNotifications - Gestión de notificaciones desktop nativas
  * 
- * Fase 4.3 - Notificaciones Desktop
+ * Fase 4.3 - Notificaciones Desktop (Tauri Native)
  * 
  * Features:
- * - Notificaciones del sistema operativo
+ * - Notificaciones nativas del sistema operativo via Tauri
  * - Solicitud de permisos
  * - Cola de notificaciones
  * - Preferencias de usuario
@@ -12,9 +12,13 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from '@tauri-apps/plugin-notification'
 
 const STORAGE_KEY = 'pcmd.notifications.v1'
-const NOTIFICATION_TIMEOUT = 5000 // 5 segundos
 
 export const NOTIFICATION_TYPES = {
   INFO: 'info',
@@ -77,74 +81,15 @@ function savePreferences(preferences) {
 }
 
 /**
- * Verifica si las notificaciones están soportadas
+ * Verifica si las notificaciones están soportadas (Tauri siempre las soporta)
  * @returns {boolean}
  */
 function isSupported() {
-  return typeof window !== 'undefined' && 'Notification' in window
+  return typeof window !== 'undefined' && '__TAURI__' in window
 }
 
 /**
- * Obtiene el estado de los permisos
- * @returns {string} 'granted', 'denied', 'default'
- */
-function getPermissionStatus() {
-  if (!isSupported()) return 'denied'
-  return Notification.permission
-}
-
-/**
- * Solicita permisos para notificaciones
- * @returns {Promise<string>}
- */
-async function requestPermission() {
-  if (!isSupported()) {
-    return 'denied'
-  }
-
-  try {
-    const permission = await Notification.requestPermission()
-    return permission
-  } catch (error) {
-    console.warn('Error requesting notification permission:', error)
-    return 'denied'
-  }
-}
-
-/**
- * Muestra una notificación del sistema
- * @param {string} title 
- * @param {Object} options 
- * @returns {Notification|null}
- */
-function showSystemNotification(title, options = {}) {
-  if (!isSupported() || Notification.permission !== 'granted') {
-    return null
-  }
-
-  try {
-    const notification = new Notification(title, {
-      icon: '/icon.png',
-      badge: '/badge.png',
-      ...options,
-    })
-
-    // Auto-cerrar después del timeout
-    if (options.autoClose !== false) {
-      setTimeout(() => {
-        notification.close()
-      }, options.timeout || NOTIFICATION_TIMEOUT)
-    }
-
-    return notification
-  } catch (error) {
-    console.warn('Error showing notification:', error)
-    return null
-  }
-}
-
-/**
- * Hook para gestionar notificaciones desktop
+ * Hook para gestionar notificaciones desktop nativas de Tauri
  * 
  * @returns {{
  *   preferences: Object,
@@ -159,50 +104,70 @@ function showSystemNotification(title, options = {}) {
  */
 export function useNotifications() {
   const [preferences, setPreferences] = useState(() => loadPreferences())
-  const [permission, setPermission] = useState(() => getPermissionStatus())
-  const notificationsRef = useRef([])
+  const [permission, setPermission] = useState('default')
   const queueRef = useRef([])
   const processingRef = useRef(false)
+  const permissionCheckedRef = useRef(false)
+
+  // Verificar y solicitar permisos al iniciar
+  useEffect(() => {
+    async function initPermissions() {
+      if (!isSupported()) {
+        console.log('[Notifications] Tauri not supported')
+        setPermission('denied')
+        return
+      }
+      
+      if (permissionCheckedRef.current) return
+      permissionCheckedRef.current = true
+      
+      try {
+        console.log('[Notifications] Checking permission...')
+        let granted = await isPermissionGranted()
+        
+        if (!granted) {
+          console.log('[Notifications] Permission not granted, requesting...')
+          const result = await requestPermission()
+          granted = result === 'granted'
+          console.log('[Notifications] Permission request result:', result)
+        }
+        
+        const newPermission = granted ? 'granted' : 'denied'
+        console.log('[Notifications] Final permission:', newPermission)
+        setPermission(newPermission)
+      } catch (error) {
+        console.warn('[Notifications] Error checking/requesting permission:', error)
+        // En Windows, si hay error asumimos que está concedido (comportamiento por defecto)
+        setPermission('granted')
+      }
+    }
+    
+    initPermissions()
+  }, [])
 
   // Guardar preferencias cuando cambien
   useEffect(() => {
     savePreferences(preferences)
   }, [preferences])
 
-  // Monitorear cambios en permisos
-  useEffect(() => {
-    if (!isSupported()) return
-
-    const checkPermission = () => {
-      setPermission(Notification.permission)
-    }
-
-    // Verificar cada segundo (no hay evento nativo para esto)
-    const interval = setInterval(checkPermission, 1000)
-    
-    return () => clearInterval(interval)
-  }, [])
-
   /**
    * Procesar cola de notificaciones
    */
-  const processQueue = useCallback(() => {
+  const processQueue = useCallback(async () => {
     if (processingRef.current || queueRef.current.length === 0) return
 
     processingRef.current = true
     const { title, options } = queueRef.current.shift()
 
-    const notification = showSystemNotification(title, options)
-    if (notification) {
-      notificationsRef.current.push(notification)
-      
-      // Limpiar referencia cuando se cierre
-      notification.onclose = () => {
-        const index = notificationsRef.current.indexOf(notification)
-        if (index > -1) {
-          notificationsRef.current.splice(index, 1)
-        }
-      }
+    try {
+      console.log('[Notifications] Sending notification:', title, options.body)
+      await sendNotification({
+        title,
+        body: options.body || '',
+      })
+      console.log('[Notifications] Notification sent successfully')
+    } catch (error) {
+      console.error('[Notifications] Error sending notification:', error)
     }
 
     processingRef.current = false
@@ -218,9 +183,29 @@ export function useNotifications() {
    * @returns {Promise<string>}
    */
   const requestPermissionCallback = useCallback(async () => {
-    const result = await requestPermission()
-    setPermission(result)
-    return result
+    if (!isSupported()) {
+      return 'denied'
+    }
+
+    try {
+      // Primero verificar si ya tenemos permiso
+      const alreadyGranted = await isPermissionGranted()
+      if (alreadyGranted) {
+        setPermission('granted')
+        return 'granted'
+      }
+
+      // Solicitar permiso
+      const result = await requestPermission()
+      const newPermission = result === 'granted' ? 'granted' : 'denied'
+      setPermission(newPermission)
+      return newPermission
+    } catch (error) {
+      console.warn('Error requesting notification permission:', error)
+      // En caso de error, asumir concedido en Windows
+      setPermission('granted')
+      return 'granted'
+    }
   }, [])
 
   /**
@@ -249,41 +234,71 @@ export function useNotifications() {
    * @param {string} title 
    * @param {Object} options 
    */
-  const notify = useCallback((title, options = {}) => {
+  const notify = useCallback(async (title, options = {}) => {
     const {
       type = NOTIFICATION_TYPES.INFO,
       body = '',
-      icon,
-      onClick,
-      timeout = NOTIFICATION_TIMEOUT,
     } = options
 
-    // Verificar si las notificaciones están habilitadas
-    if (!preferences.enabled) return
-    if (!preferences.desktop) return
-    if (preferences.types[type] === false) return
+    console.log('[Notifications] notify() called:', { title, type, body, preferences, permission })
 
-    // Verificar permisos
-    if (permission !== 'granted') {
-      console.warn('Notification permission not granted')
+    // Verificar si las notificaciones están habilitadas
+    if (!preferences.enabled) {
+      console.log('[Notifications] Notifications disabled in preferences')
       return
     }
+    if (!preferences.desktop) {
+      console.log('[Notifications] Desktop notifications disabled')
+      return
+    }
+    if (preferences.types[type] === false) {
+      console.log('[Notifications] Type disabled:', type)
+      return
+    }
+
+    // Verificar si Tauri está disponible
+    if (!isSupported()) {
+      console.warn('[Notifications] Tauri not available')
+      return
+    }
+
+    // No bloquear por permisos - intentar enviar de todos modos
+    // En Windows las notificaciones generalmente funcionan sin permiso explícito
 
     // Agregar a la cola
     queueRef.current.push({
       title,
       options: {
         body,
-        icon: icon || getIconForType(type),
-        tag: `pcmd-${type}-${Date.now()}`,
-        timeout,
-        onClick,
       },
     })
+
+    console.log('[Notifications] Added to queue, processing...')
 
     // Procesar cola
     processQueue()
   }, [preferences, permission, processQueue])
+
+  /**
+   * Enviar notificación directamente (sin verificar preferencias)
+   * Útil para pruebas
+   */
+  const sendDirect = useCallback(async (title, body) => {
+    if (!isSupported()) {
+      console.warn('[Notifications] Tauri not available for direct send')
+      return false
+    }
+
+    try {
+      console.log('[Notifications] Direct send:', title, body)
+      await sendNotification({ title, body })
+      console.log('[Notifications] Direct send successful')
+      return true
+    } catch (error) {
+      console.error('[Notifications] Direct send error:', error)
+      return false
+    }
+  }, [])
 
   /**
    * Mostrar alerta de métricas
@@ -298,24 +313,27 @@ export function useNotifications() {
       error: NOTIFICATION_TYPES.ERROR,
     }
 
-    notify('Alerta de Monitoreo', {
+    // Añadir prefijo según severidad para mejor visibilidad
+    const severityPrefix = {
+      info: 'INFO',
+      success: 'OK',
+      warning: 'AVISO',
+      error: 'ERROR',
+      critical: 'CRITICO',
+    }
+
+    const prefix = severityPrefix[severity] || 'ALERTA'
+
+    notify(`[${prefix}] Monitoreo`, {
       type: typeMap[severity] || NOTIFICATION_TYPES.ALERT,
       body: message,
     })
   }, [notify])
 
   /**
-   * Cerrar todas las notificaciones
+   * Cerrar todas las notificaciones (en Tauri las notificaciones nativas se cierran solas)
    */
   const clearAll = useCallback(() => {
-    notificationsRef.current.forEach(notification => {
-      try {
-        notification.close()
-      } catch (error) {
-        // Ignore
-      }
-    })
-    notificationsRef.current = []
     queueRef.current = []
   }, [])
 
@@ -331,27 +349,12 @@ export function useNotifications() {
     permission,
     isSupported: isSupported(),
     notify,
+    sendDirect,
     requestPermission: requestPermissionCallback,
     updatePreferences,
     showAlert,
     clearAll,
   }
-}
-
-/**
- * Obtiene el ícono para un tipo de notificación
- * @param {string} type 
- * @returns {string}
- */
-function getIconForType(type) {
-  const icons = {
-    [NOTIFICATION_TYPES.INFO]: '/icons/info.png',
-    [NOTIFICATION_TYPES.SUCCESS]: '/icons/success.png',
-    [NOTIFICATION_TYPES.WARNING]: '/icons/warning.png',
-    [NOTIFICATION_TYPES.ERROR]: '/icons/error.png',
-    [NOTIFICATION_TYPES.ALERT]: '/icons/alert.png',
-  }
-  return icons[type] || '/icon.png'
 }
 
 export default useNotifications

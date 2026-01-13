@@ -1,4 +1,5 @@
 import { ServerAvatar } from '../../../../components'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './SelectionSidebar.css'
 
 function SelectionSidebar({
@@ -14,8 +15,9 @@ function SelectionSidebar({
   onDelete,
   onToggleFavorite,
   onDuplicate,
-  t,
 }) {
+  const { t } = useTranslation()
+
   // Mapear status de conexion a status del avatar
   const getAvatarStatus = (status) => {
     switch (status) {
@@ -26,17 +28,30 @@ function SelectionSidebar({
     }
   }
 
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'online':
+        return t('status.online')
+      case 'offline':
+        return t('status.offline')
+      case 'checking':
+        return t('status.checking')
+      default:
+        return t('status.unknown')
+    }
+  }
+
   return (
     <aside className="selection-sidebar">
       <div className="sidebar-header">
-        <h1 className="sidebar-title">{t.connections}</h1>
+        <h1 className="sidebar-title">{t('selection.connections')}</h1>
       </div>
 
       <div className="sidebar-summary">
         <span>
-          {connections.length} {t.saved}
+          {connections.length} {t('selection.saved')}
         </span>
-        {defaultId && <span className="summary-dot">{t.defaultLabel}</span>}
+        {defaultId && <span className="summary-dot">{t('selection.defaultLabel')}</span>}
       </div>
 
       <div className="sidebar-search">
@@ -44,15 +59,15 @@ function SelectionSidebar({
         <input
           type="text"
           value={search}
-          placeholder={t.searchPlaceholder}
+          placeholder={t('selection.searchPlaceholder')}
           onChange={onSearchChange}
-          aria-label={t.searchPlaceholder}
+          aria-label={t('selection.searchPlaceholder')}
         />
       </div>
 
       <div className="sidebar-list" role="list">
         {filteredConnections.length === 0 ? (
-          <p className="sidebar-empty">{t.noConnections}</p>
+          <p className="sidebar-empty">{t('selection.noConnections')}</p>
         ) : (
           filteredConnections.map((item, index) => (
             <div
@@ -74,7 +89,7 @@ function SelectionSidebar({
                       <p className="item-name">{item.name}</p>
                       {item.id === defaultId && <span className="default-dot" />}
                       <span className={`status-pill status-${item.status || 'unknown'}`}>
-                        {getStatusLabel(item.status, t)}
+                        {getStatusLabel(item.status)}
                       </span>
                     </div>
                   </button>
@@ -86,7 +101,7 @@ function SelectionSidebar({
                 >
                   <div className="item-meta">
                     <div className="meta-block">
-                      <span className="meta-label">{t.username}</span>
+                      <span className="meta-label">{t('form.username')}</span>
                       <span className="meta-value">
                         <UserIcon />
                         {item.username}
@@ -106,7 +121,7 @@ function SelectionSidebar({
                     type="button"
                     className={`icon-button ${item.isFavorite ? 'is-active' : ''}`}
                     onClick={() => onToggleFavorite(item.id)}
-                    title={t.favorite}
+                    title={t('actions.favorite')}
                   >
                     <HeartIcon />
                   </button>
@@ -114,7 +129,7 @@ function SelectionSidebar({
                     type="button"
                     className={`icon-button ${item.id === defaultId ? 'is-active' : ''}`}
                     onClick={() => onSetDefault(item.id)}
-                    title={t.setDefault}
+                    title={t('actions.setDefault')}
                   >
                     <StarIcon />
                   </button>
@@ -122,7 +137,7 @@ function SelectionSidebar({
                     type="button"
                     className="icon-button"
                     onClick={() => onDuplicate(item.id)}
-                    title={t.duplicate}
+                    title={t('actions.duplicate')}
                   >
                     <CopyIcon />
                   </button>
@@ -130,7 +145,7 @@ function SelectionSidebar({
                     type="button"
                     className={`icon-button ${item.id === selectedId ? 'is-primary' : ''}`}
                     onClick={() => onConnect(item.id)}
-                    title={t.connect}
+                    title={t('actions.connect')}
                   >
                     <PlugIcon />
                   </button>
@@ -138,7 +153,7 @@ function SelectionSidebar({
                     type="button"
                     className="icon-button is-danger"
                     onClick={() => onDelete(item.id)}
-                    title={t.delete}
+                    title={t('common.delete')}
                   >
                     <TrashIcon />
                   </button>
@@ -150,19 +165,6 @@ function SelectionSidebar({
       </div>
     </aside>
   )
-}
-
-function getStatusLabel(status, t) {
-  switch (status) {
-    case 'online':
-      return t.statusOnline
-    case 'offline':
-      return t.statusOffline
-    case 'checking':
-      return t.statusChecking
-    default:
-      return t.statusUnknown
-  }
 }
 
 function UserIcon() {

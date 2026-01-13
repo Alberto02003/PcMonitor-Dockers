@@ -1,0 +1,44 @@
+/* Terminal Window - External window styles */
+
+.terminal-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: #0a1929;
+  overflow: hidden;
+}
+
+.terminal-window .terminal-section {
+  flex: 1;
+  padding: 0;
+  min-height: 0;
+}
+
+.terminal-window .terminal-container {
+  height: 100%;
+  border-radius: 0;
+  border: none;
+}
+
+/* Loading state */
+.terminal-window-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  background: #0a1929;
+  color: var(--accent-blue, #64ffda);
+  font-family: 'SF Mono', Consolas, 'Courier New', monospace;
+  font-size: 1rem;
+}
+
+.terminal-window-loading span {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}

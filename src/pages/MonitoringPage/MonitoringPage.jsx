@@ -1,54 +1,68 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRealTimeMetrics, useRealTimeContainers } from '../../hooks/useRealTimeData.js'
-import { useMetricsHistory } from '../../hooks/useMetricsHistory.js'
+import { alertFields } from './constants/alertsConfig.js'
+import { useAlertsConfig } from './hooks/useAlertsConfig.js'
+import { useWidgetOrder } from './hooks/useWidgetOrder.js'
+import { useDockerModal } from './hooks/useDockerModal.js'
+import { useAlertNotifications } from './hooks/useAlertNotifications.js'
+import { useReportsModal } from './hooks/useReportsModal.js'
+import { useTranslation } from '../../hooks/useTranslation.jsx'
+import { isTauri } from '../../services/tauri.js'
 import MonitoringHeader from './components/MonitoringHeader/MonitoringHeader.jsx'
 import SystemWidgets from './components/SystemWidgets/SystemWidgets.jsx'
 import DockersSection from './components/DockersSection/DockersSection.jsx'
+import TerminalSection from './components/TerminalSection/TerminalSection.jsx'
 import DockerModal from './components/DockerModal/DockerModal.jsx'
 import AlertsModal from './components/AlertsModal/AlertsModal.jsx'
-import MetricsCharts from '../../components/MetricsCharts/MetricsCharts.jsx'
+import ReportsModal from './components/ReportsModal/ReportsModal.jsx'
 import './MonitoringPage.css'
 
-const ALERTS_KEY_PREFIX = 'pcmd.alerts.v1'
-const WIDGETS_KEY_PREFIX = 'pcmd.widgets.v1'
-
-const defaultAlerts = {
-  cpuUsage: { enabled: true, value: 85 },
-  gpuUsage: { enabled: true, value: 85 },
-  ramUsage: { enabled: true, value: 85 },
-  diskUsage: { enabled: true, value: 90 },
-  swapUsage: { enabled: false, value: 70 },
-  cpuTemp: { enabled: true, value: 80 },
-  gpuTemp: { enabled: false, value: 85 },
-  loadAvg: { enabled: true, value: 1.5 },
-  netIn: { enabled: false, value: 50 },
-  netOut: { enabled: false, value: 50 },
-  ioRead: { enabled: false, value: 120 },
-  ioWrite: { enabled: false, value: 120 },
-  latency: { enabled: false, value: 150 },
-  dockerDown: { enabled: true },
-  restarts: { enabled: false, value: 3 },
-}
-
 function MonitoringPage({ connection, onBack }) {
+  const { t } = useTranslation()
   const [view, setView] = useState('system')
-  const [widgetOrder, setWidgetOrder] = useState([
-    'hero',
-    'core-grid',
-    'extended-grid',
-    'details',
-    'specs',
-  ])
-  const [draggingId, setDraggingId] = useState(null)
-  const [dragOverId, setDragOverId] = useState(null)
-  const [widgetsLoaded, setWidgetsLoaded] = useState(false)
-  const [dockerModalOpen, setDockerModalOpen] = useState(false)
-  const [activeDocker, setActiveDocker] = useState(null)
-  const [dockerPanel, setDockerPanel] = useState('metrics')
-  const [alertsOpen, setAlertsOpen] = useState(false)
-  const [alerts, setAlerts] = useState(defaultAlerts)
   
-  // Real-time data from SSH connection (no mock data)
+  // Terminal state - persists across view changes
+  const [terminalHistory, setTerminalHistory] = useState([])
+  const [terminalCommandHistory, setTerminalCommandHistory] = useState([])
+  const [isTerminalPoppedOut, setIsTerminalPoppedOut] = useState(false)
+
+  // Custom hooks para gestión de estado
+  const {
+    alerts,
+    alertsOpen,
+    openAlerts,
+    closeAlerts,
+    updateAlertValue,
+    updateAlertEnabled,
+    saveAlerts,
+  } = useAlertsConfig(connection?.id)
+
+  const {
+    widgetOrder,
+    draggingId,
+    dragOverId,
+    handleDragStart,
+    handleDragEnter,
+  } = useWidgetOrder(connection?.id)
+
+  const {
+    dockerModalOpen,
+    activeDocker,
+    dockerPanel,
+    openDocker,
+    closeDocker,
+    changePanel,
+  } = useDockerModal()
+
+  const {
+    reportsOpen,
+    openReports,
+    closeReports,
+    isGenerating,
+    generateReport,
+  } = useReportsModal(connection?.id)
+
+  // Real-time data from SSH connection
   // Intervals optimized for performance: metrics every 5s, containers every 10s
   const { 
     metrics, 
@@ -64,157 +78,140 @@ function MonitoringPage({ connection, onBack }) {
     refresh: refreshContainers,
   } = useRealTimeContainers(connection?.id, 10000)
 
-  // Metrics history for charts (24h retention, 1000 max points)
-  const metricsHistory = useMetricsHistory(connection?.id, {
-    retention: 24 * 60 * 60 * 1000, // 24 hours
-    maxPoints: 1000,
-    autoSave: true
+  // Sistema de notificaciones de alertas
+  useAlertNotifications({
+    metrics,
+    metricsLoading,
+    containers,
+    containersLoading,
+    alerts,
+    connection,
   })
   
   const connectionLabel = connection
     ? `${connection.name} - ${connection.username}@${connection.host}:${connection.port || 22}`
-    : 'Sin conexion activa'
-
-  const alertsKey = useMemo(
-    () => `${ALERTS_KEY_PREFIX}.${connection?.id || 'global'}`,
-    [connection],
-  )
-
-  const widgetsKey = useMemo(
-    () => `${WIDGETS_KEY_PREFIX}.${connection?.id || 'global'}`,
-    [connection],
-  )
-
-  const alertFields = useMemo(
-    () => [
-      { key: 'cpuUsage', label: 'CPU (%)', unit: '%' },
-      { key: 'gpuUsage', label: 'GPU (%)', unit: '%' },
-      { key: 'ramUsage', label: 'RAM (%)', unit: '%' },
-      { key: 'diskUsage', label: 'Disco (%)', unit: '%' },
-      { key: 'swapUsage', label: 'Swap (%)', unit: '%' },
-      { key: 'cpuTemp', label: 'Temp CPU (C)', unit: 'C' },
-      { key: 'gpuTemp', label: 'Temp GPU (C)', unit: 'C' },
-      { key: 'loadAvg', label: 'Carga promedio', unit: '' },
-      { key: 'netIn', label: 'Red entrada (Mb/s)', unit: 'Mb/s' },
-      { key: 'netOut', label: 'Red salida (Mb/s)', unit: 'Mb/s' },
-      { key: 'ioRead', label: 'IO lectura (MB/s)', unit: 'MB/s' },
-      { key: 'ioWrite', label: 'IO escritura (MB/s)', unit: 'MB/s' },
-      { key: 'latency', label: 'Latencia (ms)', unit: 'ms' },
-      { key: 'dockerDown', label: 'Contenedor caido', unit: '', noValue: true },
-      { key: 'restarts', label: 'Reinicios (>=)', unit: '' },
-    ],
-    [],
-  )
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(alertsKey)
-      if (!stored) {
-        setAlerts(defaultAlerts)
-        return
-      }
-      const parsed = JSON.parse(stored)
-      setAlerts({ ...defaultAlerts, ...parsed })
-    } catch {
-      setAlerts(defaultAlerts)
-    }
-  }, [alertsKey])
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(widgetsKey)
-      if (!stored) return
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setWidgetOrder(parsed)
-      }
-    } catch {
-      // Ignore invalid stored widget order.
-    } finally {
-      setWidgetsLoaded(true)
-    }
-  }, [widgetsKey])
-
-  useEffect(() => {
-    if (!widgetsLoaded) return
-    localStorage.setItem(widgetsKey, JSON.stringify(widgetOrder))
-  }, [widgetsKey, widgetOrder, widgetsLoaded])
-
-  function updateAlertValue(key, value) {
-    setAlerts((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], value },
-    }))
-  }
-
-  function updateAlertEnabled(key, enabled) {
-    setAlerts((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], enabled },
-    }))
-  }
-
-  function handleSaveAlerts() {
-    localStorage.setItem(alertsKey, JSON.stringify(alerts))
-    setAlertsOpen(false)
-  }
-
-  function handleDragStart(id) {
-    setDraggingId(id)
-  }
-
-  function handleDragEnter(id) {
-    if (!draggingId || draggingId === id) return
-    setDragOverId(id)
-    setWidgetOrder((prev) => {
-      const next = [...prev]
-      const from = next.indexOf(draggingId)
-      const to = next.indexOf(id)
-      if (from === -1 || to === -1) return prev
-      next.splice(from, 1)
-      next.splice(to, 0, draggingId)
-      return next
-    })
-  }
-
-  function handleDragEnd() {
-    setDraggingId(null)
-    setDragOverId(null)
-  }
-
-  useEffect(() => {
-    function handlePointerUp() {
-      handleDragEnd()
-    }
-    window.addEventListener('pointerup', handlePointerUp)
-    return () => window.removeEventListener('pointerup', handlePointerUp)
-  })
-
-  function handleOpenDocker(container) {
-    setActiveDocker(container)
-    setDockerPanel('metrics')
-    setDockerModalOpen(true)
-  }
+    : t('common.noConnection')
 
   // Callback to refresh containers after docker action
-  const handleDockerAction = () => {
+  const handleDockerAction = useCallback(() => {
     setTimeout(refreshContainers, 1000)
-  }
+  }, [refreshContainers])
 
-  // Add metrics to history when they are updated
-  useEffect(() => {
-    if (metrics && !metricsLoading && !metricsError) {
-      metricsHistory.addMetrics(metrics)
+  // Handle view change
+  const handleViewChange = useCallback((newView) => {
+    setView(newView)
+  }, [])
+
+  // Terminal pop-out functionality
+  const handleTerminalPopout = useCallback(async () => {
+    if (!isTauri() || !connection) return
+
+    try {
+      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow')
+      const { emit, listen } = await import('@tauri-apps/api/event')
+
+      // Set up listeners BEFORE creating window
+      // Listen for when the window is ready
+      const unlistenReady = await listen('terminal-window-ready', async () => {
+        console.log('Terminal window ready, sending init data')
+        // Send initial data to the terminal window
+        await emit('terminal-init', {
+          connectionId: connection.id,
+          serverHost: connection.host,
+          history: terminalHistory,
+          commandHistory: terminalCommandHistory,
+        })
+        unlistenReady()
+      })
+
+      // Listen for terminal sync events (history updates from external window)
+      const unlistenSync = await listen('terminal-sync', (event) => {
+        const { history, commandHistory } = event.payload
+        setTerminalHistory(history)
+        setTerminalCommandHistory(commandHistory)
+      })
+
+      console.log('Creating terminal window...')
+      
+      // Create the external terminal window
+      const terminalWindow = new WebviewWindow('terminal-window', {
+        url: '/#/terminal-window',
+        title: `Terminal SSH - ${connection.host}`,
+        width: 900,
+        height: 600,
+        minWidth: 600,
+        minHeight: 400,
+        center: true,
+        decorations: true,
+        resizable: true,
+      })
+
+      // Listen for pop-in event (when user wants to return terminal to main window)
+      const unlistenPopin = await listen('terminal-popin', async (event) => {
+        console.log('Received terminal-popin, closing external window')
+        const { history, commandHistory } = event.payload
+        setTerminalHistory(history)
+        setTerminalCommandHistory(commandHistory)
+        setIsTerminalPoppedOut(false)
+        unlistenSync()
+        unlistenPopin()
+        
+        // Close the terminal window from the main window
+        try {
+          await terminalWindow.close()
+          console.log('Terminal window closed from main')
+        } catch (err) {
+          console.log('Error closing terminal window:', err)
+          try {
+            await terminalWindow.destroy()
+          } catch (e) {
+            console.log('Destroy also failed:', e)
+          }
+        }
+      })
+
+      // Wait for the window to be created
+      terminalWindow.once('tauri://created', () => {
+        console.log('Terminal window created successfully')
+        setIsTerminalPoppedOut(true)
+      })
+
+      terminalWindow.once('tauri://error', (e) => {
+        console.error('Failed to create terminal window:', e)
+        unlistenReady()
+        unlistenSync()
+        unlistenPopin()
+      })
+
+      // Handle window close event (user closes via X button)
+      terminalWindow.onCloseRequested(async () => {
+        console.log('Terminal window close requested via X')
+        setIsTerminalPoppedOut(false)
+        unlistenSync()
+        unlistenPopin()
+      })
+
+    } catch (error) {
+      console.error('Failed to open terminal window:', error)
     }
-  }, [metrics, metricsLoading, metricsError, metricsHistory])
+  }, [connection, terminalHistory, terminalCommandHistory])
+
+  // Cleanup listeners when component unmounts or connection changes
+  useEffect(() => {
+    return () => {
+      // If terminal is popped out when we leave, it will be orphaned
+      // The external window will handle its own cleanup
+    }
+  }, [])
 
   return (
     <div className="monitoring-page">
       <MonitoringHeader
         view={view}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
         onBack={onBack}
-        onOpenAlerts={() => setAlertsOpen(true)}
+        onOpenAlerts={openAlerts}
+        onOpenReports={openReports}
         connectionLabel={connectionLabel}
       />
 
@@ -226,7 +223,7 @@ function MonitoringPage({ connection, onBack }) {
         </div>
       )}
 
-      {view === 'system' ? (
+      {view === 'system' && (
         <SystemWidgets
           widgetOrder={widgetOrder}
           draggingId={draggingId}
@@ -238,11 +235,11 @@ function MonitoringPage({ connection, onBack }) {
           metricsError={metricsError}
           lastUpdate={lastUpdate}
         />
-      ) : view === 'charts' ? (
-        <MetricsCharts metricsHistory={metricsHistory} />
-      ) : (
+      )}
+
+      {view === 'dockers' && (
         <DockersSection 
-          onOpenDocker={handleOpenDocker} 
+          onOpenDocker={openDocker} 
           connectionId={connection?.id}
           containers={containers}
           loading={containersLoading}
@@ -252,12 +249,39 @@ function MonitoringPage({ connection, onBack }) {
         />
       )}
 
+      {view === 'terminal' && !isTerminalPoppedOut && (
+        <TerminalSection
+          connectionId={connection?.id}
+          serverHost={connection?.host}
+          history={terminalHistory}
+          setHistory={setTerminalHistory}
+          commandHistory={terminalCommandHistory}
+          setCommandHistory={setTerminalCommandHistory}
+          isPoppedOut={false}
+          onPopout={handleTerminalPopout}
+        />
+      )}
+
+      {view === 'terminal' && isTerminalPoppedOut && (
+        <div className="terminal-popped-out-message">
+          <div className="popped-out-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </div>
+          <p>{t('terminal.poppedOutMessage')}</p>
+          <span className="hint">{t('terminal.closeExternalHint')}</span>
+        </div>
+      )}
+
       <DockerModal
         open={dockerModalOpen}
         activeDocker={activeDocker}
         dockerPanel={dockerPanel}
-        onClose={() => setDockerModalOpen(false)}
-        onPanelChange={setDockerPanel}
+        onClose={closeDocker}
+        onPanelChange={changePanel}
         connection={connection}
       />
 
@@ -265,10 +289,18 @@ function MonitoringPage({ connection, onBack }) {
         open={alertsOpen}
         alerts={alerts}
         alertFields={alertFields}
-        onClose={() => setAlertsOpen(false)}
-        onSave={handleSaveAlerts}
+        onClose={closeAlerts}
+        onSave={saveAlerts}
         onUpdateAlertEnabled={updateAlertEnabled}
         onUpdateAlertValue={updateAlertValue}
+      />
+
+      <ReportsModal
+        open={reportsOpen}
+        connection={connection}
+        onClose={closeReports}
+        onGenerate={generateReport}
+        isGenerating={isGenerating}
       />
     </div>
   )

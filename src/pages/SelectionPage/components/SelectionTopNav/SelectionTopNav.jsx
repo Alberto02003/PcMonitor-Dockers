@@ -1,17 +1,20 @@
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './SelectionTopNav.css'
 
-function SelectionTopNav({ t, onAddNew, onOpenSettings }) {
+function SelectionTopNav({ onAddNew, onOpenSettings }) {
+  const { t } = useTranslation()
+
   return (
     <div className="top-nav">
-      <span className="top-nav-title">{t.panel}</span>
+      <span className="top-nav-title">{t('selection.panel')}</span>
       <div className="top-nav-actions">
         <button type="button" className="nav-button" onClick={onAddNew}>
           <PlusIcon />
-          {t.addNew}
+          {t('actions.addNew')}
         </button>
         <button type="button" className="nav-button nav-button-muted" onClick={onOpenSettings}>
           <SettingsIcon />
-          {t.settings}
+          {t('settings.title')}
         </button>
       </div>
     </div>

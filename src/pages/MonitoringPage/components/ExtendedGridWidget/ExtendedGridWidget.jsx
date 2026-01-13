@@ -1,6 +1,8 @@
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './ExtendedGridWidget.css'
 
 function ExtendedGridWidget({ metrics }) {
+  const { t } = useTranslation()
   const gpu = metrics?.gpu || null
   const temps = metrics?.temperatures || {}
   const memory = metrics?.memory || {}
@@ -32,13 +34,13 @@ function ExtendedGridWidget({ metrics }) {
           <span style={{ width: `${gpu?.usagePercent || 0}%` }} />
         </div>
         <p className="card-footnote">
-          {gpu ? `VRAM ${formatMb(gpu.memoryUsedMb)} / ${formatMb(gpu.memoryTotalMb)}` : 'GPU no detectada'}
+          {gpu ? `VRAM ${formatMb(gpu.memoryUsedMb)} / ${formatMb(gpu.memoryTotalMb)}` : t('extended.gpuNotDetected')}
         </p>
       </section>
 
       <section className="monitoring-card">
         <div className="card-header">
-          <h2>Temperaturas</h2>
+          <h2>{t('extended.temperatures')}</h2>
           <span className="card-value">CPU {formatNumber(temps.cpuTempC)}C</span>
         </div>
         <div className="temp-bars">
@@ -59,12 +61,12 @@ function ExtendedGridWidget({ metrics }) {
 
       <section className="monitoring-card">
         <div className="card-header">
-          <h2>Procesos</h2>
+          <h2>{t('extended.processes')}</h2>
           <span className="card-value">{metrics?.topProcesses?.length || '--'}</span>
         </div>
         <div className="status-badges">
           <span className={`badge ${metrics?.topProcesses?.length > 0 ? 'ok' : 'warn'}`}>
-            {metrics?.topProcesses?.length > 0 ? 'OK' : 'Sin datos'}
+            {metrics?.topProcesses?.length > 0 ? t('extended.ok') : t('extended.noData')}
           </span>
         </div>
         <p className="card-footnote">

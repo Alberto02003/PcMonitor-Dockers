@@ -1,15 +1,17 @@
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './SettingsModal.css'
 
 function SettingsModal({
   open,
   settings,
-  t,
   onClose,
   onUpdateSettings,
   onStoreCredentialsChange,
   onExport,
   onImport,
 }) {
+  const { t } = useTranslation()
+
   if (!open) return null
 
   return (
@@ -21,16 +23,16 @@ function SettingsModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
-          <h3>{t.settingsTitle}</h3>
-          <button type="button" className="icon-button" onClick={onClose} title={t.settingsClose}>
+          <h3>{t('settings.title')}</h3>
+          <button type="button" className="icon-button" onClick={onClose} title={t('common.close')}>
             <CloseIcon />
           </button>
         </div>
         <div className="modal-body">
           <div className="modal-section">
-            <span>{t.settingsSectionGeneral}</span>
+            <span>{t('settings.sectionGeneral')}</span>
             <label className="modal-field">
-              <span>{t.settingNotifications}</span>
+              <span>{t('settings.notifications')}</span>
               <select
                 value={settings.notificationDuration}
                 onChange={(event) =>
@@ -45,7 +47,7 @@ function SettingsModal({
               </select>
             </label>
             <label className="modal-toggle">
-              <span>{t.settingAutoConnect}</span>
+              <span>{t('settings.autoConnect')}</span>
               <input
                 type="checkbox"
                 checked={settings.autoConnectDefault}
@@ -57,9 +59,9 @@ function SettingsModal({
           </div>
 
           <div className="modal-section">
-            <span>{t.settingsSectionSecurity}</span>
+            <span>{t('settings.sectionSecurity')}</span>
             <label className="modal-toggle">
-              <span>{t.settingStoreCreds}</span>
+              <span>{t('settings.storeCreds')}</span>
               <input
                 type="checkbox"
                 checked={settings.storeCredentials}
@@ -68,46 +70,46 @@ function SettingsModal({
             </label>
             <div className="modal-actions">
               <button type="button" className="btn btn-outline" onClick={onExport}>
-                {t.exportJson}
+                {t('actions.exportJson')}
               </button>
               <button type="button" className="btn btn-outline" onClick={onImport}>
-                {t.importJson}
+                {t('actions.importJson')}
               </button>
             </div>
           </div>
 
           <div className="modal-section">
-            <span>{t.settingsSectionWindow}</span>
+            <span>{t('settings.sectionWindow')}</span>
             <label className="modal-field">
-              <span>{t.settingWindowSize}</span>
+              <span>{t('settings.windowSize')}</span>
               <select
                 value={settings.windowSize}
                 onChange={(event) => onUpdateSettings({ windowSize: event.target.value })}
               >
-                <option value="small">{t.sizeSmall}</option>
-                <option value="medium">{t.sizeMedium}</option>
-                <option value="large">{t.sizeLarge}</option>
+                <option value="small">{t('settings.sizeSmall')}</option>
+                <option value="medium">{t('settings.sizeMedium')}</option>
+                <option value="large">{t('settings.sizeLarge')}</option>
               </select>
             </label>
           </div>
 
           <div className="modal-section">
-            <span>{t.settingsSectionLocale}</span>
+            <span>{t('settings.sectionLocale')}</span>
             <label className="modal-field">
-              <span>{t.settingLanguage}</span>
+              <span>{t('settings.language')}</span>
               <select
                 value={settings.language}
                 onChange={(event) => onUpdateSettings({ language: event.target.value })}
               >
-                <option value="es">{t.languageEs}</option>
-                <option value="en">{t.languageEn}</option>
+                <option value="es">{t('languages.es')}</option>
+                <option value="en">{t('languages.en')}</option>
               </select>
             </label>
           </div>
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-outline" onClick={onClose}>
-            {t.settingsClose}
+            {t('common.close')}
           </button>
         </div>
       </div>

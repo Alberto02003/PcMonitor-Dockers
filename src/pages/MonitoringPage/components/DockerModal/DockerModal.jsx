@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { dockerImages, dockerVolumes } from '../../../../services/tauri.js'
 import { useRealTimeLogs } from '../../../../hooks/useRealTimeData.js'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './DockerModal.css'
 
 function DockerModal({
@@ -11,6 +12,7 @@ function DockerModal({
   onPanelChange,
   connection,
 }) {
+  const { t } = useTranslation()
   const [images, setImages] = useState([])
   const [volumes, setVolumes] = useState([])
   const [imagesLoading, setImagesLoading] = useState(false)
@@ -18,7 +20,7 @@ function DockerModal({
   const logsEndRef = useRef(null)
 
   const container = activeDocker || {}
-  const containerName = container.name || 'Contenedor'
+  const containerName = container.name || t('docker.container')
 
   // Real-time logs via polling (replaces WebSocket)
   // Poll every 3 seconds to reduce SSH load
@@ -100,12 +102,12 @@ function DockerModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
-          <h3>Detalles de {containerName}</h3>
-          <button type="button" className="icon-button" onClick={onClose} title="Cerrar">
+          <h3>{t('docker.detailsOf')} {containerName}</h3>
+          <button type="button" className="icon-button" onClick={onClose} title={t('common.close')}>
             x
           </button>
         </div>
-        <div className="modal-tabs" role="tablist" aria-label="Paneles de detalles">
+        <div className="modal-tabs" role="tablist" aria-label={t('docker.detailPanels')}>
           <button
             type="button"
             role="tab"
@@ -113,7 +115,7 @@ function DockerModal({
             className={`modal-tab ${dockerPanel === 'metrics' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('metrics')}
           >
-            Rendimiento
+            {t('docker.performance')}
           </button>
           <button
             type="button"
@@ -122,7 +124,7 @@ function DockerModal({
             className={`modal-tab ${dockerPanel === 'logs' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('logs')}
           >
-            Logs
+            {t('docker.logs')}
             <span className="tab-badge">LIVE</span>
           </button>
           <button
@@ -132,7 +134,7 @@ function DockerModal({
             className={`modal-tab ${dockerPanel === 'volumes' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('volumes')}
           >
-            Volumenes
+            {t('docker.volumes')}
           </button>
           <button
             type="button"
@@ -141,17 +143,17 @@ function DockerModal({
             className={`modal-tab ${dockerPanel === 'images' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('images')}
           >
-            Imagenes
+            {t('docker.images')}
           </button>
         </div>
         <div className="modal-body">
           {dockerPanel === 'metrics' && (
             <div className="modal-section">
-              <span>Rendimiento de {containerName}</span>
+              <span>{t('docker.performance')} - {containerName}</span>
               <div className="docker-metrics">
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>CPU</span>
+                    <span>{t('docker.cpu')}</span>
                     <strong>{formatNumber(container.cpuPercent, 1)}%</strong>
                   </div>
                   <div className="hbar">
@@ -160,35 +162,35 @@ function DockerModal({
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>RAM</span>
+                    <span>{t('docker.ram')}</span>
                     <strong>{formatNumber(container.memoryUsageMb)} MB</strong>
                   </div>
                   <div className="hbar">
                     <span style={{ width: `${memPercent}%` }} />
                   </div>
-                  <p className="metric-footnote">Limite: {formatNumber(container.memoryLimitMb)} MB</p>
+                  <p className="metric-footnote">{t('docker.limit')} {formatNumber(container.memoryLimitMb)} MB</p>
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Red RX</span>
+                    <span>{t('docker.netRx')}</span>
                     <strong>{formatNumber(container.netIoRxMb, 1)} MB</strong>
                   </div>
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Red TX</span>
+                    <span>{t('docker.netTx')}</span>
                     <strong>{formatNumber(container.netIoTxMb, 1)} MB</strong>
                   </div>
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Disco Read</span>
+                    <span>{t('docker.diskRead')}</span>
                     <strong>{formatNumber(container.blockIoReadMb, 1)} MB</strong>
                   </div>
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Disco Write</span>
+                    <span>{t('docker.diskWrite')}</span>
                     <strong>{formatNumber(container.blockIoWriteMb, 1)} MB</strong>
                   </div>
                 </div>
@@ -196,7 +198,7 @@ function DockerModal({
               <div className="metric-grid">
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Uso de CPU</span>
+                    <span>{t('docker.cpuUsage')}</span>
                     <strong>{formatNumber(container.cpuPercent)}%</strong>
                   </div>
                   <div className="donut">
@@ -206,7 +208,7 @@ function DockerModal({
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Memoria</span>
+                    <span>{t('docker.memoryUsage')}</span>
                     <strong>{formatNumber(container.memoryUsageMb)} MB</strong>
                   </div>
                   <div className="donut">
@@ -216,29 +218,29 @@ function DockerModal({
                 </div>
                 <div className="metric-card">
                   <div className="metric-head">
-                    <span>Estado</span>
+                    <span>{t('docker.status')}</span>
                     <strong>{container.state || '--'}</strong>
                   </div>
                   <div className="status-badges">
                     <span className={`badge ${container.state === 'running' ? 'ok' : 'warn'}`}>
-                      {container.state === 'running' ? 'OK' : 'Detenido'}
+                      {container.state === 'running' ? t('docker.ok') : t('docker.stopped')}
                     </span>
                   </div>
                 </div>
               </div>
               <div className="metric-card">
                 <div className="metric-head">
-                  <span>Informacion</span>
-                  <strong>Contenedor</strong>
+                  <span>{t('docker.info')}</span>
+                  <strong>{t('docker.container')}</strong>
                 </div>
                 <div className="mini-table">
-                  <div>ID</div>
+                  <div>{t('docker.id')}</div>
                   <div>{container.id?.substring(0, 12) || '--'}</div>
                   <div></div>
-                  <div>Imagen</div>
+                  <div>{t('docker.image')}</div>
                   <div>{container.image || '--'}</div>
                   <div></div>
-                  <div>Reinicios</div>
+                  <div>{t('docker.restarts')}</div>
                   <div>{container.restartCount ?? '--'}</div>
                   <div></div>
                 </div>
@@ -248,7 +250,7 @@ function DockerModal({
           {dockerPanel === 'logs' && (
             <div className="modal-section">
               <div className="logs-header">
-                <span>Logs en tiempo real</span>
+                <span>{t('docker.realtimeLogs')}</span>
                 <div className="logs-status">
                   <span className="status-dot live" />
                   <span>LIVE</span>
@@ -267,7 +269,7 @@ function DockerModal({
                 <div className="terminal-body">
                   {logs.length === 0 ? (
                     <div className="terminal-line">
-                      <span className="terminal-entry terminal-waiting">Esperando logs...</span>
+                      <span className="terminal-entry terminal-waiting">{t('docker.waitingLogs')}</span>
                     </div>
                   ) : (
                     logs.map((line, index) => (
@@ -283,10 +285,10 @@ function DockerModal({
           )}
           {dockerPanel === 'volumes' && (
             <div className="modal-section">
-              <span>Volumenes {volumesLoading && '(cargando...)'}</span>
+              <span>{t('docker.volumes')} {volumesLoading && t('docker.loadingData')}</span>
               <div className="volume-list">
                 {volumes.length === 0 ? (
-                  <p>No hay volumenes</p>
+                  <p>{t('docker.noVolumes')}</p>
                 ) : (
                   volumes.map((vol) => (
                     <div key={vol.name} className="volume-item">
@@ -302,10 +304,10 @@ function DockerModal({
           )}
           {dockerPanel === 'images' && (
             <div className="modal-section">
-              <span>Imagenes {imagesLoading && '(cargando...)'}</span>
+              <span>{t('docker.images')} {imagesLoading && t('docker.loadingData')}</span>
               <div className="image-list">
                 {images.length === 0 ? (
-                  <p>No hay imagenes</p>
+                  <p>{t('docker.noImages')}</p>
                 ) : (
                   images.map((img) => (
                     <div key={img.id} className="image-item">
@@ -326,7 +328,7 @@ function DockerModal({
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-outline" onClick={onClose}>
-            Cerrar
+            {t('common.close')}
           </button>
         </div>
       </div>

@@ -1,6 +1,8 @@
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './SpecsWidget.css'
 
 function SpecsWidget({ metrics }) {
+  const { t } = useTranslation()
   const specs = metrics?.specs || {}
   const systemInfo = metrics?.systemInfo || {}
 
@@ -17,8 +19,8 @@ function SpecsWidget({ metrics }) {
   return (
     <section className="monitoring-card system-specs">
       <div className="card-header">
-        <h2>Especificaciones</h2>
-        <span className="card-value">Hardware</span>
+        <h2>{t('specs.title')}</h2>
+        <span className="card-value">{t('specs.hardware')}</span>
       </div>
       <div className="specs-grid">
         <div className="spec-item spec-item-wide">
@@ -26,18 +28,18 @@ function SpecsWidget({ metrics }) {
           <strong>{specs.cpuModel || '--'}</strong>
         </div>
         <div className="spec-item">
-          <span>Cores / Threads</span>
+          <span>{t('specs.coresThreads')}</span>
           <strong>
             {formatValue(specs.cpuCores)} / {formatValue(specs.cpuThreads)}
           </strong>
         </div>
         <div className="spec-item">
-          <span>Frecuencia Max</span>
+          <span>{t('specs.maxFrequency')}</span>
           <strong>{formatFrequency(specs.cpuMaxMhz)}</strong>
         </div>
         <div className="spec-item spec-item-wide">
           <span>GPU</span>
-          <strong>{specs.gpuName || 'No detectada'}</strong>
+          <strong>{specs.gpuName || t('specs.notDetected')}</strong>
         </div>
         <div className="spec-item">
           <span>VRAM</span>
@@ -51,14 +53,14 @@ function SpecsWidget({ metrics }) {
           </strong>
         </div>
         <div className="spec-item">
-          <span>Disco</span>
+          <span>{t('monitoring.disk')}</span>
           <strong>
             {specs.diskTotalGb ? `${specs.diskTotalGb} GB` : '--'}
             {specs.diskType ? ` ${specs.diskType}` : ''}
           </strong>
         </div>
         <div className="spec-item">
-          <span>Sistema Operativo</span>
+          <span>{t('specs.os')}</span>
           <strong>
             {specs.osName || systemInfo.os || '--'}
             {specs.osVersion ? ` ${specs.osVersion}` : ''}
@@ -69,12 +71,12 @@ function SpecsWidget({ metrics }) {
           <strong>{specs.kernelVersion || systemInfo.kernel || '--'}</strong>
         </div>
         <div className="spec-item">
-          <span>Arquitectura</span>
+          <span>{t('specs.architecture')}</span>
           <strong>{formatValue(specs.architecture)}</strong>
         </div>
         <div className="spec-item">
           <span>Docker</span>
-          <strong>{specs.dockerVersion ? `v${specs.dockerVersion}` : 'No instalado'}</strong>
+          <strong>{specs.dockerVersion ? `v${specs.dockerVersion}` : t('specs.notInstalled')}</strong>
         </div>
         <div className="spec-item">
           <span>Hostname</span>

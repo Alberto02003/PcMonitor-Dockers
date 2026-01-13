@@ -1,7 +1,9 @@
 import { LastUpdate, AnimatedValue } from '../../../../components'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './HeroWidget.css'
 
 function HeroWidget({ metrics, lastUpdate }) {
+  const { t } = useTranslation()
   const systemInfo = metrics?.systemInfo || {}
   const cpu = metrics?.cpu || {}
   
@@ -18,24 +20,24 @@ function HeroWidget({ metrics, lastUpdate }) {
     <section className="monitoring-hero">
       <div className="hero-main">
         <div className="hero-card">
-          <span className="hero-label">Estado</span>
+          <span className="hero-label">{t('hero.status')}</span>
           <p className={`hero-value ${statusClass}`}>
             {isOnline && <span className="hero-status-dot" />}
-            {metrics ? 'En linea' : 'Cargando...'}
+            {metrics ? t('hero.online') : t('hero.loading')}
           </p>
           <span className="hero-subtle">
-            Ultima actualizacion: <LastUpdate timestamp={lastUpdate} />
+            {t('hero.lastUpdate')} <LastUpdate timestamp={lastUpdate} />
           </span>
         </div>
         <div className="hero-card">
-          <span className="hero-label">Tiempo activo</span>
+          <span className="hero-label">{t('hero.uptime')}</span>
           <p className="hero-value">{formatUptime(systemInfo.uptime)}</p>
-          <span className="hero-subtle">Desde ultimo reinicio</span>
+          <span className="hero-subtle">{t('hero.sinceRestart')}</span>
         </div>
       </div>
       <div className="hero-side">
         <div className="hero-card hero-card--accent">
-          <span className="hero-label">Carga promedio</span>
+          <span className="hero-label">{t('hero.loadAverage')}</span>
           <p className="hero-value">
             <AnimatedValue 
               value={cpu.loadAvg1m || 0} 
@@ -50,9 +52,9 @@ function HeroWidget({ metrics, lastUpdate }) {
           </span>
         </div>
         <div className="hero-card">
-          <span className="hero-label">IP privada</span>
+          <span className="hero-label">{t('hero.privateIp')}</span>
           <p className="hero-value hero-value--mono">{systemInfo.privateIp || '--'}</p>
-          <span className="hero-subtle">Publica: {systemInfo.publicIp || 'N/A'}</span>
+          <span className="hero-subtle">{t('hero.publicIp')} {systemInfo.publicIp || 'N/A'}</span>
         </div>
       </div>
     </section>

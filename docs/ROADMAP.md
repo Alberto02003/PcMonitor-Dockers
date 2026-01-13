@@ -8,66 +8,6 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ## 🔥 FASE 6: Alta Prioridad - Quick Wins
 
-### 6.1 Gráficos de Métricas Históricas ⭐
-**Objetivo**: Visualizar tendencias y patrones usando Chart.js o Recharts
-
-**Tareas**:
-- [ ] Instalar Chart.js o Recharts
-- [ ] Crear componente ChartWidget genérico
-- [ ] Gráfico de línea para CPU/RAM/Network
-- [ ] Selector de rango temporal (1h, 6h, 24h, 7d)
-- [ ] Zoom in/out en gráficos
-- [ ] Tooltips con valores exactos
-- [ ] Comparar métricas entre servidores
-- [ ] Exportar gráficos como imagen PNG
-- [ ] Integrar con useMetricsHistory existente
-- [ ] Predicción de tendencias (regresión lineal básica)
-
-**Archivos a crear/modificar**:
-- `src/components/ChartWidget/ChartWidget.jsx` (nuevo)
-- `src/components/ChartWidget/ChartWidget.css` (nuevo)
-- `src/pages/MonitoringPage/MonitoringPage.jsx`
-- `src/hooks/useMetricsHistory.js` (ya existe)
-
-**Beneficios**:
-- Alto impacto visual
-- Detectar patrones y anomalías
-- Usar el histórico ya implementado
-
----
-
-### 6.2 Sistema de Alertas Avanzado 🔔
-**Objetivo**: Notificaciones inteligentes por múltiples canales
-
-**Tareas**:
-- [ ] Backend: Comando Tauri para enviar notificaciones
-- [ ] Integración con Telegram Bot API
-- [ ] Integración con Discord Webhooks
-- [ ] Integración con Slack Webhooks
-- [ ] Envío de emails (SMTP)
-- [ ] Alertas con cooldown (evitar spam)
-- [ ] Umbral adaptativo (detectar patrones normales)
-- [ ] Historial de alertas con timeline
-- [ ] Silenciar alertas temporalmente
-- [ ] Alertas por grupos de métricas
-- [ ] Plantillas de alertas (CPU crítico, disco lleno, etc.)
-- [ ] Test de notificaciones desde UI
-
-**Archivos a crear/modificar**:
-- `src-tauri/src/notifications.rs` (nuevo)
-- `src-tauri/src/lib.rs`
-- `src/hooks/useAlerts.js` (extender)
-- `src/pages/MonitoringPage/components/AlertsModal/AlertsModal.jsx`
-- `src/components/NotificationSettings/NotificationSettings.jsx` (nuevo)
-
-**Canales soportados**:
-- Desktop (ya implementado con useNotifications)
-- Telegram
-- Discord
-- Slack
-- Email
-
----
 
 ### 6.3 Docker Compose Management 🐳
 **Objetivo**: Gestionar stacks completos, no solo contenedores individuales

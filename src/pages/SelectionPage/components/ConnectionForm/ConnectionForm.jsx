@@ -1,3 +1,4 @@
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './ConnectionForm.css'
 
 function ConnectionForm({
@@ -10,16 +11,17 @@ function ConnectionForm({
   isSaving,
   isTesting,
   selectedConnection,
-  t,
   hostSuggestions,
   userSuggestions,
 }) {
+  const { t } = useTranslation()
+
   return (
     <>
       <form className="connection-form" onSubmit={onSave}>
         <div className="form-grid">
           <label className="field">
-            <span>{t.name}</span>
+            <span>{t('form.name')}</span>
             <input
               name="name"
               value={formData.name}
@@ -29,7 +31,7 @@ function ConnectionForm({
             {errors.name && <span className="field-error">{errors.name}</span>}
           </label>
           <label className="field">
-            <span>{t.host}</span>
+            <span>{t('form.host')}</span>
             <input
               name="host"
               list="host-suggestions"
@@ -40,7 +42,7 @@ function ConnectionForm({
             {errors.host && <span className="field-error">{errors.host}</span>}
           </label>
           <label className="field">
-            <span>{t.port}</span>
+            <span>{t('form.port')}</span>
             <input
               name="port"
               value={formData.port}
@@ -50,7 +52,7 @@ function ConnectionForm({
             {errors.port && <span className="field-error">{errors.port}</span>}
           </label>
           <label className="field">
-            <span>{t.username}</span>
+            <span>{t('form.username')}</span>
             <input
               name="username"
               list="user-suggestions"
@@ -64,16 +66,16 @@ function ConnectionForm({
 
         <div className="field-group">
           <label className="field">
-            <span>{t.authMethod}</span>
+            <span>{t('form.authMethod')}</span>
             <select name="authType" value={formData.authType} onChange={onChange}>
-              <option value="password">{t.password}</option>
-              <option value="key">{t.sshKey}</option>
+              <option value="password">{t('form.password')}</option>
+              <option value="key">{t('form.sshKey')}</option>
             </select>
           </label>
 
           {formData.authType === 'password' ? (
             <label className="field">
-              <span>{t.password}</span>
+              <span>{t('form.password')}</span>
               <input
                 type="password"
                 name="password"
@@ -83,22 +85,22 @@ function ConnectionForm({
             </label>
           ) : (
             <label className="field">
-              <span>{t.keyPath}</span>
+              <span>{t('form.keyPath')}</span>
               <input name="keyPath" value={formData.keyPath} onChange={onChange} />
             </label>
           )}
         </div>
 
-        <p className="form-placeholder">{t.formHint}</p>
+        <p className="form-placeholder">{t('selection.formHint')}</p>
 
         <label className="field field-notes">
-          <span>{t.notes}</span>
+          <span>{t('form.notes')}</span>
           <textarea name="notes" rows="3" value={formData.notes} onChange={onChange} />
         </label>
 
         <div className="form-actions">
           <button className="btn btn-accent" type="submit" disabled={isSaving}>
-            {isSaving ? t.saving : t.save}
+            {isSaving ? t('actions.saving') : t('actions.save')}
           </button>
           <button
             className="btn btn-outline"
@@ -106,11 +108,11 @@ function ConnectionForm({
             onClick={onTest}
             disabled={isTesting}
           >
-            {isTesting ? t.testing : t.test}
+            {isTesting ? t('actions.testing') : t('actions.test')}
           </button>
           {selectedConnection && (
             <button className="btn btn-ghost" type="button" onClick={onDelete}>
-              {t.delete}
+              {t('common.delete')}
             </button>
           )}
         </div>

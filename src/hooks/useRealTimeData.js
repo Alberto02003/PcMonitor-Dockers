@@ -9,6 +9,7 @@ import {
   dockerLogs,
   isTauri 
 } from '../services/tauri.js'
+import { saveDockerBatch } from '../services/api.js'
 
 /**
  * Hook para obtener métricas del sistema en tiempo real
@@ -111,6 +112,13 @@ export function useRealTimeContainers(connectionId, intervalMs = 5000) {
         setContainers(data || [])
         setError(null)
         setLoading(false)
+        
+        // Save Docker metrics to database (fire and forget)
+        if (data && data.length > 0) {
+          saveDockerBatch(connectionId, data).catch(err => {
+            console.warn('Failed to save Docker metrics:', err.message)
+          })
+        }
       }
     } catch (err) {
       if (isMountedRef.current) {

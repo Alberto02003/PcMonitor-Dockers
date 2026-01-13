@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { dockerStart, dockerStop, dockerRestart } from '../../../../services/tauri.js'
 import { generateAccessUrls, formatPortsDisplay, openInBrowser, copyToClipboard } from '../../../../utils/dockerUtils.js'
+import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './DockersSection.css'
 
 const formatNumber = (value, decimals = 0) => {
@@ -11,6 +12,7 @@ const formatNumber = (value, decimals = 0) => {
 }
 
 function DockersSection({ onOpenDocker, connectionId, containers = [], loading, error, onDockerAction, serverHost }) {
+  const { t } = useTranslation()
   const [actionLoading, setActionLoading] = useState({})
   const [actionError, setActionError] = useState(null)
   const [copiedUrl, setCopiedUrl] = useState(null)
@@ -22,7 +24,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       await dockerStart(connectionId, containerId)
       if (onDockerAction) onDockerAction()
     } catch (err) {
-      setActionError(`Error al iniciar: ${err}`)
+      setActionError(`${t('docker.errorStart')} ${err}`)
     } finally {
       setActionLoading((prev) => ({ ...prev, [containerId]: null }))
     }
@@ -35,7 +37,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       await dockerStop(connectionId, containerId)
       if (onDockerAction) onDockerAction()
     } catch (err) {
-      setActionError(`Error al parar: ${err}`)
+      setActionError(`${t('docker.errorStop')} ${err}`)
     } finally {
       setActionLoading((prev) => ({ ...prev, [containerId]: null }))
     }
@@ -48,7 +50,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       await dockerRestart(connectionId, containerId)
       if (onDockerAction) onDockerAction()
     } catch (err) {
-      setActionError(`Error al reiniciar: ${err}`)
+      setActionError(`${t('docker.errorRestart')} ${err}`)
     } finally {
       setActionLoading((prev) => ({ ...prev, [containerId]: null }))
     }
@@ -73,10 +75,10 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       <section className="monitoring-docker">
         <div className="card-header">
           <h2>Dockers</h2>
-          <span className="card-value">Cargando...</span>
+          <span className="card-value">{t('common.loading')}</span>
         </div>
         <div className="docker-loading">
-          <span>Obteniendo contenedores del servidor...</span>
+          <span>{t('docker.gettingContainers')}</span>
         </div>
       </section>
     )
@@ -87,7 +89,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       <section className="monitoring-docker">
         <div className="card-header">
           <h2>Dockers</h2>
-          <span className="card-value">Error</span>
+          <span className="card-value">{t('common.error')}</span>
         </div>
         <p className="docker-error">{error}</p>
       </section>
@@ -98,7 +100,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
     <section className="monitoring-docker">
       <div className="card-header">
         <h2>Dockers</h2>
-        <span className="card-value">{runningCount} activos</span>
+        <span className="card-value">{runningCount} {t('common.actives')}</span>
       </div>
       
       {actionError && (
@@ -110,7 +112,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       
       <div className="docker-list">
         {containers.length === 0 ? (
-          <p className="docker-empty">No se encontraron contenedores</p>
+          <p className="docker-empty">{t('docker.noContainers')}</p>
         ) : (
           containers.map((container) => {
             const accessUrls = generateAccessUrls(container.portMappings || [], serverHost)
@@ -122,11 +124,11 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                   <div>
                     <p className="docker-name">{container.name}</p>
                     <p className="docker-meta">
-                      Estado: {container.state} · {container.status} · Reinicios: {container.restartCount ?? 0}
+                      {t('docker.status')} {container.state} · {container.status} · {t('docker.restarts')} {container.restartCount ?? 0}
                     </p>
                     {container.portMappings && container.portMappings.length > 0 && (
                       <p className="docker-ports">
-                        Puertos: {formatPortsDisplay(container.portMappings)}
+                        {t('docker.ports')} {formatPortsDisplay(container.portMappings)}
                       </p>
                     )}
                   </div>
@@ -135,14 +137,14 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                     <span>RAM {formatNumber(container.memoryUsageMb)} MB</span>
                     <span>RX {formatNumber(container.netIoRxMb, 1)} MB</span>
                     <span>TX {formatNumber(container.netIoTxMb, 1)} MB</span>
-                    <span>Imagen {container.image || '--'}</span>
+                    <span>{t('docker.image')} {container.image || '--'}</span>
                   </div>
                 </div>
 
                 {/* URLs de acceso */}
                 {container.state === 'running' && webUrls.length > 0 && (
                   <div className="docker-urls">
-                    <span className="docker-urls-label">Acceso rápido:</span>
+                    <span className="docker-urls-label">{t('docker.quickAccess')}</span>
                     <div className="docker-urls-list">
                       {webUrls.map((urlInfo, idx) => (
                         <div key={idx} className="docker-url-item">
@@ -150,7 +152,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                             type="button"
                             className="btn btn-sm btn-outline btn-url"
                             onClick={() => handleOpenUrl(urlInfo.url)}
-                            title={`Abrir ${urlInfo.url}`}
+                            title={`Open ${urlInfo.url}`}
                           >
                             <span className="url-icon">🌐</span>
                             <span className="url-label">{urlInfo.label}</span>
@@ -159,7 +161,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                             type="button"
                             className="btn btn-sm btn-icon"
                             onClick={() => handleCopyUrl(urlInfo.url)}
-                            title="Copiar URL"
+                            title="Copy URL"
                           >
                             {copiedUrl === urlInfo.url ? '✓' : '📋'}
                           </button>
@@ -178,7 +180,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                         onClick={() => handleStop(container.id)}
                         disabled={actionLoading[container.id]}
                       >
-                        {actionLoading[container.id] === 'stop' ? 'Parando...' : 'Parar'}
+                        {actionLoading[container.id] === 'stop' ? t('docker.stopping') : t('docker.stopAction')}
                       </button>
                       <button
                         type="button"
@@ -186,7 +188,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                         onClick={() => handleRestart(container.id)}
                         disabled={actionLoading[container.id]}
                       >
-                        {actionLoading[container.id] === 'restart' ? 'Reiniciando...' : 'Reiniciar'}
+                        {actionLoading[container.id] === 'restart' ? t('docker.restarting') : t('docker.restartAction')}
                       </button>
                     </>
                   ) : (
@@ -196,7 +198,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                       onClick={() => handleStart(container.id)}
                       disabled={actionLoading[container.id]}
                     >
-                      {actionLoading[container.id] === 'start' ? 'Iniciando...' : 'Iniciar'}
+                      {actionLoading[container.id] === 'start' ? t('docker.starting') : t('docker.startAction')}
                     </button>
                   )}
                   <button
@@ -204,7 +206,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                     className="btn btn-accent"
                     onClick={() => onOpenDocker(container)}
                   >
-                    Ver detalles
+                    {t('actions.viewDetails')}
                   </button>
                 </div>
               </div>

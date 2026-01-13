@@ -3,6 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from '../../hooks/useTranslation.jsx'
 import './LastUpdate.css'
 
 /**
@@ -22,6 +23,7 @@ function LastUpdate({
   showIcon = true,
   compact = false,
 }) {
+  const { t } = useTranslation()
   const [relativeTime, setRelativeTime] = useState('')
 
   // Actualizar tiempo relativo cada segundo
@@ -32,26 +34,26 @@ function LastUpdate({
     }
 
     const updateRelativeTime = () => {
-      setRelativeTime(getRelativeTime(timestamp))
+      setRelativeTime(getRelativeTime(timestamp, t))
     }
 
     updateRelativeTime()
     const interval = setInterval(updateRelativeTime, 1000)
 
     return () => clearInterval(interval)
-  }, [timestamp])
+  }, [timestamp, t])
 
   if (error) {
     return (
       <div className={`last-update last-update--error ${compact ? 'last-update--compact' : ''}`}>
         {showIcon && <ErrorIcon />}
-        <span className="last-update__text">Error al actualizar</span>
+        <span className="last-update__text">{t('monitoring.errorUpdating')}</span>
         {onRefresh && (
           <button
             type="button"
             className="last-update__refresh"
             onClick={onRefresh}
-            title="Reintentar"
+            title={t('actions.retry')}
           >
             <RefreshIcon />
           </button>
@@ -64,7 +66,7 @@ function LastUpdate({
     return (
       <div className={`last-update last-update--loading ${compact ? 'last-update--compact' : ''}`}>
         {showIcon && <LoadingIcon />}
-        <span className="last-update__text">Actualizando...</span>
+        <span className="last-update__text">{t('monitoring.updating')}</span>
       </div>
     )
   }
@@ -73,7 +75,7 @@ function LastUpdate({
     return (
       <div className={`last-update last-update--empty ${compact ? 'last-update--compact' : ''}`}>
         {showIcon && <ClockIcon />}
-        <span className="last-update__text">Sin datos</span>
+        <span className="last-update__text">{t('monitoring.noDataYet')}</span>
       </div>
     )
   }
@@ -82,14 +84,14 @@ function LastUpdate({
     <div className={`last-update ${compact ? 'last-update--compact' : ''}`}>
       {showIcon && <ClockIcon />}
       <span className="last-update__text">
-        {compact ? relativeTime : `Actualizado ${relativeTime}`}
+        {compact ? relativeTime : `${t('monitoring.updated')} ${relativeTime}`}
       </span>
       {onRefresh && (
         <button
           type="button"
           className="last-update__refresh"
           onClick={onRefresh}
-          title="Actualizar ahora"
+          title={t('actions.refreshNow')}
           disabled={loading}
         >
           <RefreshIcon />
@@ -102,15 +104,16 @@ function LastUpdate({
 /**
  * Obtiene tiempo relativo desde un timestamp
  * @param {Date|string|number} timestamp
+ * @param {Function} t - Translation function
  * @returns {string}
  */
-function getRelativeTime(timestamp) {
+function getRelativeTime(timestamp, t) {
   const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
   const now = new Date()
   const diffMs = now - date
 
   if (diffMs < 0) {
-    return 'ahora'
+    return t ? t('common.now') : 'now'
   }
 
   const diffSec = Math.floor(diffMs / 1000)
@@ -118,20 +121,22 @@ function getRelativeTime(timestamp) {
   const diffHour = Math.floor(diffMin / 60)
   const diffDay = Math.floor(diffHour / 24)
 
+  const ago = t ? t('common.ago') : 'ago'
+
   if (diffSec < 5) {
-    return 'ahora'
+    return t ? t('common.now') : 'now'
   }
   if (diffSec < 60) {
-    return `hace ${diffSec}s`
+    return `${ago} ${diffSec}s`
   }
   if (diffMin < 60) {
-    return `hace ${diffMin}m`
+    return `${ago} ${diffMin}m`
   }
   if (diffHour < 24) {
-    return `hace ${diffHour}h`
+    return `${ago} ${diffHour}h`
   }
   if (diffDay < 7) {
-    return `hace ${diffDay}d`
+    return `${ago} ${diffDay}d`
   }
 
   return date.toLocaleDateString()
