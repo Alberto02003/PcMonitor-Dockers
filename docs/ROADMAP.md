@@ -40,7 +40,7 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ---
 
-### 6.4 Terminal SSH Integrada 💻
+
 **Objetivo**: Ejecutar comandos sin salir de la aplicación
 
 **Tareas**:
@@ -73,66 +73,8 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ---
 
-### 6.5 Dashboard Multi-servidor 📊
-**Objetivo**: Vista consolidada de todos los servidores conectados
-
-**Tareas**:
-- [ ] Página MultiDashboard con grid de servidores
-- [ ] Card compacto por servidor con métricas clave
-- [ ] Código de colores por health (verde/amarillo/rojo)
-- [ ] Click en card → ir a MonitoringPage de ese servidor
-- [ ] Filtros: por grupo, por estado, por carga
-- [ ] Ordenar por: nombre, CPU, RAM, disco
-- [ ] Vista de mapa (geolocalización opcional)
-- [ ] Grupos de servidores (producción, dev, staging)
-- [ ] Alertas agregadas (contador total)
-- [ ] Comparar métricas entre servidores
-- [ ] Dashboard público (solo lectura, sin credenciales)
-
-**Archivos a crear/modificar**:
-- `src/pages/MultiDashboard/MultiDashboard.jsx` (nuevo)
-- `src/pages/MultiDashboard/MultiDashboard.css` (nuevo)
-- `src/components/ServerCard/ServerCard.jsx` (nuevo)
-- `src/components/App/App.jsx`
-- `src/stores/serversStore.js` (nuevo)
-
-**Layout sugerido**:
-```
-┌─────────────────────────────────────────┐
-│  [Todos] [Prod] [Dev] [Staging]        │
-├─────────┬─────────┬─────────┬──────────┤
-│ Server1 │ Server2 │ Server3 │ Server4  │
-│ 🟢 CPU  │ 🟡 CPU  │ 🟢 CPU  │ 🔴 CPU   │
-│ 12%     │ 78%     │ 23%     │ 95%      │
-│ RAM 45% │ RAM 82% │ RAM 34% │ RAM 89%  │
-└─────────┴─────────┴─────────┴──────────┘
-```
-
 ---
 
-## 🎯 FASE 7: Media Prioridad - Features Potentes
-
-### 7.1 Logs Centralizados 📜
-**Objetivo**: Ver y buscar logs de múltiples fuentes
-
-**Tareas**:
-- [ ] Backend: Comando `get_system_logs` (syslog, dmesg, etc.)
-- [ ] Backend: Streaming de logs en tiempo real
-- [ ] Componente LogViewer con virtualización
-- [ ] Buscar en logs (regex support)
-- [ ] Filtros por nivel (error, warning, info, debug)
-- [ ] Resaltar palabras clave
-- [ ] Follow mode (tail -f style)
-- [ ] Descargar logs como archivo
-- [ ] Ver logs de Docker + Sistema juntos
-- [ ] Timestamp con timezone
-
-**Archivos a crear**:
-- `src-tauri/src/logs.rs` (nuevo)
-- `src/components/LogViewer/LogViewer.jsx` (nuevo)
-- `src/pages/MonitoringPage/components/LogsSection/LogsSection.jsx` (nuevo)
-
----
 
 ### 7.2 Gestión de Procesos ⚙️
 **Objetivo**: Ver y controlar procesos del sistema
@@ -177,26 +119,6 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ---
 
-### 7.4 Backups & Snapshots 💾
-**Objetivo**: Gestión de backups automáticos
-
-**Tareas**:
-- [ ] Backend: Comandos para crear backups
-- [ ] Programar backups automáticos (cron)
-- [ ] Backup de Docker volumes
-- [ ] Database dumps (MySQL, PostgreSQL, MongoDB)
-- [ ] Restaurar desde backup
-- [ ] Ver espacio usado por backups
-- [ ] Comprimir/descomprimir archivos
-- [ ] Backup incremental vs completo
-- [ ] Rotación de backups antiguos
-- [ ] Verificar integridad de backups
-
-**Archivos a crear**:
-- `src-tauri/src/backups.rs` (nuevo)
-- `src/pages/BackupsPage/BackupsPage.jsx` (nuevo)
-
----
 
 ### 7.5 SSL/TLS Certificate Monitor 🔒
 **Objetivo**: Monitorear certificados SSL
@@ -240,17 +162,6 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ---
 
-### 8.3 Database Management 🗄️
-**Tareas**:
-- [ ] Conectar a MySQL/PostgreSQL/MongoDB
-- [ ] Ver tablas y esquemas
-- [ ] Ejecutar queries básicas
-- [ ] Exportar/importar datos
-- [ ] Ver tamaño de bases de datos
-- [ ] Backup de DBs
-
----
-
 ### 8.4 Git Integration 🔀
 **Tareas**:
 - [ ] Listar repositorios en el servidor
@@ -270,50 +181,6 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 - [ ] Buscar en logs
 - [ ] Historial de comandos recientes
 - [ ] Fuzzy search
-
----
-
-## 🎨 FASE 9: UI/UX Improvements
-
-### 9.1 Temas y Personalización
-**Tareas**:
-- [x] Dark mode básico (COMPLETADO - Fase 4)
-- [ ] Múltiples temas preconstruidos (Nord, Dracula, Monokai)
-- [ ] Editor de temas custom
-- [ ] Cambiar colores de acento
-- [ ] Fuentes personalizables
-- [ ] Tamaño de UI (compact/normal/large)
-
----
-
-### 9.2 Dashboard Personalizable
-**Tareas**:
-- [ ] Widgets drag & drop (react-grid-layout)
-- [ ] Crear dashboards personalizados por servidor
-- [ ] Templates de dashboard (web, database, cache)
-- [ ] Compartir dashboards (export/import JSON)
-- [ ] Dashboards públicos (embed code)
-
----
-
-### 9.3 Atajos de Teclado Avanzados
-**Tareas**:
-- [x] useKeyboardShortcuts básico (COMPLETADO - Fase 4)
-- [ ] Panel de shortcuts (Ctrl+?)
-- [ ] Shortcuts personalizables por usuario
-- [ ] Vim mode para power users
-- [ ] Grabar macros de teclado
-
----
-
-### 9.4 Búsqueda Global
-**Tareas**:
-- [ ] Buscar en toda la app (Ctrl+K)
-- [ ] Buscar servidores por nombre/IP
-- [ ] Buscar contenedores
-- [ ] Buscar en logs históricos
-- [ ] Buscar comandos ejecutados
-- [ ] Fuzzy search con scoring
 
 ---
 
@@ -356,17 +223,6 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 ## 📊 FASE 11: Analytics y Reportes
 
-### 11.1 Reportes Automáticos
-**Tareas**:
-- [ ] Backend: Generador de reportes
-- [ ] Reporte diario/semanal/mensual por email
-- [ ] Uptime report
-- [ ] Uso de recursos promedio
-- [ ] Incidentes y alertas del período
-- [ ] PDF/HTML export
-- [ ] Gráficos incluidos en reportes
-
----
 
 ### 11.2 Capacity Planning
 **Tareas**:

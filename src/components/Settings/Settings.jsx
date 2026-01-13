@@ -5,7 +5,7 @@ const SETTINGS_KEY = 'pcmd.settings.v1'
 
 const defaultSettings = {
   notificationDuration: 1000,
-  autoConnectDefault: false,
+  autoConnectDefault: true,
   theme: 'dark',
   windowSize: 'medium',
   storeCredentials: true,
@@ -23,7 +23,8 @@ function SettingsProvider({ children }) {
       const stored = localStorage.getItem(SETTINGS_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        const next = { ...defaultSettings, ...parsed, theme: 'dark' }
+        // Force autoConnectDefault to true (always auto-connect to default)
+        const next = { ...defaultSettings, ...parsed, theme: 'dark', autoConnectDefault: true }
         setSettings(next)
       }
     } catch {

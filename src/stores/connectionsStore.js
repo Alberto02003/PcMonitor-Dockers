@@ -1,10 +1,11 @@
 /**
  * Store global para conexiones SSH usando Zustand
- * Usa API HTTP como backend
+ * Usa API HTTP como backend con credenciales cifradas
  */
 
 import { create } from 'zustand'
 import * as api from '../services/api.js'
+import { encryptCredentials, decryptCredentials, isTauri } from '../services/tauri.js'
 
 /**
  * Estado inicial
@@ -76,12 +77,31 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
-   * Cargar conexiones desde la API
+   * Cargar conexiones desde la API y descifrar credenciales
    */
   loadConnections: async () => {
     try {
       set({ isLoading: true, error: null })
-      const connections = await api.getConnections()
+      const rawConnections = await api.getConnections()
+      
+      // Descifrar credenciales si estamos en Tauri
+      let connections = rawConnections
+      if (isTauri()) {
+        connections = await Promise.all(rawConnections.map(async (conn) => {
+          try {
+            const decrypted = await decryptCredentials(conn.password, conn.keyPath)
+            return {
+              ...conn,
+              password: decrypted.password || '',
+              keyPath: decrypted.keyPath || '',
+            }
+          } catch (err) {
+            console.warn(`Failed to decrypt credentials for ${conn.name}:`, err)
+            return { ...conn, password: '', keyPath: '' }
+          }
+        }))
+      }
+      
       set({ connections, isLoading: false, apiConnected: true })
       return connections
     } catch (error) {
@@ -102,7 +122,7 @@ export const useConnectionsStore = create((set, get) => ({
   setError: (error) => set({ error }),
 
   /**
-   * Agregar conexion
+   * Agregar conexion con credenciales cifradas
    */
   addConnection: async (connectionData, options = {}) => {
     const connection = {
@@ -115,8 +135,20 @@ export const useConnectionsStore = create((set, get) => ({
     }
 
     try {
-      await api.createConnection(connection)
+      // Cifrar credenciales antes de enviar a la API
+      let connectionToSave = connection
+      if (isTauri()) {
+        const encrypted = await encryptCredentials(connection.password, connection.keyPath)
+        connectionToSave = {
+          ...connection,
+          password: encrypted.password || '',
+          keyPath: encrypted.keyPath || '',
+        }
+      }
       
+      await api.createConnection(connectionToSave)
+      
+      // Guardar en estado local con credenciales en claro (para uso en memoria)
       set(state => ({
         connections: [...state.connections, connection],
       }))
@@ -130,7 +162,7 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
-   * Actualizar conexion
+   * Actualizar conexion con credenciales cifradas
    */
   updateConnection: async (id, updates) => {
     const state = get()
@@ -144,8 +176,23 @@ export const useConnectionsStore = create((set, get) => ({
     }
 
     try {
-      await api.updateConnection(id, updates)
+      // Cifrar credenciales si se actualizan
+      let updatesToSave = updates
+      if (isTauri() && (updates.password !== undefined || updates.keyPath !== undefined)) {
+        const encrypted = await encryptCredentials(
+          updates.password ?? existing.password,
+          updates.keyPath ?? existing.keyPath
+        )
+        updatesToSave = {
+          ...updates,
+          password: encrypted.password || '',
+          keyPath: encrypted.keyPath || '',
+        }
+      }
       
+      await api.updateConnection(id, updatesToSave)
+      
+      // Guardar en estado local con credenciales en claro
       set(state => ({
         connections: state.connections.map(c => c.id === id ? updated : c),
       }))
@@ -180,13 +227,24 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
-   * Restaurar conexion (undo)
+   * Restaurar conexion (undo) con credenciales cifradas
    */
   restoreConnection: async (connection, index) => {
     if (!connection) return
 
     try {
-      await api.createConnection(connection)
+      // Cifrar credenciales antes de guardar
+      let connectionToSave = connection
+      if (isTauri()) {
+        const encrypted = await encryptCredentials(connection.password, connection.keyPath)
+        connectionToSave = {
+          ...connection,
+          password: encrypted.password || '',
+          keyPath: encrypted.keyPath || '',
+        }
+      }
+      
+      await api.createConnection(connectionToSave)
       
       set(state => {
         const next = [...state.connections]
@@ -201,7 +259,7 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
-   * Duplicar conexion
+   * Duplicar conexion con credenciales cifradas
    */
   duplicateConnection: async (id, nameSuffix = 'copy') => {
     const state = get()
@@ -218,8 +276,20 @@ export const useConnectionsStore = create((set, get) => ({
     }
 
     try {
-      await api.createConnection(duplicated)
+      // Cifrar credenciales antes de guardar
+      let connectionToSave = duplicated
+      if (isTauri()) {
+        const encrypted = await encryptCredentials(duplicated.password, duplicated.keyPath)
+        connectionToSave = {
+          ...duplicated,
+          password: encrypted.password || '',
+          keyPath: encrypted.keyPath || '',
+        }
+      }
       
+      await api.createConnection(connectionToSave)
+      
+      // Guardar en estado local con credenciales en claro
       set(state => ({
         connections: [...state.connections, duplicated],
       }))
@@ -310,7 +380,7 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
-   * Importar conexiones
+   * Importar conexiones con credenciales cifradas
    */
   importConnections: async (imported) => {
     const state = get()
@@ -339,7 +409,18 @@ export const useConnectionsStore = create((set, get) => ({
       }
 
       try {
-        await api.createConnection(normalized)
+        // Cifrar credenciales si vienen en el import
+        let connectionToSave = normalized
+        if (isTauri() && (normalized.password || normalized.keyPath)) {
+          const encrypted = await encryptCredentials(normalized.password, normalized.keyPath)
+          connectionToSave = {
+            ...normalized,
+            password: encrypted.password || '',
+            keyPath: encrypted.keyPath || '',
+          }
+        }
+        
+        await api.createConnection(connectionToSave)
         count++
       } catch (error) {
         console.error('Failed to import connection:', error)

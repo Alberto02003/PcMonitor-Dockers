@@ -46,7 +46,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
     if (!search.trim()) return connections
     const term = search.trim().toLowerCase()
     return connections.filter((item) =>
-      [item.name, item.host, item.username]
+      [item.name, item.host, item.username, item.notes, String(item.port || 22)]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(term))
     )
@@ -150,14 +150,11 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
 
   const handleSetDefault = useCallback(async (id) => {
     await actions.setDefault(id, defaultId)
-  }, [actions, defaultId])
-
-  const handleDuplicate = useCallback(async (id) => {
-    const duplicated = await actions.duplicateConnection(id)
-    if (duplicated) {
-      setSelectedId(duplicated.id)
+    // Auto-connect when setting as default
+    if (id !== defaultId) {
+      await actions.connect(id)
     }
-  }, [actions])
+  }, [actions, defaultId])
 
   const handleConnect = useCallback(async (id) => {
     setSelectedId(id)
@@ -226,7 +223,6 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         onSelect={setSelectedId}
         onSetDefault={handleSetDefault}
         onToggleFavorite={actions.toggleFavorite}
-        onDuplicate={handleDuplicate}
         onConnect={handleConnect}
         onDelete={handleDelete}
       />

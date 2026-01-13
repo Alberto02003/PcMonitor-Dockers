@@ -394,7 +394,7 @@ impl DockerManager {
         Ok(volumes)
     }
 
-    pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<DockerInfo, SshError> {
+pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<DockerInfo, SshError> {
         let mut info = DockerInfo::default();
 
         // Single command to get all docker info
@@ -412,4 +412,342 @@ impl DockerManager {
 
         Ok(info)
     }
+
+    // ========================================================================
+    // Docker Compose Management
+    // ========================================================================
+
+    /// Helper to detect working docker compose command
+    fn compose_cmd_script() -> &'static str {
+        r#"if docker compose version >/dev/null 2>&1; then C="docker compose"; elif docker-compose version >/dev/null 2>&1; then C="docker-compose"; elif sudo -n docker compose version >/dev/null 2>&1; then C="sudo docker compose"; elif sudo -n docker-compose version >/dev/null 2>&1; then C="sudo docker-compose"; else C="docker compose"; fi"#
+    }
+
+    /// List all Docker Compose stacks (projects)
+    pub fn compose_list(ssh_manager: &SshManager, connection_id: &str) -> Result<Vec<ComposeStack>, SshError> {
+        // First detect compose command, then list
+        let cmd = format!(
+            "{}; $C ls --format json 2>/dev/null || echo '[]'",
+            Self::compose_cmd_script()
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        let stdout = result.stdout.trim();
+        
+        // Parse JSON output
+        let stacks: Vec<ComposeStack> = if stdout.is_empty() || stdout == "[]" {
+            Vec::new()
+        } else {
+            serde_json::from_str(stdout).unwrap_or_else(|_| {
+                // Try parsing line by line (older format)
+                Self::parse_compose_ls_legacy(stdout)
+            })
+        };
+        
+        Ok(stacks)
+    }
+
+    /// Parse legacy docker-compose ls output
+    fn parse_compose_ls_legacy(output: &str) -> Vec<ComposeStack> {
+        let mut stacks = Vec::new();
+        
+        for line in output.lines() {
+            // Skip header line
+            if line.starts_with("NAME") || line.is_empty() {
+                continue;
+            }
+            
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 2 {
+                stacks.push(ComposeStack {
+                    name: parts[0].to_string(),
+                    status: parts.get(1).unwrap_or(&"unknown").to_string(),
+                    config_files: parts.get(2).map(|s| s.to_string()),
+                });
+            }
+        }
+        
+        stacks
+    }
+
+    /// Get services status for a compose stack
+    pub fn compose_ps(ssh_manager: &SshManager, connection_id: &str, project_name: &str) -> Result<Vec<ComposeService>, SshError> {
+        let cmd = format!(
+            "{}; $C -p {} ps --format json 2>/dev/null || $C -p {} ps 2>/dev/null",
+            Self::compose_cmd_script(),
+            project_name,
+            project_name
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        let stdout = result.stdout.trim();
+        
+        // Try JSON first
+        if stdout.starts_with('[') || stdout.starts_with('{') {
+            // Handle both array and line-by-line JSON
+            let services: Vec<ComposeService> = if stdout.starts_with('[') {
+                serde_json::from_str(stdout).unwrap_or_default()
+            } else {
+                // Line-by-line JSON objects
+                stdout.lines()
+                    .filter_map(|line| serde_json::from_str::<ComposeService>(line).ok())
+                    .collect()
+            };
+            return Ok(services);
+        }
+        
+        // Parse table format
+        Ok(Self::parse_compose_ps_table(stdout, project_name))
+    }
+
+    fn parse_compose_ps_table(output: &str, project_name: &str) -> Vec<ComposeService> {
+        let mut services = Vec::new();
+        
+        for line in output.lines() {
+            // Skip header
+            if line.contains("NAME") && line.contains("STATUS") {
+                continue;
+            }
+            if line.trim().is_empty() {
+                continue;
+            }
+            
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 3 {
+                services.push(ComposeService {
+                    id: String::new(),
+                    name: parts[0].to_string(),
+                    service: parts[0].replace(&format!("{}-", project_name), "").replace("-1", ""),
+                    project: project_name.to_string(),
+                    state: parts.get(parts.len() - 2).unwrap_or(&"unknown").to_string(),
+                    status: parts.last().unwrap_or(&"").to_string(),
+                    health: None,
+                    exit_code: 0,
+                    publishers: Vec::new(),
+                });
+            }
+        }
+        
+        services
+    }
+
+    /// Start a compose stack
+    pub fn compose_up(ssh_manager: &SshManager, connection_id: &str, project_path: &str, detach: bool) -> Result<ComposeActionResult, SshError> {
+        let detach_flag = if detach { "-d" } else { "" };
+        let cmd = format!(
+            "cd {} && {}; $C up {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            detach_flag
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: "up".to_string(),
+            message: if result.exit_code == 0 {
+                "Stack started successfully".to_string()
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Stop a compose stack
+    pub fn compose_down(ssh_manager: &SshManager, connection_id: &str, project_path: &str, remove_volumes: bool) -> Result<ComposeActionResult, SshError> {
+        let volumes_flag = if remove_volumes { "-v" } else { "" };
+        let cmd = format!(
+            "cd {} && {}; $C down {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            volumes_flag
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: "down".to_string(),
+            message: if result.exit_code == 0 {
+                "Stack stopped successfully".to_string()
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Restart a compose stack
+    pub fn compose_restart(ssh_manager: &SshManager, connection_id: &str, project_path: &str) -> Result<ComposeActionResult, SshError> {
+        let cmd = format!(
+            "cd {} && {}; $C restart 2>&1",
+            project_path,
+            Self::compose_cmd_script()
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: "restart".to_string(),
+            message: if result.exit_code == 0 {
+                "Stack restarted successfully".to_string()
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Stop a specific service in a compose stack
+    pub fn compose_stop_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        let cmd = format!(
+            "cd {} && {}; $C stop {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            service_name
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: format!("stop {}", service_name),
+            message: if result.exit_code == 0 {
+                format!("Service {} stopped", service_name)
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Start a specific service in a compose stack
+    pub fn compose_start_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        let cmd = format!(
+            "cd {} && {}; $C start {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            service_name
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: format!("start {}", service_name),
+            message: if result.exit_code == 0 {
+                format!("Service {} started", service_name)
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Restart a specific service in a compose stack
+    pub fn compose_restart_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        let cmd = format!(
+            "cd {} && {}; $C restart {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            service_name
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        
+        Ok(ComposeActionResult {
+            success: result.exit_code == 0,
+            project: project_path.to_string(),
+            action: format!("restart {}", service_name),
+            message: if result.exit_code == 0 {
+                format!("Service {} restarted", service_name)
+            } else {
+                result.stderr
+            },
+            output: result.stdout,
+        })
+    }
+
+    /// Get logs for a compose stack or service
+    pub fn compose_logs(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: Option<&str>, tail: u32) -> Result<Vec<String>, SshError> {
+        let service_arg = service_name.unwrap_or("");
+        let cmd = format!(
+            "cd {} && {}; $C logs --tail {} {} 2>&1",
+            project_path,
+            Self::compose_cmd_script(),
+            tail,
+            service_arg
+        );
+        
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+        Ok(result.stdout.lines().map(|s| s.to_string()).collect())
+    }
+}
+
+// ============================================================================
+// Docker Compose Structures
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposeStack {
+    #[serde(alias = "Name")]
+    pub name: String,
+    #[serde(alias = "Status")]
+    pub status: String,
+    #[serde(alias = "ConfigFiles")]
+    pub config_files: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposeService {
+    #[serde(alias = "ID", default)]
+    pub id: String,
+    #[serde(alias = "Name", default)]
+    pub name: String,
+    #[serde(alias = "Service", default)]
+    pub service: String,
+    #[serde(alias = "Project", default)]
+    pub project: String,
+    #[serde(alias = "State", default)]
+    pub state: String,
+    #[serde(alias = "Status", default)]
+    pub status: String,
+    #[serde(alias = "Health", default)]
+    pub health: Option<String>,
+    #[serde(alias = "ExitCode", default)]
+    pub exit_code: i32,
+    #[serde(alias = "Publishers", default)]
+    pub publishers: Vec<ComposePublisher>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposePublisher {
+    #[serde(alias = "URL", default)]
+    pub url: String,
+    #[serde(alias = "TargetPort", default)]
+    pub target_port: u16,
+    #[serde(alias = "PublishedPort", default)]
+    pub published_port: u16,
+    #[serde(alias = "Protocol", default)]
+    pub protocol: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposeActionResult {
+    pub success: bool,
+    pub project: String,
+    pub action: String,
+    pub message: String,
+    pub output: String,
 }

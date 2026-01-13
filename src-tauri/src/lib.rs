@@ -4,13 +4,15 @@ mod docker;
 mod websocket;
 mod security;
 mod reports;
+mod crypto;
 
 use ssh::{ConnectionConfig, ConnectionStatus, SshManager, CommandResult};
 use metrics::{MetricsCollector, SystemMetrics};
-use docker::{DockerManager, DockerContainer, DockerImage, DockerVolume, DockerActionResult, DockerInfo};
+use docker::{DockerManager, DockerContainer, DockerImage, DockerVolume, DockerActionResult, DockerInfo, ComposeStack, ComposeService, ComposeActionResult};
 use websocket::WebSocketServer;
 use security::{SecureStorage, FullConnection, validate_host, validate_port, validate_username};
 use reports::{ReportsApiClient, PdfGenerator, ReportScheduler, ReportConfig, ReportResult};
+use crypto::{encrypt_credential, decrypt_credential};
 use parking_lot::Mutex;
 use std::sync::Arc;
 use std::path::PathBuf;
@@ -89,6 +91,40 @@ async fn secure_get_connection(
     } else {
         Err("Secure storage not initialized".into())
     }
+}
+
+// ============================================================================
+// Credential Encryption Commands
+// ============================================================================
+
+#[tauri::command]
+fn encrypt_credentials(password: Option<String>, key_path: Option<String>) -> Result<(Option<String>, Option<String>), String> {
+    let encrypted_password = match password {
+        Some(p) if !p.is_empty() => Some(encrypt_credential(&p).map_err(|e| e.to_string())?),
+        _ => None,
+    };
+    
+    let encrypted_key_path = match key_path {
+        Some(k) if !k.is_empty() => Some(encrypt_credential(&k).map_err(|e| e.to_string())?),
+        _ => None,
+    };
+    
+    Ok((encrypted_password, encrypted_key_path))
+}
+
+#[tauri::command]
+fn decrypt_credentials(encrypted_password: Option<String>, encrypted_key_path: Option<String>) -> Result<(Option<String>, Option<String>), String> {
+    let password = match encrypted_password {
+        Some(p) if !p.is_empty() => Some(decrypt_credential(&p).map_err(|e| e.to_string())?),
+        _ => None,
+    };
+    
+    let key_path = match encrypted_key_path {
+        Some(k) if !k.is_empty() => Some(decrypt_credential(&k).map_err(|e| e.to_string())?),
+        _ => None,
+    };
+    
+    Ok((password, key_path))
 }
 
 // ============================================================================
@@ -437,6 +473,143 @@ async fn docker_info(
 }
 
 // ============================================================================
+// Docker Compose Commands
+// ============================================================================
+
+#[tauri::command]
+async fn compose_list(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+) -> Result<Vec<ComposeStack>, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_list(&ssh_manager, &connectionId)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_ps(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectName: String,
+) -> Result<Vec<ComposeService>, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_ps(&ssh_manager, &connectionId, &projectName)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_up(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectPath: String,
+    detach: Option<bool>,
+) -> Result<ComposeActionResult, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    let detach = detach.unwrap_or(true);
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_up(&ssh_manager, &connectionId, &projectPath, detach)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_down(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectPath: String,
+    #[allow(non_snake_case)]
+    removeVolumes: Option<bool>,
+) -> Result<ComposeActionResult, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    let remove_volumes = removeVolumes.unwrap_or(false);
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_down(&ssh_manager, &connectionId, &projectPath, remove_volumes)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_restart(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectPath: String,
+) -> Result<ComposeActionResult, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_restart(&ssh_manager, &connectionId, &projectPath)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_logs(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectPath: String,
+    #[allow(non_snake_case)]
+    serviceName: Option<String>,
+    tail: Option<u32>,
+) -> Result<Vec<String>, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    let tail = tail.unwrap_or(100);
+    tokio::task::spawn_blocking(move || {
+        DockerManager::compose_logs(&ssh_manager, &connectionId, &projectPath, serviceName.as_deref(), tail)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn compose_service_action(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    projectPath: String,
+    #[allow(non_snake_case)]
+    serviceName: String,
+    action: String,
+) -> Result<ComposeActionResult, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    tokio::task::spawn_blocking(move || {
+        match action.as_str() {
+            "start" => DockerManager::compose_start_service(&ssh_manager, &connectionId, &projectPath, &serviceName),
+            "stop" => DockerManager::compose_stop_service(&ssh_manager, &connectionId, &projectPath, &serviceName),
+            "restart" => DockerManager::compose_restart_service(&ssh_manager, &connectionId, &projectPath, &serviceName),
+            _ => Err(crate::ssh::SshError::ExecutionError(format!("Unknown action: {}", action))),
+        }.map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+// ============================================================================
 // Reports Commands
 // ============================================================================
 
@@ -601,6 +774,9 @@ pub fn run() {
             Ok(())
         })
 .invoke_handler(tauri::generate_handler![
+            // Credential encryption commands
+            encrypt_credentials,
+            decrypt_credentials,
             // Secure storage commands (legacy - keeping for compatibility)
             secure_save_connection,
             secure_load_connections,
@@ -628,6 +804,14 @@ pub fn run() {
             docker_images,
             docker_volumes,
             docker_info,
+            // Docker Compose commands
+            compose_list,
+            compose_ps,
+            compose_up,
+            compose_down,
+            compose_restart,
+            compose_logs,
+            compose_service_action,
             // Reports commands
             set_api_base_url,
             generate_report,

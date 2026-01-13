@@ -46,16 +46,6 @@ function SettingsModal({
                 <option value="3000">3s</option>
               </select>
             </label>
-            <label className="modal-toggle">
-              <span>{t('settings.autoConnect')}</span>
-              <input
-                type="checkbox"
-                checked={settings.autoConnectDefault}
-                onChange={(event) =>
-                  onUpdateSettings({ autoConnectDefault: event.target.checked })
-                }
-              />
-            </label>
           </div>
 
           <div className="modal-section">

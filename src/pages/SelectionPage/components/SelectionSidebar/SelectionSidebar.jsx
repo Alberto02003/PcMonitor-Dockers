@@ -14,7 +14,6 @@ function SelectionSidebar({
   onConnect,
   onDelete,
   onToggleFavorite,
-  onDuplicate,
 }) {
   const { t } = useTranslation()
 
@@ -135,14 +134,6 @@ function SelectionSidebar({
                   </button>
                   <button
                     type="button"
-                    className="icon-button"
-                    onClick={() => onDuplicate(item.id)}
-                    title={t('actions.duplicate')}
-                  >
-                    <CopyIcon />
-                  </button>
-                  <button
-                    type="button"
                     className={`icon-button ${item.id === selectedId ? 'is-primary' : ''}`}
                     onClick={() => onConnect(item.id)}
                     title={t('actions.connect')}
@@ -205,17 +196,6 @@ function StarIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
       <path
         d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.2-5.4-2.8-5.4 2.8 1-6.2L3.2 9.4l6.1-.9Z"
-        fill="currentColor"
-      />
-    </svg>
-  )
-}
-
-function CopyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
-      <path
-        d="M8 7h11v13H8Zm-3-3h11v2H7v11H5Z"
         fill="currentColor"
       />
     </svg>

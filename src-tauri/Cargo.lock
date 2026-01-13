@@ -126,9 +126,12 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 name = "app"
 version = "0.1.0"
 dependencies = [
+ "aes-gcm",
  "base64 0.21.7",
  "chrono",
  "futures-util",
+ "hex",
+ "hostname",
  "lazy_static",
  "log",
  "parking_lot",
@@ -137,6 +140,7 @@ dependencies = [
  "reqwest 0.11.27",
  "serde",
  "serde_json",
+ "sha2",
  "ssh2",
  "tauri",
  "tauri-build",
@@ -921,6 +925,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
 dependencies = [
  "generic-array",
+ "rand_core 0.6.4",
  "typenum",
 ]
 
@@ -2069,6 +2074,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hostname"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c731c3e10504cc8ed35cfe2f1db4c9274c3d35fa486e3b31df46f068ef3e867"
+dependencies = [
+ "libc",
+ "match_cfg",
+ "winapi",
+]
+
+[[package]]
 name = "html5ever"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2842,6 +2858,12 @@ dependencies = [
  "string_cache_codegen",
  "tendril",
 ]
+
+[[package]]
+name = "match_cfg"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffbee8634e0d45d258acb448e7eaab3fce7a0a467395d4d9f228e3c1f01fb2e4"
 
 [[package]]
 name = "match_token"

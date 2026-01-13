@@ -85,7 +85,11 @@ function TerminalSection({
       }])
     } finally {
       setIsExecuting(false)
-      inputRef.current?.focus()
+      // Use setTimeout to ensure focus happens after React re-render
+      setTimeout(() => {
+        inputRef.current?.focus()
+        inputRef.current?.select()
+      }, 0)
     }
   }, [connectionId])
 

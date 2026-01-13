@@ -1,6 +1,44 @@
 import { invoke } from '@tauri-apps/api/core'
 
 // ============================================================================
+// Credential Encryption API - AES-256-GCM encryption for credentials
+// ============================================================================
+
+/**
+ * Encrypt credentials before storing in database
+ * @param {string|null} password - Plain text password
+ * @param {string|null} keyPath - Plain text key path
+ * @returns {Promise<{password: string|null, keyPath: string|null}>} Encrypted values
+ */
+export async function encryptCredentials(password, keyPath) {
+  const [encryptedPassword, encryptedKeyPath] = await invoke('encrypt_credentials', {
+    password: password || null,
+    keyPath: keyPath || null,
+  })
+  return {
+    password: encryptedPassword,
+    keyPath: encryptedKeyPath,
+  }
+}
+
+/**
+ * Decrypt credentials loaded from database
+ * @param {string|null} encryptedPassword - Encrypted password
+ * @param {string|null} encryptedKeyPath - Encrypted key path  
+ * @returns {Promise<{password: string|null, keyPath: string|null}>} Decrypted values
+ */
+export async function decryptCredentials(encryptedPassword, encryptedKeyPath) {
+  const [password, keyPath] = await invoke('decrypt_credentials', {
+    encryptedPassword: encryptedPassword || null,
+    encryptedKeyPath: encryptedKeyPath || null,
+  })
+  return {
+    password,
+    keyPath,
+  }
+}
+
+// ============================================================================
 // Secure Storage API - Encrypted credential storage using Rust backend
 // ============================================================================
 
@@ -146,6 +184,80 @@ export async function dockerVolumes(connectionId) {
 
 export async function dockerInfo(connectionId) {
   return invoke('docker_info', { connectionId })
+}
+
+// ============================================================================
+// Docker Compose API
+// ============================================================================
+
+/**
+ * List all Docker Compose stacks (projects)
+ * @param {string} connectionId - Connection ID
+ * @returns {Promise<Array>} Array of compose stacks
+ */
+export async function composeList(connectionId) {
+  return invoke('compose_list', { connectionId })
+}
+
+/**
+ * Get services status for a compose stack
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectName - Compose project name
+ * @returns {Promise<Array>} Array of services with their status
+ */
+export async function composePs(connectionId, projectName) {
+  return invoke('compose_ps', { connectionId, projectName })
+}
+
+/**
+ * Start a compose stack
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectPath - Path to docker-compose.yml directory
+ * @param {boolean} detach - Run in detached mode (default: true)
+ */
+export async function composeUp(connectionId, projectPath, detach = true) {
+  return invoke('compose_up', { connectionId, projectPath, detach })
+}
+
+/**
+ * Stop a compose stack
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectPath - Path to docker-compose.yml directory
+ * @param {boolean} removeVolumes - Also remove volumes (default: false)
+ */
+export async function composeDown(connectionId, projectPath, removeVolumes = false) {
+  return invoke('compose_down', { connectionId, projectPath, removeVolumes })
+}
+
+/**
+ * Restart a compose stack
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectPath - Path to docker-compose.yml directory
+ */
+export async function composeRestart(connectionId, projectPath) {
+  return invoke('compose_restart', { connectionId, projectPath })
+}
+
+/**
+ * Get logs for a compose stack or specific service
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectPath - Path to docker-compose.yml directory
+ * @param {string|null} serviceName - Specific service name (null for all)
+ * @param {number} tail - Number of lines to tail (default: 100)
+ */
+export async function composeLogs(connectionId, projectPath, serviceName = null, tail = 100) {
+  return invoke('compose_logs', { connectionId, projectPath, serviceName, tail })
+}
+
+/**
+ * Perform an action on a specific service in a compose stack
+ * @param {string} connectionId - Connection ID
+ * @param {string} projectPath - Path to docker-compose.yml directory
+ * @param {string} serviceName - Service name
+ * @param {string} action - Action: 'start', 'stop', 'restart'
+ */
+export async function composeServiceAction(connectionId, projectPath, serviceName, action) {
+  return invoke('compose_service_action', { connectionId, projectPath, serviceName, action })
 }
 
 // ============================================================================
