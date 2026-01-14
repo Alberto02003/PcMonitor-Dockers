@@ -565,6 +565,12 @@ export async function checkForUpdates() {
     }
     return { available: false }
   } catch (error) {
+    // Handle case where no releases exist yet
+    const errorMsg = error?.message || String(error)
+    if (errorMsg.includes('Could not fetch') || errorMsg.includes('404')) {
+      console.warn('No releases found yet - updater will work after first release is published')
+      return { available: false, noReleases: true }
+    }
     console.error('Error checking for updates:', error)
     return null
   }

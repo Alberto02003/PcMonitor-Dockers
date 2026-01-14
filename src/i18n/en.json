@@ -396,6 +396,7 @@
     "checkNow": "Check for updates",
     "error": "Error checking for updates",
     "restartRequired": "The app will restart to complete the update",
-    "progress": "Progress"
+    "progress": "Progress",
+    "noReleases": "No releases published yet on GitHub"
   }
 }

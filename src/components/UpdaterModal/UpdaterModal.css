@@ -70,6 +70,13 @@
   font-size: 0.9rem;
 }
 
+.updater-no-update .no-releases-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
 /* Update available state */
 .updater-available {
   display: flex;

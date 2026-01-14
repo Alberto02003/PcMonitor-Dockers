@@ -112,6 +112,9 @@ function UpdaterModal({ open, onClose }) {
               <p className="version-info">
                 {t('updater.currentVersion')}: <strong>v{currentVersion}</strong>
               </p>
+              {updateInfo.noReleases && (
+                <p className="no-releases-hint">{t('updater.noReleases')}</p>
+              )}
             </div>
           )}
 

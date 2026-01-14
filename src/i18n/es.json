@@ -396,6 +396,7 @@
     "checkNow": "Buscar actualizaciones",
     "error": "Error al buscar actualizaciones",
     "restartRequired": "La aplicacion se reiniciara para completar la actualizacion",
-    "progress": "Progreso"
+    "progress": "Progreso",
+    "noReleases": "No hay releases publicados aun en GitHub"
   }
 }
