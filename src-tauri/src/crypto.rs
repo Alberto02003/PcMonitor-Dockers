@@ -23,6 +23,7 @@ pub enum CryptoError {
     DecryptionFailed(String),
     #[error("Invalid data format")]
     InvalidFormat,
+    #[allow(dead_code)]
     #[error("Key derivation failed")]
     KeyDerivationFailed,
 }
@@ -153,8 +154,8 @@ impl Default for CredentialCrypto {
     }
 }
 
-/// Global crypto instance for the application
 lazy_static::lazy_static! {
+    /// Global crypto instance for the application
     pub static ref CRYPTO: CredentialCrypto = CredentialCrypto::new();
 }
 

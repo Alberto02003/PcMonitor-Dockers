@@ -6,10 +6,12 @@ import { useWidgetOrder } from './hooks/useWidgetOrder.js'
 import { useDockerModal } from './hooks/useDockerModal.js'
 import { useAlertNotifications } from './hooks/useAlertNotifications.js'
 import { useReportsModal } from './hooks/useReportsModal.js'
+import { useAdvancedMetrics } from './hooks/useAdvancedMetrics.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { isTauri } from '../../services/tauri.js'
 import MonitoringHeader from './components/MonitoringHeader/MonitoringHeader.jsx'
-import SystemWidgets from './components/SystemWidgets/SystemWidgets.jsx'
+import SystemSection from './components/SystemSection/SystemSection.jsx'
+import NetworkSection from './components/NetworkSection/NetworkSection.jsx'
 import DockersSection from './components/DockersSection/DockersSection.jsx'
 import TerminalSection from './components/TerminalSection/TerminalSection.jsx'
 import DockerModal from './components/DockerModal/DockerModal.jsx'
@@ -20,6 +22,7 @@ import './MonitoringPage.css'
 function MonitoringPage({ connection, onBack }) {
   const { t } = useTranslation()
   const [view, setView] = useState('system')
+  const [systemTab, setSystemTab] = useState('overview')
   
   // Terminal state - persists across view changes
   const [terminalHistory, setTerminalHistory] = useState([])
@@ -78,6 +81,13 @@ function MonitoringPage({ connection, onBack }) {
     refresh: refreshContainers,
   } = useRealTimeContainers(connection?.id, 10000)
 
+  // Advanced metrics for detailed system tabs (CPU, Memory, Disk, Processes, Network)
+  const {
+    metrics: advancedMetrics,
+    loading: advancedLoading,
+    error: advancedError,
+  } = useAdvancedMetrics(connection?.id, 5000)
+
   // Sistema de notificaciones de alertas
   useAlertNotifications({
     metrics,
@@ -100,6 +110,11 @@ function MonitoringPage({ connection, onBack }) {
   // Handle view change
   const handleViewChange = useCallback((newView) => {
     setView(newView)
+  }, [])
+
+  // Handle system sub-tab change
+  const handleSystemTabChange = useCallback((tab) => {
+    setSystemTab(tab)
   }, [])
 
   // Terminal pop-out functionality
@@ -209,6 +224,8 @@ function MonitoringPage({ connection, onBack }) {
       <MonitoringHeader
         view={view}
         onViewChange={handleViewChange}
+        systemTab={systemTab}
+        onSystemTabChange={handleSystemTabChange}
         onBack={onBack}
         onOpenAlerts={openAlerts}
         onOpenReports={openReports}
@@ -216,24 +233,34 @@ function MonitoringPage({ connection, onBack }) {
       />
 
       {/* Show error banner if there are errors */}
-      {(metricsError || containersError) && (
+      {(metricsError || containersError || advancedError) && (
         <div className="monitoring-error">
           <span className="error-icon">!</span>
-          <span>{metricsError || containersError}</span>
+          <span>{metricsError || containersError || advancedError}</span>
         </div>
       )}
 
       {view === 'system' && (
-        <SystemWidgets
+        <SystemSection
+          activeTab={systemTab}
+          metrics={metrics}
+          advancedMetrics={advancedMetrics}
+          metricsLoading={metricsLoading}
+          advancedLoading={advancedLoading}
+          metricsError={metricsError}
+          lastUpdate={lastUpdate}
           widgetOrder={widgetOrder}
           draggingId={draggingId}
           dragOverId={dragOverId}
           onDragStart={handleDragStart}
           onDragEnter={handleDragEnter}
-          metrics={metrics}
-          metricsLoading={metricsLoading}
-          metricsError={metricsError}
-          lastUpdate={lastUpdate}
+        />
+      )}
+
+      {view === 'network' && (
+        <NetworkSection
+          metrics={advancedMetrics}
+          loading={advancedLoading}
         />
       )}
 

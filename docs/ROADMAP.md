@@ -4,16 +4,307 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
 
 **Estado Actual**: App funcional con monitoreo SSH, Docker, métricas básicas, alertas, terminal SSH integrada y auto-actualización.
 
-**Próximo Objetivo**: Sistema de monitorización avanzado con análisis detallado de todos los componentes del servidor.
+**Próximo Objetivo**: Sistema de monitorización avanzado con análisis detallado de todos los componentes del servidor, persistencia en MySQL.
 
 ---
 
-## FASE 6: Sistema de Monitorización Avanzado (PRIORIDAD MÁXIMA)
+## Arquitectura del Sistema
 
-### 6.1 Refactor de Arquitectura UI
-**Objetivo**: Reorganizar la vista de monitorización con nueva estructura de navegación
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        SERVIDOR LINUX (SSH)                         │
+│  Fuentes: /proc/stat, /proc/meminfo, /proc/diskstats,              │
+│           /proc/net/dev, ss, ps aux                                 │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      TAURI APP (Rust + React)                       │
+│  - Recolección de métricas via SSH                                 │
+│  - Cálculo de deltas para throughput                               │
+│  - UI con tabs: System | Network | Dockers | Terminal              │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      API REST (Express.js)                          │
+│  Puerto: 3001                                                       │
+│  Endpoints: /api/metrics/*, /api/connections/*, /api/docker/*      │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      MYSQL Database                                 │
+│  Retención: 24h detallado, 7d agregado, 30d resumen                │
+│  Tablas: metrics_snapshots, metrics_cpu_detailed, ...              │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-**Estructura de navegación principal (Header)**:
+---
+
+## FASE 6: Base de Datos - Nuevas Tablas para Métricas Avanzadas
+
+### 6.0 Schema de Base de Datos (MySQL)
+
+**Ubicación**: `Api-Bd-Md/init/06-advanced-metrics-schema.sql`
+
+#### 6.0.1 Tabla `metrics_cpu_detailed`
+```sql
+CREATE TABLE metrics_cpu_detailed (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  -- Per-core (JSON array)
+  cores_usage JSON,  -- [{"core": 0, "usage": 45.2, "freq_mhz": 3200}, ...]
+  -- Breakdown agregado
+  user_percent DECIMAL(5,2),
+  system_percent DECIMAL(5,2),
+  idle_percent DECIMAL(5,2),
+  iowait_percent DECIMAL(5,2),
+  nice_percent DECIMAL(5,2),
+  irq_percent DECIMAL(5,2),
+  softirq_percent DECIMAL(5,2),
+  steal_percent DECIMAL(5,2),
+  -- Stats
+  context_switches_per_sec BIGINT,
+  interrupts_per_sec BIGINT,
+  processes_running INT,
+  processes_blocked INT,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+#### 6.0.2 Tabla `metrics_memory_detailed`
+```sql
+CREATE TABLE metrics_memory_detailed (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  -- Desglose en bytes
+  buffers BIGINT,
+  cached BIGINT,
+  swap_cached BIGINT,
+  active BIGINT,
+  inactive BIGINT,
+  dirty BIGINT,
+  writeback BIGINT,
+  mapped BIGINT,
+  shmem BIGINT,
+  slab BIGINT,
+  sreclaimable BIGINT,
+  sunreclaim BIGINT,
+  page_tables BIGINT,
+  -- Huge pages
+  hugepages_total INT,
+  hugepages_free INT,
+  hugepages_size_kb INT,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+#### 6.0.3 Tabla `metrics_disk_io`
+```sql
+CREATE TABLE metrics_disk_io (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  device VARCHAR(50),
+  mount_point VARCHAR(255),
+  filesystem_type VARCHAR(50),
+  -- Throughput (calculado como delta/segundo)
+  read_ops_per_sec DECIMAL(12,2),
+  write_ops_per_sec DECIMAL(12,2),
+  read_bytes_per_sec BIGINT,
+  write_bytes_per_sec BIGINT,
+  -- I/O stats
+  io_in_progress INT,
+  io_time_ms BIGINT,
+  weighted_io_time_ms BIGINT,
+  avg_queue_size DECIMAL(8,2),
+  avg_wait_ms DECIMAL(8,2),
+  utilization_percent DECIMAL(5,2),
+  -- Inodes
+  inodes_used BIGINT,
+  inodes_total BIGINT,
+  inodes_percent DECIMAL(5,2),
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_device (device),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+#### 6.0.4 Tabla `metrics_network_detailed`
+```sql
+CREATE TABLE metrics_network_detailed (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  interface VARCHAR(50),
+  -- Throughput (delta/segundo)
+  rx_bytes_per_sec BIGINT,
+  tx_bytes_per_sec BIGINT,
+  rx_packets_per_sec BIGINT,
+  tx_packets_per_sec BIGINT,
+  -- Totales acumulados
+  rx_bytes_total BIGINT,
+  tx_bytes_total BIGINT,
+  -- Errores
+  rx_errors BIGINT,
+  tx_errors BIGINT,
+  rx_drops BIGINT,
+  tx_drops BIGINT,
+  collisions BIGINT,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_interface (interface),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+#### 6.0.5 Tabla `metrics_tcp_connections`
+```sql
+CREATE TABLE metrics_tcp_connections (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  established INT DEFAULT 0,
+  time_wait INT DEFAULT 0,
+  close_wait INT DEFAULT 0,
+  listen INT DEFAULT 0,
+  syn_sent INT DEFAULT 0,
+  syn_recv INT DEFAULT 0,
+  fin_wait1 INT DEFAULT 0,
+  fin_wait2 INT DEFAULT 0,
+  last_ack INT DEFAULT 0,
+  closing INT DEFAULT 0,
+  total_connections INT DEFAULT 0,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+#### 6.0.6 Tabla `metrics_listening_ports`
+```sql
+CREATE TABLE metrics_listening_ports (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  port INT,
+  protocol VARCHAR(10),
+  address VARCHAR(50),
+  process_name VARCHAR(100),
+  pid INT,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_port (port)
+);
+```
+
+#### 6.0.7 Tabla `metrics_processes`
+```sql
+CREATE TABLE metrics_processes (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT NOT NULL,
+  pid INT,
+  name VARCHAR(255),
+  username VARCHAR(100),
+  state CHAR(1),
+  cpu_percent DECIMAL(6,2),
+  memory_percent DECIMAL(5,2),
+  memory_rss_mb DECIMAL(12,2),
+  memory_vsz_mb DECIMAL(12,2),
+  threads INT,
+  nice INT,
+  cpu_time_seconds BIGINT,
+  open_files INT,
+  connections INT,
+  command TEXT,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (snapshot_id) REFERENCES metrics_snapshots(id) ON DELETE CASCADE,
+  INDEX idx_snapshot (snapshot_id),
+  INDEX idx_pid (pid),
+  INDEX idx_cpu (cpu_percent DESC),
+  INDEX idx_recorded (recorded_at)
+);
+```
+
+**Tareas**:
+- [x] Crear archivo `06-advanced-metrics-schema.sql`
+- [x] Crear stored procedures para cleanup de tablas nuevas
+- [ ] Crear stored procedures para agregación horaria/diaria
+- [x] Actualizar `cleanup_old_metrics()` para incluir nuevas tablas
+
+---
+
+### 6.1 API REST - Nuevos Endpoints
+
+**Ubicación**: `Api-Bd-Md/api/src/routes/metrics-advanced.js`
+
+#### Endpoints a crear:
+
+```
+# Guardar métricas avanzadas (batch - todo en un request)
+POST /api/metrics/advanced
+Body: {
+  connectionId: "uuid",
+  basic: { cpu, memory, disk, network, ... },  // metrics_snapshots
+  cpuDetailed: { cores: [...], user, system, ... },
+  memoryDetailed: { buffers, cached, slab, ... },
+  diskIo: [{ device, readOps, writeOps, ... }],
+  networkDetailed: [{ interface, rxBytesPerSec, ... }],
+  tcpConnections: { established, timeWait, ... },
+  listeningPorts: [{ port, protocol, process, ... }],
+  processes: [{ pid, name, cpu, memory, ... }]
+}
+
+# Obtener métricas CPU detalladas
+GET /api/metrics/cpu-detailed/:connectionId
+Query: ?hours=24&interval=minute
+
+# Obtener métricas memoria detalladas
+GET /api/metrics/memory-detailed/:connectionId
+Query: ?hours=24
+
+# Obtener métricas disco I/O
+GET /api/metrics/disk-io/:connectionId
+Query: ?hours=24&device=sda
+
+# Obtener métricas red detalladas
+GET /api/metrics/network-detailed/:connectionId
+Query: ?hours=24&interface=eth0
+
+# Obtener conexiones TCP
+GET /api/metrics/tcp-connections/:connectionId
+Query: ?hours=24
+
+# Obtener puertos escuchando (último snapshot)
+GET /api/metrics/listening-ports/:connectionId
+
+# Obtener procesos (último snapshot o histórico)
+GET /api/metrics/processes/:connectionId
+Query: ?hours=1&top=20&sortBy=cpu
+```
+
+**Tareas**:
+- [x] Crear `routes/metrics-advanced.js`
+- [x] Endpoint POST batch para guardar todas las métricas
+- [x] Endpoints GET para cada tipo de métrica
+- [x] Registrar rutas en `index.js`
+- [ ] Añadir validación de datos (opcional, básica implementada)
+
+---
+
+## FASE 7: Sistema de Monitorización Avanzado (UI)
+
+### 7.1 Refactor de Arquitectura UI
+
+**Estructura de navegación principal**:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  [System ▾] [Network] [Dockers] [Terminal]                  │
@@ -22,21 +313,17 @@ Este documento define las mejoras futuras organizadas por prioridad y fase de de
          └── Sub-tabs: [Overview] [CPU] [Memory] [Disk] [Processes]
 ```
 
-**Network como tab principal** al mismo nivel que System, Dockers y Terminal.
-
 **Tareas**:
 - [ ] Añadir tab "Network" al MonitoringHeader
-- [ ] Crear sub-navegación dentro de "System" con tabs secundarios
-- [ ] Sub-tabs de System: Overview | CPU | Memory | Disk | Processes
+- [ ] Crear sub-navegación dentro de "System"
 - [ ] Mantener estado del tab/sub-tab seleccionado
-- [ ] Transiciones suaves entre vistas
 
 **Estructura de archivos**:
 ```
 src/pages/MonitoringPage/
 ├── components/
-│   ├── MonitoringHeader/          (modificar - añadir Network)
-│   ├── SystemSection/             (nuevo - contenedor con sub-tabs)
+│   ├── MonitoringHeader/          (modificar)
+│   ├── SystemSection/             (nuevo)
 │   │   ├── SystemSection.jsx
 │   │   ├── SystemSection.css
 │   │   └── tabs/
@@ -45,7 +332,7 @@ src/pages/MonitoringPage/
 │   │       ├── MemoryTab/
 │   │       ├── DiskTab/
 │   │       └── ProcessesTab/
-│   ├── NetworkSection/            (nuevo - análisis de red completo)
+│   ├── NetworkSection/            (nuevo)
 │   │   ├── NetworkSection.jsx
 │   │   └── NetworkSection.css
 │   ├── DockersSection/            (existente)
@@ -54,446 +341,200 @@ src/pages/MonitoringPage/
 
 ---
 
-### 6.2 CPU Avanzado
-**Objetivo**: Análisis detallado de CPU con métricas por core
+### 7.2 CPU Tab
+**Métricas desde**: `metrics_cpu_detailed`
 
-**Métricas a recolectar**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| Per-core usage % | `/proc/stat` | Uso por cada núcleo |
-| User % | `/proc/stat` | Tiempo en modo usuario |
-| System % | `/proc/stat` | Tiempo en modo kernel |
-| IOWait % | `/proc/stat` | Esperando I/O |
-| Idle % | `/proc/stat` | Tiempo inactivo |
-| Nice % | `/proc/stat` | Procesos con prioridad baja |
-| IRQ % | `/proc/stat` | Interrupciones hardware |
-| SoftIRQ % | `/proc/stat` | Interrupciones software |
-| Steal % | `/proc/stat` | Tiempo robado (VMs) |
-| Context switches/s | `/proc/stat` | Cambios de contexto |
-| Interrupts/s | `/proc/stat` | Interrupciones por segundo |
-| Processes running | `/proc/stat` | Procesos ejecutándose |
-| Processes blocked | `/proc/stat` | Procesos bloqueados |
-| Frequency per core | `/proc/cpuinfo` | MHz por núcleo |
-
-**Tareas Backend**:
-- [ ] Crear `CpuAdvancedMetrics` struct en Rust
-- [ ] Parsear `/proc/stat` completo
-- [ ] Calcular deltas entre lecturas para rates
-- [ ] Comando `get_cpu_advanced_metrics`
+| Componente | Descripción |
+|------------|-------------|
+| Barra principal | CPU % agregado con color coding |
+| Gráfico histórico | Chart.js con selector 1h/6h/24h/7d |
+| Grid per-core | Barras horizontales por núcleo |
+| Breakdown pie | User/System/IOWait/Idle |
+| Stats cards | Context switches, interrupts, procs |
 
 **Tareas Frontend**:
 - [ ] Componente `CpuTab.jsx`
-- [ ] Gráfico de barras horizontales por core
-- [ ] Gráfico circular de breakdown (user/system/idle)
+- [ ] Hook `useCpuMetrics(connectionId, range)`
+- [ ] Gráfico de barras por core
+- [ ] Pie chart de breakdown
 - [ ] Sparklines para cada core
-- [ ] Gráfico histórico con Chart.js (1h/6h/24h)
-- [ ] Tabla de estadísticas
-
-**UI Mockup**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  CPU Usage: 45%                    Load: 2.34 / 1.89 / 1.45 │
-│  ████████████████░░░░░░░░░░░░░░░░                           │
-├─────────────────────────────────────────────────────────────┤
-│  [Gráfico histórico - selección de rango temporal]          │
-├─────────────────────────────────────────────────────────────┤
-│  Per-Core Usage:                                            │
-│  Core 0: ██████████░░░░░░░░░░ 52%  Core 4: ████████░░░░ 41% │
-│  Core 1: ████████████████░░░░ 78%  Core 5: ██████░░░░░░ 32% │
-│  Core 2: ████░░░░░░░░░░░░░░░░ 23%  Core 6: ██████████░░ 55% │
-│  Core 3: ██████████████░░░░░░ 67%  Core 7: ████████████ 61% │
-├─────────────────────────────────────────────────────────────┤
-│  Breakdown:                     │  Stats:                   │
-│  User:   35%  ████████░░░░     │  Context switches: 45.2k/s│
-│  System: 10%  ███░░░░░░░░░     │  Interrupts: 12.8k/s      │
-│  IOWait:  2%  █░░░░░░░░░░░     │  Procs running: 3         │
-│  Idle:   53%  █████████████    │  Procs blocked: 0         │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
-### 6.3 Memoria Avanzada
-**Objetivo**: Desglose completo del uso de memoria
+### 7.3 Memory Tab
+**Métricas desde**: `metrics_memory_detailed`
 
-**Métricas a recolectar**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| Total | `/proc/meminfo` | RAM total |
-| Used | Calculado | RAM en uso |
-| Free | `/proc/meminfo` | RAM libre |
-| Available | `/proc/meminfo` | RAM disponible |
-| Buffers | `/proc/meminfo` | Buffers de kernel |
-| Cached | `/proc/meminfo` | Page cache |
-| SwapCached | `/proc/meminfo` | Swap en cache |
-| Active | `/proc/meminfo` | Memoria activa |
-| Inactive | `/proc/meminfo` | Memoria inactiva |
-| Dirty | `/proc/meminfo` | Pendiente de escribir |
-| Writeback | `/proc/meminfo` | Escribiéndose ahora |
-| Mapped | `/proc/meminfo` | Archivos mapeados |
-| Shmem | `/proc/meminfo` | Memoria compartida |
-| Slab | `/proc/meminfo` | Estructuras kernel |
-| SReclaimable | `/proc/meminfo` | Slab recuperable |
-| SUnreclaim | `/proc/meminfo` | Slab no recuperable |
-| PageTables | `/proc/meminfo` | Tablas de páginas |
-| SwapTotal | `/proc/meminfo` | Swap total |
-| SwapUsed | Calculado | Swap usado |
-| HugePages_Total | `/proc/meminfo` | Huge pages totales |
-| HugePages_Free | `/proc/meminfo` | Huge pages libres |
-
-**Tareas Backend**:
-- [ ] Crear `MemoryAdvancedMetrics` struct
-- [ ] Parsear `/proc/meminfo` completo
-- [ ] Calcular memoria por categoría
-- [ ] Comando `get_memory_advanced_metrics`
+| Componente | Descripción |
+|------------|-------------|
+| Barras RAM/Swap | Uso actual con porcentaje |
+| Gráfico histórico | Stacked area chart |
+| Breakdown cards | Used/Buffers/Cached/Available |
+| Cache info | Slab, dirty, writeback |
+| Top consumers | Top 5 procesos por memoria |
 
 **Tareas Frontend**:
 - [ ] Componente `MemoryTab.jsx`
-- [ ] Gráfico stacked area (RAM + Swap)
-- [ ] Breakdown visual (Used/Buffers/Cached/Free)
-- [ ] Top memory consumers (procesos)
-- [ ] Gráfico histórico con Chart.js
-
-**UI Mockup**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  RAM: 12.4 GB / 32 GB (38.8%)   Swap: 0.2 GB / 8 GB (2.5%) │
-│  ████████████░░░░░░░░░░░░░░░░░░  █░░░░░░░░░░░░░░░░░░░░░░░░ │
-├─────────────────────────────────────────────────────────────┤
-│  [Gráfico histórico RAM + Swap - stacked area chart]        │
-├─────────────────────────────────────────────────────────────┤
-│  Memory Breakdown:              │  Cache Info:              │
-│  Used:      8.2 GB ████████    │  Page cache: 3.8 GB       │
-│  Buffers:   0.4 GB █           │  Slab: 0.6 GB             │
-│  Cached:    3.8 GB ████        │  Dirty: 12 MB             │
-│  Available: 19.6 GB            │  Writeback: 0 MB          │
-├─────────────────────────────────────────────────────────────┤
-│  Top Memory Consumers:                                      │
-│  1. java           2.4 GB  ████████████░░░░░░░░             │
-│  2. postgres       1.8 GB  █████████░░░░░░░░░░░             │
-│  3. node           0.9 GB  ████░░░░░░░░░░░░░░░░             │
-└─────────────────────────────────────────────────────────────┘
-```
+- [ ] Hook `useMemoryMetrics(connectionId, range)`
+- [ ] Stacked area chart RAM + Swap
+- [ ] Cards de breakdown
 
 ---
 
-### 6.4 Disco I/O Avanzado
-**Objetivo**: Métricas de rendimiento de disco en tiempo real
+### 7.4 Disk Tab
+**Métricas desde**: `metrics_disk_io`
 
-**Métricas a recolectar**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| Read ops/sec | `/proc/diskstats` | Operaciones de lectura |
-| Write ops/sec | `/proc/diskstats` | Operaciones de escritura |
-| Read MB/s | `/proc/diskstats` | Throughput lectura |
-| Write MB/s | `/proc/diskstats` | Throughput escritura |
-| Read merged/s | `/proc/diskstats` | Lecturas fusionadas |
-| Write merged/s | `/proc/diskstats` | Escrituras fusionadas |
-| IO in progress | `/proc/diskstats` | IOs activos |
-| IO time ms | `/proc/diskstats` | Tiempo en IO |
-| Weighted IO time | `/proc/diskstats` | Tiempo ponderado |
-| Avg queue size | Calculado | Profundidad de cola |
-| Avg wait time ms | Calculado | Latencia promedio |
-| Utilization % | Calculado | % tiempo ocupado |
-| Inodes used | `df -i` | Inodos usados |
-| Inodes total | `df -i` | Inodos totales |
-
-**Tareas Backend**:
-- [ ] Crear `DiskIOMetrics` struct
-- [ ] Parsear `/proc/diskstats`
-- [ ] Calcular deltas para rates (ops/s, MB/s)
-- [ ] Calcular utilización y latencia
-- [ ] Comando `get_disk_io_metrics`
+| Componente | Descripción |
+|------------|-------------|
+| Selector | Dropdown de discos/particiones |
+| Barra uso | Espacio usado/total |
+| Gráfico I/O | Dual line Read/Write MB/s |
+| IOPS card | Operaciones por segundo |
+| Latencia | Queue size, wait time |
+| Inodos | Barra de uso de inodos |
 
 **Tareas Frontend**:
 - [ ] Componente `DiskTab.jsx`
-- [ ] Selector de disco (dropdown)
-- [ ] Gráfico dual-line (Read/Write MB/s)
-- [ ] Métricas de IOPS
-- [ ] Indicadores de latencia
-- [ ] Barra de uso de inodos
-- [ ] Gráfico histórico
-
-**UI Mockup**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Select Disk: [/dev/sda1 ▾]    [/dev/sdb1]    [/dev/nvme0] │
-├─────────────────────────────────────────────────────────────┤
-│  /dev/sda1 mounted on /                                     │
-│  Usage: 156 GB / 500 GB (31.2%)                             │
-│  ██████████░░░░░░░░░░░░░░░░░░░░░                            │
-├─────────────────────────────────────────────────────────────┤
-│  [Gráfico I/O: Read/Write MB/s - dual line chart]          │
-├─────────────────────────────────────────────────────────────┤
-│  I/O Performance:               │  Capacity:                │
-│  Read:  45.2 MB/s  ████████    │  Inodes: 2.1M / 32M (6%)  │
-│  Write: 12.8 MB/s  ███░░░░░    │  Block size: 4096         │
-│  IOPS:  1,245 ops/s            │  Type: NVMe SSD           │
-│  Queue: 2.3 avg                │  Filesystem: ext4         │
-│  Wait:  0.8 ms avg             │                           │
-└─────────────────────────────────────────────────────────────┘
-```
+- [ ] Hook `useDiskMetrics(connectionId, device, range)`
+- [ ] Selector de disco
+- [ ] Gráfico dual-line I/O
 
 ---
 
-### 6.5 Network Analyzer (TAB PRINCIPAL - NUEVO)
-**Objetivo**: Tab principal de análisis avanzado de red (al mismo nivel que System, Dockers, Terminal)
+### 7.5 Network Section (Tab Principal)
+**Métricas desde**: `metrics_network_detailed`, `metrics_tcp_connections`, `metrics_listening_ports`
 
-**Ubicación en UI**: Header → [System] [**Network**] [Dockers] [Terminal]
-
-#### 6.5.1 Throughput en Tiempo Real
-**Métricas**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| RX bytes/sec | `/proc/net/dev` delta | Throughput descarga |
-| TX bytes/sec | `/proc/net/dev` delta | Throughput subida |
-| RX packets/sec | `/proc/net/dev` delta | Paquetes recibidos |
-| TX packets/sec | `/proc/net/dev` delta | Paquetes enviados |
-| RX errors | `/proc/net/dev` | Errores recepción |
-| TX errors | `/proc/net/dev` | Errores transmisión |
-| RX drops | `/proc/net/dev` | Paquetes descartados RX |
-| TX drops | `/proc/net/dev` | Paquetes descartados TX |
-| Collisions | `/proc/net/dev` | Colisiones |
-| Multicast | `/proc/net/dev` | Paquetes multicast |
-
-#### 6.5.2 Conexiones TCP/UDP
-**Métricas**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| ESTABLISHED | `ss -tna` | Conexiones establecidas |
-| TIME_WAIT | `ss -tna` | Esperando cierre |
-| CLOSE_WAIT | `ss -tna` | Esperando cierre app |
-| LISTEN | `ss -tna` | Puertos escuchando |
-| SYN_SENT | `ss -tna` | Conexiones iniciando |
-| SYN_RECV | `ss -tna` | Conexiones aceptando |
-| FIN_WAIT1/2 | `ss -tna` | Finalizando |
-| LAST_ACK | `ss -tna` | Último ACK |
-| Total connections | Conteo | Total de conexiones |
-
-#### 6.5.3 Puertos y Servicios
-**Métricas**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| Port number | `ss -tlnp` | Puerto escuchando |
-| Protocol | `ss -tlnp` | TCP/UDP |
-| Process name | `ss -tlnp` | Proceso dueño |
-| PID | `ss -tlnp` | ID del proceso |
-| Connections count | `ss -tn` | Conexiones por puerto |
-
-#### 6.5.4 Tráfico por Proceso (requiere nethogs o ss)
-**Métricas**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| Process name | `ss -tnp` / `nethogs` | Nombre proceso |
-| PID | `ss -tnp` | ID proceso |
-| RX bytes | `nethogs` o estimado | Bytes recibidos |
-| TX bytes | `nethogs` o estimado | Bytes enviados |
-| Connections | `ss -tnp` | Conexiones activas |
-
-**Tareas Backend**:
-- [ ] Crear módulo `src-tauri/src/network_analyzer.rs`
-- [ ] Struct `NetworkAdvancedMetrics`
-- [ ] Struct `TcpConnectionStats`
-- [ ] Struct `ListeningPort`
-- [ ] Struct `ProcessNetworkUsage`
-- [ ] Parsear `/proc/net/dev` con deltas
-- [ ] Parsear output de `ss` commands
-- [ ] Comando `get_network_advanced_metrics`
-- [ ] Comando `get_tcp_connections`
-- [ ] Comando `get_listening_ports`
-- [ ] Comando `get_network_by_process`
+| Componente | Descripción |
+|------------|-------------|
+| Selector interfaz | Tabs o dropdown eth0/docker0/lo |
+| Throughput cards | RX/TX Mbps en tiempo real |
+| Gráfico live | Actualización cada 2s |
+| Stats table | Packets, errors, drops |
+| TCP pie chart | Conexiones por estado |
+| Ports table | Puertos escuchando con proceso |
+| Top processes | Tráfico por proceso |
 
 **Tareas Frontend**:
-- [ ] Componente `NetworkTab.jsx`
-- [ ] Selector de interfaz
-- [ ] Gráfico tiempo real RX/TX (live updating)
-- [ ] Tabla de estadísticas de interfaz
-- [ ] Gráfico pie de estados TCP
-- [ ] Lista de puertos escuchando
-- [ ] Top conexiones por tráfico
-- [ ] Tabla de tráfico por proceso
-
-**UI Mockup**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Interface: [eth0 ▾]   [docker0]   [lo]                     │
-├─────────────────────────────────────────────────────────────┤
-│  Throughput:                                                │
-│  ↓ Download: 125.4 Mbps        ↑ Upload: 23.8 Mbps         │
-│  [Gráfico tiempo real RX/TX - live updating chart]          │
-├─────────────────────────────────────────────────────────────┤
-│  Statistics:                    │  Errors:                  │
-│  RX Packets: 1.2M/s            │  RX Errors: 0             │
-│  TX Packets: 0.8M/s            │  TX Errors: 0             │
-│  Total RX: 458.2 GB            │  RX Drops: 12             │
-│  Total TX: 89.4 GB             │  TX Drops: 0              │
-├─────────────────────────────────────────────────────────────┤
-│  TCP Connections:               │  Listening Ports:         │
-│  ESTABLISHED: 234              │  :22   ssh    (sshd)      │
-│  TIME_WAIT:   45               │  :80   http   (nginx)     │
-│  CLOSE_WAIT:  2                │  :443  https  (nginx)     │
-│  LISTEN:      12               │  :5432 postgresql         │
-│  [Pie chart por estado]        │  :6379 redis              │
-├─────────────────────────────────────────────────────────────┤
-│  Top Processes by Network:                                  │
-│  Process         PID      ↓ Down      ↑ Up      Conns      │
-│  nginx           12453    45 MB/s     12 MB/s   234        │
-│  postgres        8921     8 MB/s      2 MB/s    45         │
-│  sshd            1234     0.5 MB/s    0.1 MB/s  3          │
-└─────────────────────────────────────────────────────────────┘
-```
+- [ ] Componente `NetworkSection.jsx`
+- [ ] Hook `useNetworkMetrics(connectionId, interface)`
+- [ ] Gráfico tiempo real con actualización
+- [ ] Pie chart de conexiones TCP
+- [ ] Tabla de puertos escuchando
 
 ---
 
-### 6.6 Procesos Avanzado
-**Objetivo**: Vista detallada de procesos con filtros y ordenamiento
+### 7.6 Processes Tab
+**Métricas desde**: `metrics_processes`
 
-**Métricas por proceso**:
-| Métrica | Fuente Linux | Descripción |
-|---------|--------------|-------------|
-| PID | `ps` / `/proc` | ID del proceso |
-| Name | `ps` / `/proc` | Nombre del proceso |
-| User | `ps` | Usuario propietario |
-| State | `/proc/[pid]/status` | R/S/D/Z/T |
-| CPU % | `ps` / top | Uso de CPU |
-| MEM % | `ps` | Uso de memoria % |
-| MEM MB | Calculado | Memoria en MB |
-| VSZ | `ps` | Memoria virtual |
-| RSS | `ps` | Memoria residente |
-| Threads | `/proc/[pid]/status` | Número de threads |
-| Nice | `ps` | Valor de prioridad |
-| Start time | `ps` | Hora de inicio |
-| CPU time | `ps` | Tiempo de CPU usado |
-| Command | `ps` | Comando completo |
-| Open files | `/proc/[pid]/fd` count | Archivos abiertos |
-| Connections | `ss -tnp` | Conexiones de red |
-
-**Tareas Backend**:
-- [ ] Crear `ProcessAdvancedMetrics` struct
-- [ ] Parsear `ps aux` o `/proc/[pid]/*`
-- [ ] Obtener threads, open files
-- [ ] Comando `get_processes_advanced`
-- [ ] Comando `kill_process(pid, signal)`
+| Componente | Descripción |
+|------------|-------------|
+| Summary bar | Running/Sleeping/Zombie counts |
+| Filters | Sort by, filter by name, limit |
+| Table | PID, Name, CPU%, MEM%, Threads, State |
+| Detail panel | Info expandida del proceso |
+| Actions | Kill process button |
 
 **Tareas Frontend**:
 - [ ] Componente `ProcessesTab.jsx`
-- [ ] Tabla ordenable por cualquier columna
-- [ ] Filtro por nombre
-- [ ] Paginación o virtualización
-- [ ] Click en proceso para detalles
-- [ ] Botón kill con confirmación
-- [ ] Resumen: Running/Sleeping/Zombie counts
-
-**UI Mockup**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Running: 245   Sleeping: 890   Zombie: 0   Total: 1,135   │
-├─────────────────────────────────────────────────────────────┤
-│  Sort by: [CPU ▾]  Filter: [___________]  Show: [20 ▾]     │
-├─────────────────────────────────────────────────────────────┤
-│  PID     Name          CPU%   MEM%   MEM MB   Threads  St  │
-│  12453   java          45.2   7.5    2,400    89       R   │
-│  8921    postgres      12.8   5.6    1,792    24       S   │
-│  15678   node          8.4    2.8    896      12       S   │
-│  1       systemd       0.1    0.2    64       1        S   │
-│  ...                                                        │
-├─────────────────────────────────────────────────────────────┤
-│  [Selected process details panel with kill button]          │
-└─────────────────────────────────────────────────────────────┘
-```
+- [ ] Hook `useProcesses(connectionId, options)`
+- [ ] Tabla ordenable/filtrable
+- [ ] Panel de detalles
+- [ ] Virtualización para listas largas
 
 ---
 
-### 6.7 Overview Tab (Dashboard Mejorado)
-**Objetivo**: Vista resumen con los KPIs más importantes
+### 7.7 Overview Tab
+**Métricas desde**: Todas las tablas (resumen)
 
-**Componentes**:
-- Health score general (0-100)
-- KPI cards: CPU, RAM, Disk, Network
-- Sparklines en cada card
-- Alertas activas
-- Uptime y load average
-- Quick actions
+| Componente | Descripción |
+|------------|-------------|
+| Health score | Puntuación 0-100 del servidor |
+| KPI cards | CPU, RAM, Disk, Network con sparklines |
+| Alertas | Alertas activas inline |
+| Quick stats | Uptime, load, containers |
 
-**Tareas**:
+**Tareas Frontend**:
 - [ ] Componente `OverviewTab.jsx`
 - [ ] Calcular health score
-- [ ] Mostrar alertas activas inline
-- [ ] Links rápidos a cada tab detallado
+- [ ] Cards con sparklines
 
 ---
 
-### 6.8 Gráficos Históricos con Chart.js
-**Objetivo**: Visualización de histórico de métricas
+## FASE 8: Backend Tauri - Recolección de Métricas
 
-**Funcionalidades**:
-- [ ] Selector de rango: 1h, 6h, 24h, 7d, custom
-- [ ] Zoom y pan interactivo
-- [ ] Tooltips con valores exactos
-- [ ] Múltiples series en un gráfico
-- [ ] Exportar gráfico como imagen
-- [ ] Min/Max/Avg en leyenda
+### 8.1 Nuevo Módulo de Métricas Avanzadas
 
-**Tareas**:
-- [ ] Componente `MetricChart.jsx` (wrapper Chart.js)
-- [ ] Hook `useMetricHistory(metricName, range)`
-- [ ] Almacenar histórico en memoria (últimas 24h)
-- [ ] Agregación por minuto/hora según rango
+**Ubicación**: `src-tauri/src/metrics_advanced.rs`
+
+**Structs a crear**:
+```rust
+pub struct AdvancedMetrics {
+    pub cpu: CpuDetailedMetrics,
+    pub memory: MemoryDetailedMetrics,
+    pub disks: Vec<DiskIOMetrics>,
+    pub network: Vec<NetworkDetailedMetrics>,
+    pub tcp: TcpConnectionStats,
+    pub ports: Vec<ListeningPort>,
+    pub processes: Vec<ProcessMetrics>,
+}
+
+pub struct CpuDetailedMetrics {
+    pub cores: Vec<CoreUsage>,
+    pub user_percent: f64,
+    pub system_percent: f64,
+    pub idle_percent: f64,
+    pub iowait_percent: f64,
+    // ...
+}
+// ... más structs
+```
+
+**Tareas Backend Rust**:
+- [x] Crear `metrics_advanced.rs`
+- [x] Parsear `/proc/stat` para CPU per-core
+- [x] Parsear `/proc/meminfo` completo
+- [x] Parsear `/proc/diskstats` con deltas
+- [x] Parsear `/proc/net/dev` con deltas
+- [x] Ejecutar `ss -tna` y parsear conexiones
+- [x] Ejecutar `ss -tlnp` y parsear puertos
+- [x] Parsear `ps aux` para procesos
+- [x] Comando Tauri `get_advanced_metrics`
+- [x] Guardar estado anterior para cálculo de deltas
 
 ---
 
-## FASE 7: Persistencia y Almacenamiento
+### 8.2 Integración con API
 
-### 7.1 Histórico Persistente (SQLite)
-**Objetivo**: Guardar métricas para análisis posterior
+**Ubicación**: `src/services/tauri.js` y `src/services/api.js`
+
+**Flujo de datos**:
+```
+1. Tauri recolecta métricas via SSH
+2. Frontend llama a saveAdvancedMetrics()
+3. Se envía POST /api/metrics/advanced
+4. MySQL guarda en todas las tablas
+5. Frontend consulta GET /api/metrics/* para gráficos
+```
 
 **Tareas**:
-- [ ] Crear base de datos SQLite local
-- [ ] Tabla `metrics_history`
-- [ ] Insertar métricas cada minuto
-- [ ] Retención: 24h detallado, 7d por hora, 30d por día
-- [ ] Comando `get_metrics_history(range)`
-- [ ] Exportar a CSV/JSON
+- [ ] Función `saveAdvancedMetrics(connectionId, data)` en tauri.js
+- [ ] Función `fetchCpuHistory(connectionId, range)` en api.js
+- [ ] Función `fetchNetworkHistory(connectionId, range)` en api.js
+- [ ] Hook `useAdvancedMetrics` para polling
+- [ ] Intervalo de guardado: cada 5 segundos
 
 ---
 
-## FASE 8: Funcionalidades Adicionales
+## FASE 9: Funcionalidades Adicionales
 
-### 8.1 SSL/TLS Certificate Monitor
-**Tareas**:
+### 9.1 SSL/TLS Certificate Monitor
 - [ ] Check SSL de dominios
-- [ ] Ver fecha de expiración
 - [ ] Alertas antes de expirar
-- [ ] Ver cadena de certificados
 
-### 8.2 Systemd Services Manager
-**Tareas**:
-- [ ] Listar servicios systemd
-- [ ] Start/Stop/Restart servicios
-- [ ] Ver logs de servicio
-- [ ] Enable/Disable servicios
+### 9.2 Systemd Services Manager
+- [ ] Listar/gestionar servicios
 
-### 8.3 Cron Jobs Manager
-**Tareas**:
-- [ ] Listar crontabs
-- [ ] Editar/agregar/eliminar crons
-- [ ] Ver historial de ejecuciones
-
----
-
-## FASE 9: DevOps & Integraciones
-
-### 9.1 Webhooks para Alertas
-**Tareas**:
-- [ ] Webhook cuando hay alerta
+### 9.3 Webhooks para Alertas
 - [ ] Integración Slack/Discord/Telegram
-- [ ] Custom HTTP requests
-
-### 9.2 API REST
-**Tareas**:
-- [ ] Exponer métricas via API
-- [ ] Documentación OpenAPI
-- [ ] API keys management
 
 ---
 
@@ -505,89 +546,78 @@ src/pages/MonitoringPage/
 | 2025-01 | Seguridad | Cifrado AES-256-GCM | ✅ |
 | 2025-01 | UI | Terminal SSH integrada | ✅ |
 | 2025-01 | DevOps | Auto-updater con GitHub Releases | ✅ |
-| Pendiente | 6.1 | Refactor UI con Tabs | ⏳ |
-| Pendiente | 6.2 | CPU Avanzado | ⏳ |
-| Pendiente | 6.3 | Memoria Avanzada | ⏳ |
-| Pendiente | 6.4 | Disco I/O | ⏳ |
-| Pendiente | 6.5 | Network Analyzer | ⏳ |
-| Pendiente | 6.6 | Procesos Avanzado | ⏳ |
+| 2026-01-14 | 6.0 | Schema BD - Nuevas tablas (7 tablas + procedures + views) | ✅ |
+| 2026-01-14 | 6.1 | API REST - Nuevos endpoints (metrics-advanced.js) | ✅ |
+| 2026-01-14 | 8.1 | Backend Rust métricas avanzadas (metrics_advanced.rs) | ✅ |
+| Pendiente | 7.1 | Refactor UI con Tabs | ⏳ |
+| Pendiente | 7.2-7.7 | Componentes de tabs | ⏳ |
 
 ---
 
-## Prioridad de Implementación
+## Plan de Implementación
 
-### Sprint 1 (Backend - Métricas Avanzadas)
-1. CPU Avanzado (6.2) - Métricas per-core, breakdown, context switches
-2. Memoria Avanzada (6.3) - Buffers, cached, slab, desglose completo
-3. Disco I/O (6.4) - Read/write ops, throughput, latencia
-4. Network Analyzer (6.5) - Throughput real, conexiones TCP, puertos
-5. Procesos Avanzado (6.6) - Threads, open files, métricas extendidas
+### Sprint 1: Base de Datos y API (3-4 días)
+1. Crear `06-advanced-metrics-schema.sql` con todas las tablas
+2. Crear stored procedures de cleanup y agregación
+3. Crear `routes/metrics-advanced.js` con endpoints
+4. Probar con datos de ejemplo via Postman/curl
 
-### Sprint 2 (Frontend - Estructura UI)
-1. Refactor Header (6.1) - Añadir tab Network principal
-2. SystemSection con sub-tabs internos
-3. NetworkSection como panel completo
-4. Sub-tabs: OverviewTab, CpuTab, MemoryTab, DiskTab, ProcessesTab
+### Sprint 2: Backend Tauri (3-4 días)
+1. Crear `metrics_advanced.rs` con structs
+2. Implementar parsers para /proc/*
+3. Implementar parsers para ss commands
+4. Crear comando `get_advanced_metrics`
+5. Gestionar deltas para throughput
 
-### Sprint 3 (Visualización)
-1. MetricChart con Chart.js (6.8)
-2. Gráficos tiempo real para Network
-3. Histórico en memoria (24h)
-4. Traducciones completas
+### Sprint 3: Frontend - Estructura (2-3 días)
+1. Refactor MonitoringHeader con Network tab
+2. Crear SystemSection con sub-tabs
+3. Crear NetworkSection skeleton
+4. Hooks para fetch de métricas
 
-### Estructura Final de Navegación
-```
-Header Principal:
-┌──────────────────────────────────────────────────────────────┐
-│  [System ▾]     [Network]     [Dockers]     [Terminal]       │
-└──────────────────────────────────────────────────────────────┘
-       │               │
-       │               └── Panel completo de análisis de red
-       │                   - Throughput tiempo real
-       │                   - Conexiones TCP por estado
-       │                   - Puertos escuchando
-       │                   - Tráfico por proceso
-       │
-       └── Sub-tabs internos:
-           ┌─────────────────────────────────────────────────┐
-           │ [Overview] [CPU] [Memory] [Disk] [Processes]    │
-           └─────────────────────────────────────────────────┘
-```
+### Sprint 4: Frontend - Componentes (4-5 días)
+1. CpuTab con gráficos
+2. MemoryTab con gráficos
+3. DiskTab con selector
+4. NetworkSection completo
+5. ProcessesTab con tabla
+
+### Sprint 5: Polish y Testing (2 días)
+1. Traducciones completas
+2. Testing de flujo completo
+3. Optimización de renders
+4. Documentación
+
+**Total estimado: 15-18 días**
 
 ---
 
 ## Comandos Linux de Referencia
 
 ```bash
-# CPU detallado
+# CPU detallado (per-core + breakdown)
 cat /proc/stat
 
 # Memoria detallada
 cat /proc/meminfo
 
-# Disk I/O
+# Disk I/O (necesita delta entre lecturas)
 cat /proc/diskstats
 
-# Network throughput
+# Network throughput (necesita delta)
 cat /proc/net/dev
 
 # TCP connections por estado
 ss -tna | awk 'NR>1 {print $1}' | sort | uniq -c
 
-# Puertos escuchando
+# Puertos escuchando con proceso
 ss -tlnp
-
-# Conexiones por proceso
-ss -tnp
 
 # Procesos detallados
 ps aux --sort=-%cpu | head -20
 
 # Threads por proceso
 cat /proc/[pid]/status | grep Threads
-
-# Open files por proceso
-ls /proc/[pid]/fd | wc -l
 ```
 
 ---
@@ -595,7 +625,13 @@ ls /proc/[pid]/fd | wc -l
 ## Notas Técnicas
 
 - **Deltas**: Para rates (ops/s, MB/s) guardar lectura anterior y calcular diferencia
-- **Intervalos**: Métricas avanzadas cada 2-3 segundos (más pesadas que básicas)
-- **Caching**: Specs del sistema cacheados 1 hora
-- **Errores**: Manejar comandos que requieren sudo gracefully
-- **Performance**: Usar virtualización para tablas largas de procesos
+- **Intervalos**: 
+  - Métricas básicas: cada 5 segundos
+  - Guardado en BD: cada 5 segundos
+  - Métricas avanzadas: cada 5 segundos
+- **Retención MySQL**:
+  - Detallado: 24 horas
+  - Agregado por hora: 7 días
+  - Agregado por día: 30 días
+- **Cleanup**: Stored procedure ejecutado cada hora
+- **Performance**: Virtualización para listas largas de procesos

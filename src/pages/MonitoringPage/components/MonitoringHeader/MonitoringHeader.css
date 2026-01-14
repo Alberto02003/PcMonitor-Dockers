@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .monitoring-header-main {
@@ -36,6 +37,10 @@
   transition: var(--transition);
 }
 
+.view-tab:hover {
+  color: var(--accent-blue);
+}
+
 .view-tab.is-active {
   background: rgba(100, 255, 218, 0.2);
   color: var(--accent-blue);
@@ -53,6 +58,43 @@
   font-size: 0.9rem;
 }
 
+/* Sub-tabs for System view */
+.system-subtabs {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(100, 255, 218, 0.1);
+}
+
+.subtabs-toggle {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.subtab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: 0.4rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: capitalize;
+}
+
+.subtab:hover {
+  color: var(--accent-cyan);
+  background: rgba(100, 255, 218, 0.05);
+}
+
+.subtab.is-active {
+  background: rgba(100, 255, 218, 0.15);
+  color: var(--accent-cyan);
+  border-color: rgba(100, 255, 218, 0.3);
+}
+
 @media (max-width: 720px) {
   .monitoring-header {
     flex-direction: column;
@@ -62,5 +104,14 @@
   .monitoring-header-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .system-subtabs {
+    overflow-x: auto;
+  }
+
+  .subtabs-toggle {
+    justify-content: flex-start;
+    min-width: max-content;
   }
 }

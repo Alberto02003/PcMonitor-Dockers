@@ -143,11 +143,32 @@ export async function wsPort() {
 }
 
 // ============================================================================
-// System Metrics API (fallback)
+// System Metrics API
 // ============================================================================
 
+/**
+ * Get basic system metrics (CPU, memory, disk, network)
+ * @param {string} connectionId - Connection ID
+ * @returns {Promise<Object>} System metrics
+ */
 export async function getSystemMetrics(connectionId) {
   return invoke('get_system_metrics', { connectionId })
+}
+
+/**
+ * Get advanced system metrics (per-core CPU, detailed memory, disk I/O, network per-interface, TCP states, ports, processes)
+ * @param {string} connectionId - Connection ID
+ * @returns {Promise<Object>} Advanced metrics with:
+ *   - cpu: {cores: [], userPercent, systemPercent, idlePercent, iowaitPercent, ...}
+ *   - memory: {buffers, cached, slab, dirty, hugepages, ...}
+ *   - disks: [{device, mountPoint, readOpsPerSec, writeBytesPerSec, utilizationPercent, ...}]
+ *   - network: [{interface, rxBytesPerSec, txBytesPerSec, rxErrors, ...}]
+ *   - tcp: {established, timeWait, closeWait, listen, total, ...}
+ *   - ports: [{port, protocol, address, processName, pid}]
+ *   - processes: [{pid, name, cpuPercent, memoryPercent, threads, ...}]
+ */
+export async function getAdvancedMetrics(connectionId) {
+  return invoke('get_advanced_metrics', { connectionId })
 }
 
 // ============================================================================

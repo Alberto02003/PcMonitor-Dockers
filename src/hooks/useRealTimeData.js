@@ -7,6 +7,8 @@ import {
   getSystemMetrics, 
   dockerList, 
   dockerLogs,
+  dockerImages,
+  dockerVolumes,
   isTauri 
 } from '../services/tauri.js'
 import { saveDockerBatch } from '../services/api.js'
@@ -95,6 +97,7 @@ export function useRealTimeContainers(connectionId, intervalMs = 5000) {
   const [error, setError] = useState(null)
   const intervalRef = useRef(null)
   const isMountedRef = useRef(true)
+  const fetchCountRef = useRef(0)
 
   const fetchContainers = useCallback(async () => {
     if (!connectionId || !isTauri()) {
@@ -113,9 +116,27 @@ export function useRealTimeContainers(connectionId, intervalMs = 5000) {
         setError(null)
         setLoading(false)
         
-        // Save Docker metrics to database (fire and forget)
+        // Increment fetch counter
+        fetchCountRef.current++
+        
+        // Fetch images and volumes every 6th call (~30 seconds at 5s interval)
+        // to avoid excessive API calls
+        let extras = {}
+        if (fetchCountRef.current % 6 === 1) {
+          try {
+            const [images, volumes] = await Promise.all([
+              dockerImages(connectionId).catch(() => null),
+              dockerVolumes(connectionId).catch(() => null),
+            ])
+            extras = { images, volumes }
+          } catch {
+            // Ignore errors fetching extras
+          }
+        }
+        
+        // Save Docker data to database (fire and forget)
         if (data && data.length > 0) {
-          saveDockerBatch(connectionId, data).catch(err => {
+          saveDockerBatch(connectionId, data, extras).catch(err => {
             console.warn('Failed to save Docker metrics:', err.message)
           })
         }

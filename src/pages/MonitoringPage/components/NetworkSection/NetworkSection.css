@@ -1,0 +1,364 @@
+.network-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 160px);
+}
+
+.network-section-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 300px;
+  color: var(--text-secondary);
+}
+
+/* Interface Selector */
+.network-interface-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.network-interface-selector label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.network-interface-selector select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-width: 150px;
+  cursor: pointer;
+}
+
+.network-interface-selector select:hover {
+  border-color: var(--accent-cyan);
+}
+
+/* Throughput Grid */
+.network-throughput-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.throughput-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.throughput-card.rx {
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.throughput-card.tx {
+  border-left: 3px solid var(--accent-purple);
+}
+
+.throughput-card.packets {
+  border-left: 3px solid var(--accent-blue);
+}
+
+.throughput-card.errors {
+  border-left: 3px solid var(--status-warning);
+}
+
+.throughput-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.throughput-card.rx .throughput-icon {
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--accent-cyan);
+}
+
+.throughput-card.tx .throughput-icon {
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--accent-purple);
+}
+
+.throughput-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.throughput-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.throughput-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.throughput-value {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.throughput-total {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+}
+
+.packets-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.packet-stat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+}
+
+.packet-stat.rx {
+  color: var(--accent-cyan);
+}
+
+.packet-stat.tx {
+  color: var(--accent-purple);
+}
+
+.packet-stat.warning {
+  color: var(--status-warning);
+}
+
+/* Network Cards */
+.network-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.network-card h3 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.total-badge {
+  background: var(--accent-cyan);
+  color: var(--bg-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+/* Interfaces Table */
+.interfaces-table-wrapper,
+.ports-table-wrapper {
+  overflow-x: auto;
+}
+
+.interfaces-table,
+.ports-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.interfaces-table th,
+.ports-table th {
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.interfaces-table td,
+.ports-table td {
+  padding: 0.75rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.interfaces-table tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.interfaces-table tr:hover {
+  background: var(--bg-hover);
+}
+
+.interfaces-table tr.selected {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.interface-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+.interfaces-table .rx {
+  color: var(--accent-cyan);
+}
+
+.interfaces-table .tx {
+  color: var(--accent-purple);
+}
+
+.interfaces-table .warning,
+.ports-table .warning {
+  color: var(--status-warning);
+}
+
+/* TCP Stats Grid */
+.tcp-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.tcp-stat {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  border-left: 3px solid var(--border-color);
+}
+
+.tcp-stat.established {
+  border-left-color: var(--status-success);
+}
+
+.tcp-stat.time-wait {
+  border-left-color: var(--accent-blue);
+}
+
+.tcp-stat.close-wait {
+  border-left-color: var(--status-warning);
+}
+
+.tcp-stat.listen {
+  border-left-color: var(--accent-cyan);
+}
+
+.tcp-stat.syn-sent,
+.tcp-stat.syn-recv {
+  border-left-color: var(--accent-purple);
+}
+
+.tcp-stat.fin-wait {
+  border-left-color: var(--accent-blue);
+}
+
+.tcp-stat.other {
+  border-left-color: var(--text-tertiary);
+}
+
+.tcp-count {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.tcp-label {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+/* Ports Table */
+.port-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.protocol {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.address {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-secondary);
+}
+
+.process-name {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-purple);
+}
+
+.pid {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-tertiary);
+}
+
+.no-data {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .network-section {
+    padding: 1rem;
+  }
+
+  .network-throughput-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .tcp-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .throughput-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .network-throughput-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tcp-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

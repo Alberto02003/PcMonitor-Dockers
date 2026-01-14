@@ -424,10 +424,223 @@ pub struct Availability {
     pub availability_percent: f64,
 }
 
+/// Deserialize a value that could be a string or number into String
+fn deserialize_string_or_number<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrNumber {
+        String(String),
+        Int(i64),
+        Float(f64),
+    }
+    
+    match StringOrNumber::deserialize(deserializer)? {
+        StringOrNumber::String(s) => Ok(s),
+        StringOrNumber::Int(i) => Ok(i.to_string()),
+        StringOrNumber::Float(f) => Ok(f.to_string()),
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReportPeriod {
+    #[serde(deserialize_with = "deserialize_string_or_number")]
     pub start: String,
+    #[serde(deserialize_with = "deserialize_string_or_number")]
     pub end: String,
+    #[serde(default)]
+    pub hours: Option<i32>,
+}
+
+// ============================================================================
+// Advanced Metrics Structures for Reports
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedCpuMetrics {
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub user_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub system_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub iowait_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub idle_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub user_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub system_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub iowait_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub context_switches_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub context_switches_max: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub interrupts_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub processes_running_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub processes_running_max: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedMemoryMetrics {
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub buffers_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub cached_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub active_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub inactive_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub dirty_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub slab_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub dirty_max_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub slab_max_mb: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedDiskMetrics {
+    #[serde(default)]
+    pub device: String,
+    pub mount_point: Option<String>,
+    pub filesystem_type: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub read_iops_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub write_iops_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub read_throughput_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub write_throughput_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub read_throughput_max_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub write_throughput_max_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub utilization_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub utilization_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub latency_avg_ms: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub latency_max_ms: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub inodes_used_last: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub inodes_total_last: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub inodes_percent_last: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedNetworkMetrics {
+    #[serde(default)]
+    pub interface: String,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub rx_avg_kbps: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub tx_avg_kbps: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub rx_max_kbps: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub tx_max_kbps: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub rx_total_gb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub tx_total_gb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub rx_errors_total: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub tx_errors_total: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub rx_drops_total: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub tx_drops_total: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AdvancedTcpMetrics {
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub established_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub established_max: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub time_wait_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub time_wait_max: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub close_wait_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub close_wait_max: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_connections_avg: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub total_connections_max: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ListeningPort {
+    #[serde(default)]
+    pub port: i32,
+    pub protocol: Option<String>,
+    pub address: Option<String>,
+    pub process_name: Option<String>,
+    pub pid: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct TopProcess {
+    #[serde(default)]
+    pub name: String,
+    pub username: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_optional_i64")]
+    pub samples: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub cpu_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub cpu_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub memory_avg: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub memory_max: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub rss_avg_mb: Option<f64>,
+    #[serde(default, deserialize_with = "deserialize_optional_f64")]
+    pub rss_max_mb: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AdvancedMetricsReport {
+    pub cpu: Option<AdvancedCpuMetrics>,
+    pub memory: Option<AdvancedMemoryMetrics>,
+    #[serde(default)]
+    pub disks: Vec<AdvancedDiskMetrics>,
+    #[serde(default)]
+    pub network: Vec<AdvancedNetworkMetrics>,
+    pub tcp: Option<AdvancedTcpMetrics>,
+    #[serde(default)]
+    pub listening_ports: Vec<ListeningPort>,
+    #[serde(default)]
+    pub top_processes: Vec<TopProcess>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -441,6 +654,7 @@ pub struct ReportData {
     pub alerts: Vec<AlertData>,
     pub alerts_summary: AlertsSummary,
     pub availability: Availability,
+    pub advanced_metrics: Option<AdvancedMetricsReport>,
     pub period: ReportPeriod,
     pub generated_at: String,
 }

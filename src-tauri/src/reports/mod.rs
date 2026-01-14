@@ -5,7 +5,7 @@ mod api_client;
 mod scheduler;
 
 pub use pdf_generator::PdfGenerator;
-pub use api_client::{ReportsApiClient, ReportData, SystemMetrics, DockerMetrics, AlertData, ConnectionInfo, HourlyMetrics, AlertsSummary};
+pub use api_client::ReportsApiClient;
 pub use scheduler::ReportScheduler;
 
 use serde::{Deserialize, Serialize};
@@ -33,6 +33,7 @@ pub struct ReportResult {
 }
 
 /// Scheduled report configuration
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScheduledReportConfig {
     pub id: Option<i64>,
@@ -54,6 +55,7 @@ pub struct ScheduledReportConfig {
 }
 
 /// Report history entry
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReportHistoryEntry {
     pub id: i64,

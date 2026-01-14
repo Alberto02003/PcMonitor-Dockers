@@ -61,6 +61,7 @@ pub struct CommandResult {
 
 struct SshConnection {
     session: Session,
+    #[allow(dead_code)]
     config: ConnectionConfig,
 }
 

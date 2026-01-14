@@ -43,6 +43,7 @@ pub enum WsOutMessage {
         message: String,
     },
     /// Connection status
+    #[allow(dead_code)]
     ConnectionStatus {
         #[serde(rename = "connectionId")]
         connection_id: String,

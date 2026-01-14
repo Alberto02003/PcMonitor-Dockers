@@ -25,3 +25,6 @@ dist-ssr
 
 # Tauri signing keys (NEVER commit private keys)
 .tauri/
+Api-Bd-Md
+App_DatosSensibles
+# Extra

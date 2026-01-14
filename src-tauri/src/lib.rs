@@ -1,5 +1,6 @@
 mod ssh;
 mod metrics;
+mod metrics_advanced;
 mod docker;
 mod websocket;
 mod security;
@@ -8,6 +9,7 @@ mod crypto;
 
 use ssh::{ConnectionConfig, ConnectionStatus, SshManager, CommandResult};
 use metrics::{MetricsCollector, SystemMetrics};
+use metrics_advanced::{AdvancedMetricsCollector, AdvancedMetrics};
 use docker::{DockerManager, DockerContainer, DockerImage, DockerVolume, DockerActionResult, DockerInfo, ComposeStack, ComposeService, ComposeActionResult};
 use websocket::WebSocketServer;
 use security::{SecureStorage, FullConnection, validate_host, validate_port, validate_username};
@@ -249,6 +251,7 @@ struct TerminalOutputEvent {
     is_stderr: bool,
 }
 
+#[allow(dead_code)]
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TerminalExitEvent {
@@ -332,6 +335,23 @@ async fn get_system_metrics(
     // Run in blocking thread pool to not block async runtime
     tokio::task::spawn_blocking(move || {
         MetricsCollector::collect(&ssh_manager, &conn_id)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
+async fn get_advanced_metrics(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+) -> Result<AdvancedMetrics, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    let conn_id = connectionId.clone();
+    
+    tokio::task::spawn_blocking(move || {
+        AdvancedMetricsCollector::collect(&ssh_manager, &conn_id)
             .map_err(|e| e.to_string())
     })
     .await
@@ -797,6 +817,7 @@ pub fn run() {
             ws_port,
             // Metrics commands
             get_system_metrics,
+            get_advanced_metrics,
             // Docker commands
             docker_list,
             docker_start,

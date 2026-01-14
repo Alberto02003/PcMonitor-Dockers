@@ -4,7 +4,7 @@ use printpdf::*;
 use std::fs::File;
 use std::io::BufWriter;
 
-use super::api_client::{ReportData, SystemMetrics, AlertData, AlertsSummary, HourlyMetrics};
+use super::api_client::{ReportData, SystemMetrics, AlertData, AlertsSummary, HourlyMetrics, AdvancedMetricsReport};
 
 // Page dimensions (A4)
 const PAGE_WIDTH: f32 = 210.0;
@@ -38,12 +38,14 @@ impl Theme {
     
     // Brand
     fn primary() -> Color { Color::Rgb(Rgb::new(0.392, 1.0, 0.855, None)) }          // #64ffda
+    #[allow(dead_code)]
     fn primary_dim() -> Color { Color::Rgb(Rgb::new(0.275, 0.700, 0.600, None)) }    // #46b399
     
     // Text
     fn text_bright() -> Color { Color::Rgb(Rgb::new(0.902, 0.945, 1.0, None)) }      // #e6f1ff
     fn text_normal() -> Color { Color::Rgb(Rgb::new(0.800, 0.835, 0.890, None)) }    // #ccd5e3
     fn text_muted() -> Color { Color::Rgb(Rgb::new(0.533, 0.573, 0.690, None)) }     // #8892b0
+    #[allow(dead_code)]
     fn text_dark() -> Color { Color::Rgb(Rgb::new(0.039, 0.098, 0.184, None)) }      // #0a192f
     
     // Semantic
@@ -85,7 +87,7 @@ impl PdfGenerator {
         let mut y = PAGE_HEIGHT - MARGIN;
         y = self.draw_cover_header(&layer, &font_bold, &font, data, y);
         y = self.draw_kpi_cards(&layer, &font_bold, &font, data, y);
-        y = self.draw_system_overview(&layer, &font_bold, &font, &data.system_metrics, y);
+        let _ = self.draw_system_overview(&layer, &font_bold, &font, &data.system_metrics, y);
         
         // === PAGE 2: Detailed System Metrics ===
         let (page2, layer2) = doc.add_page(Mm(PAGE_WIDTH), Mm(PAGE_HEIGHT), "Page 2");
@@ -95,7 +97,7 @@ impl PdfGenerator {
         
         y = PAGE_HEIGHT - MARGIN - 20.0;
         y = self.draw_metrics_detail_table(&layer, &font_bold, &font, &data.system_metrics, y);
-        y = self.draw_hourly_summary(&layer, &font_bold, &font, &data.hourly_metrics, y);
+        let _ = self.draw_hourly_summary(&layer, &font_bold, &font, &data.hourly_metrics, y);
 
         // === PAGE 3: Alerts ===
         let (page3, layer3) = doc.add_page(Mm(PAGE_WIDTH), Mm(PAGE_HEIGHT), "Page 3");
@@ -115,6 +117,17 @@ impl PdfGenerator {
         
         y = PAGE_HEIGHT - MARGIN - 20.0;
         self.draw_docker_section(&layer, &font_bold, &font, data, y);
+
+        // === PAGE 5: Advanced Metrics (if available) ===
+        if let Some(ref advanced) = data.advanced_metrics {
+            let (page5, layer5) = doc.add_page(Mm(PAGE_WIDTH), Mm(PAGE_HEIGHT), "Page 5");
+            let layer = doc.get_page(page5).get_layer(layer5);
+            self.draw_page_bg(&layer);
+            self.draw_page_header(&layer, &font_bold, &font, data, 5);
+            
+            y = PAGE_HEIGHT - MARGIN - 20.0;
+            self.draw_advanced_metrics_section(&layer, &font_bold, &font, advanced, y);
+        }
 
         // Save
         let file = File::create(output_path).map_err(|e| format!("File error: {}", e))?;
@@ -143,6 +156,7 @@ impl PdfGenerator {
         layer.add_rect(Rect::new(Mm(x), Mm(y - h), Mm(x + w), Mm(y)));
     }
 
+    #[allow(dead_code)]
     fn draw_line_h(&self, layer: &PdfLayerReference, x: f32, y: f32, w: f32, color: Color, thickness: f32) {
         layer.set_outline_color(color);
         layer.set_outline_thickness(thickness);
@@ -163,6 +177,7 @@ impl PdfGenerator {
         }
     }
 
+    #[allow(dead_code)]
     fn format_bytes(&self, bytes: f64) -> String {
         if bytes >= 1_000_000_000.0 {
             format!("{:.1} GB", bytes / 1_000_000_000.0)
@@ -870,6 +885,266 @@ impl PdfGenerator {
                 &format!("... {} {}", data.docker_metrics.len() - 18, self.t("contenedores adicionales", "additional containers")),
                 TINY_SIZE, Mm(MARGIN + 5.0), Mm(y - 3.0), font
             );
+        }
+        
+        y
+    }
+
+    // ==================== PAGE 5: ADVANCED METRICS ====================
+
+    fn draw_advanced_metrics_section(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, advanced: &AdvancedMetricsReport, mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("METRICAS AVANZADAS", "ADVANCED METRICS"), HEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 12.0;
+
+        // CPU Breakdown Section
+        if let Some(ref cpu) = advanced.cpu {
+            if cpu.total_samples.unwrap_or(0) > 0 {
+                y = self.draw_advanced_cpu(layer, font_bold, font, cpu, y);
+            }
+        }
+
+        // Disk I/O Section
+        if !advanced.disks.is_empty() {
+            y = self.draw_advanced_disk(layer, font_bold, font, &advanced.disks, y);
+        }
+
+        // Network Section
+        if !advanced.network.is_empty() {
+            y = self.draw_advanced_network(layer, font_bold, font, &advanced.network, y);
+        }
+
+        // TCP Connections Section
+        if let Some(ref tcp) = advanced.tcp {
+            if tcp.total_samples.unwrap_or(0) > 0 {
+                y = self.draw_advanced_tcp(layer, font_bold, font, tcp, y);
+            }
+        }
+
+        // Top Processes Section
+        if !advanced.top_processes.is_empty() {
+            self.draw_top_processes(layer, font_bold, font, &advanced.top_processes, y);
+        }
+
+        y
+    }
+
+    fn draw_advanced_cpu(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, cpu: &super::api_client::AdvancedCpuMetrics, mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("DESGLOSE DE CPU", "CPU BREAKDOWN"), SUBHEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 8.0;
+
+        let card_h = 28.0;
+        self.draw_rect(layer, MARGIN, y, CONTENT_WIDTH, card_h, Theme::bg_card());
+
+        // CPU breakdown values
+        let items = [
+            ("User", cpu.user_avg, Theme::primary()),
+            ("System", cpu.system_avg, Theme::info()),
+            ("I/O Wait", cpu.iowait_avg, Theme::warning()),
+            ("Idle", cpu.idle_avg, Theme::text_muted()),
+        ];
+
+        let item_w = CONTENT_WIDTH / 4.0;
+        for (i, (label, value, color)) in items.into_iter().enumerate() {
+            let x = MARGIN + item_w * i as f32;
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(label, TINY_SIZE, Mm(x + 5.0), Mm(y - 6.0), font_bold);
+            
+            layer.set_fill_color(color);
+            layer.use_text(&format!("{}%", self.format_num(value, 1)), BODY_SIZE, Mm(x + 5.0), Mm(y - 14.0), font_bold);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("max {}%", self.format_num(
+                if label == "User" { cpu.user_max } 
+                else if label == "System" { cpu.system_max }
+                else if label == "I/O Wait" { cpu.iowait_max }
+                else { None }
+            , 1)), TINY_SIZE, Mm(x + 5.0), Mm(y - 21.0), font);
+        }
+
+        // Context switches info
+        layer.set_fill_color(Theme::text_muted());
+        layer.use_text(
+            &format!("Context Switches: {} avg, {} max | Processes Running: {} avg",
+                self.format_num(cpu.context_switches_avg.map(|v| v as f64), 0),
+                self.format_num(cpu.context_switches_max.map(|v| v as f64), 0),
+                self.format_num(cpu.processes_running_avg.map(|v| v as f64), 0)),
+            TINY_SIZE, Mm(MARGIN + 5.0), Mm(y - card_h + 2.0), font
+        );
+
+        y -= card_h + SECTION_GAP;
+        y
+    }
+
+    fn draw_advanced_disk(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, disks: &[super::api_client::AdvancedDiskMetrics], mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("I/O DE DISCO", "DISK I/O"), SUBHEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 8.0;
+
+        // Header
+        self.draw_rect(layer, MARGIN, y, CONTENT_WIDTH, 7.0, Theme::bg_header());
+        
+        let cols = [MARGIN + 3.0, MARGIN + 35.0, MARGIN + 65.0, MARGIN + 95.0, MARGIN + 125.0, MARGIN + 155.0];
+        
+        layer.set_fill_color(Theme::primary());
+        layer.use_text(&self.t("DISPOSITIVO", "DEVICE"), TINY_SIZE, Mm(cols[0]), Mm(y - 4.5), font_bold);
+        layer.use_text(&self.t("LECTURA", "READ"), TINY_SIZE, Mm(cols[1]), Mm(y - 4.5), font_bold);
+        layer.use_text(&self.t("ESCRITURA", "WRITE"), TINY_SIZE, Mm(cols[2]), Mm(y - 4.5), font_bold);
+        layer.use_text(&self.t("UTIL %", "UTIL %"), TINY_SIZE, Mm(cols[3]), Mm(y - 4.5), font_bold);
+        layer.use_text(&self.t("LATENCIA", "LATENCY"), TINY_SIZE, Mm(cols[4]), Mm(y - 4.5), font_bold);
+        layer.use_text("INODES %", TINY_SIZE, Mm(cols[5]), Mm(y - 4.5), font_bold);
+        
+        y -= 8.5;
+
+        let max_disks = disks.len().min(6);
+        for (i, disk) in disks.iter().take(max_disks).enumerate() {
+            if i % 2 == 0 {
+                self.draw_rect(layer, MARGIN + 1.0, y + 1.5, CONTENT_WIDTH - 2.0, 5.5, Theme::bg_card());
+            }
+            
+            layer.set_fill_color(Theme::text_normal());
+            layer.use_text(&disk.device, TINY_SIZE, Mm(cols[0]), Mm(y - 3.0), font);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("{} MB/s", self.format_num(disk.read_throughput_avg_mb, 1)), TINY_SIZE, Mm(cols[1]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{} MB/s", self.format_num(disk.write_throughput_avg_mb, 1)), TINY_SIZE, Mm(cols[2]), Mm(y - 3.0), font);
+            
+            // Utilization with color
+            let util = disk.utilization_avg.unwrap_or(0.0);
+            let util_color = if util > 80.0 { Theme::error() } else if util > 50.0 { Theme::warning() } else { Theme::success() };
+            layer.set_fill_color(util_color);
+            layer.use_text(&format!("{}%", self.format_num(disk.utilization_avg, 1)), TINY_SIZE, Mm(cols[3]), Mm(y - 3.0), font);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("{} ms", self.format_num(disk.latency_avg_ms, 1)), TINY_SIZE, Mm(cols[4]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{}%", self.format_num(disk.inodes_percent_last, 1)), TINY_SIZE, Mm(cols[5]), Mm(y - 3.0), font);
+            
+            y -= 5.5;
+        }
+        
+        y -= SECTION_GAP;
+        y
+    }
+
+    fn draw_advanced_network(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, network: &[super::api_client::AdvancedNetworkMetrics], mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("TRAFICO DE RED", "NETWORK TRAFFIC"), SUBHEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 8.0;
+
+        // Header
+        self.draw_rect(layer, MARGIN, y, CONTENT_WIDTH, 7.0, Theme::bg_header());
+        
+        let cols = [MARGIN + 3.0, MARGIN + 30.0, MARGIN + 60.0, MARGIN + 90.0, MARGIN + 120.0, MARGIN + 150.0];
+        
+        layer.set_fill_color(Theme::primary());
+        layer.use_text(&self.t("INTERFAZ", "INTERFACE"), TINY_SIZE, Mm(cols[0]), Mm(y - 4.5), font_bold);
+        layer.use_text("RX AVG", TINY_SIZE, Mm(cols[1]), Mm(y - 4.5), font_bold);
+        layer.use_text("TX AVG", TINY_SIZE, Mm(cols[2]), Mm(y - 4.5), font_bold);
+        layer.use_text("RX TOTAL", TINY_SIZE, Mm(cols[3]), Mm(y - 4.5), font_bold);
+        layer.use_text("TX TOTAL", TINY_SIZE, Mm(cols[4]), Mm(y - 4.5), font_bold);
+        layer.use_text(&self.t("ERRORES", "ERRORS"), TINY_SIZE, Mm(cols[5]), Mm(y - 4.5), font_bold);
+        
+        y -= 8.5;
+
+        let max_ifaces = network.len().min(5);
+        for (i, iface) in network.iter().take(max_ifaces).enumerate() {
+            if i % 2 == 0 {
+                self.draw_rect(layer, MARGIN + 1.0, y + 1.5, CONTENT_WIDTH - 2.0, 5.5, Theme::bg_card());
+            }
+            
+            layer.set_fill_color(Theme::text_normal());
+            layer.use_text(&iface.interface, TINY_SIZE, Mm(cols[0]), Mm(y - 3.0), font);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("{} KB/s", self.format_num(iface.rx_avg_kbps, 1)), TINY_SIZE, Mm(cols[1]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{} KB/s", self.format_num(iface.tx_avg_kbps, 1)), TINY_SIZE, Mm(cols[2]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{} GB", self.format_num(iface.rx_total_gb, 2)), TINY_SIZE, Mm(cols[3]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{} GB", self.format_num(iface.tx_total_gb, 2)), TINY_SIZE, Mm(cols[4]), Mm(y - 3.0), font);
+            
+            let errors = iface.rx_errors_total.unwrap_or(0) + iface.tx_errors_total.unwrap_or(0);
+            let error_color = if errors > 0 { Theme::warning() } else { Theme::success() };
+            layer.set_fill_color(error_color);
+            layer.use_text(&format!("{}", errors), TINY_SIZE, Mm(cols[5]), Mm(y - 3.0), font);
+            
+            y -= 5.5;
+        }
+        
+        y -= SECTION_GAP;
+        y
+    }
+
+    fn draw_advanced_tcp(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, tcp: &super::api_client::AdvancedTcpMetrics, mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("CONEXIONES TCP", "TCP CONNECTIONS"), SUBHEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 8.0;
+
+        let card_h = 20.0;
+        self.draw_rect(layer, MARGIN, y, CONTENT_WIDTH, card_h, Theme::bg_card());
+
+        let items = [
+            ("ESTABLISHED", tcp.established_avg, tcp.established_max, Theme::success()),
+            ("TIME_WAIT", tcp.time_wait_avg, tcp.time_wait_max, Theme::info()),
+            ("CLOSE_WAIT", tcp.close_wait_avg, tcp.close_wait_max, Theme::warning()),
+            ("TOTAL", tcp.total_connections_avg, tcp.total_connections_max, Theme::primary()),
+        ];
+
+        let item_w = CONTENT_WIDTH / 4.0;
+        for (i, (label, avg, max, color)) in items.into_iter().enumerate() {
+            let x = MARGIN + item_w * i as f32;
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(label, TINY_SIZE, Mm(x + 3.0), Mm(y - 5.0), font_bold);
+            
+            layer.set_fill_color(color);
+            layer.use_text(&self.format_num(avg.map(|v| v as f64), 0), BODY_SIZE, Mm(x + 3.0), Mm(y - 12.0), font_bold);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("max {}", self.format_num(max.map(|v| v as f64), 0)), TINY_SIZE, Mm(x + 20.0), Mm(y - 12.0), font);
+        }
+
+        y -= card_h + SECTION_GAP;
+        y
+    }
+
+    fn draw_top_processes(&self, layer: &PdfLayerReference, font_bold: &IndirectFontRef, font: &IndirectFontRef, processes: &[super::api_client::TopProcess], mut y: f32) -> f32 {
+        layer.set_fill_color(Theme::text_bright());
+        layer.use_text(&self.t("TOP PROCESOS POR CPU", "TOP PROCESSES BY CPU"), SUBHEADING_SIZE, Mm(MARGIN), Mm(y), font_bold);
+        y -= 8.0;
+
+        // Header
+        self.draw_rect(layer, MARGIN, y, CONTENT_WIDTH, 7.0, Theme::bg_header());
+        
+        let cols = [MARGIN + 3.0, MARGIN + 50.0, MARGIN + 80.0, MARGIN + 110.0, MARGIN + 140.0];
+        
+        layer.set_fill_color(Theme::primary());
+        layer.use_text(&self.t("PROCESO", "PROCESS"), TINY_SIZE, Mm(cols[0]), Mm(y - 4.5), font_bold);
+        layer.use_text("CPU AVG", TINY_SIZE, Mm(cols[1]), Mm(y - 4.5), font_bold);
+        layer.use_text("CPU MAX", TINY_SIZE, Mm(cols[2]), Mm(y - 4.5), font_bold);
+        layer.use_text("RAM AVG", TINY_SIZE, Mm(cols[3]), Mm(y - 4.5), font_bold);
+        layer.use_text("RSS AVG", TINY_SIZE, Mm(cols[4]), Mm(y - 4.5), font_bold);
+        
+        y -= 8.5;
+
+        let max_procs = processes.len().min(10);
+        for (i, proc) in processes.iter().take(max_procs).enumerate() {
+            if i % 2 == 0 {
+                self.draw_rect(layer, MARGIN + 1.0, y + 1.5, CONTENT_WIDTH - 2.0, 5.5, Theme::bg_card());
+            }
+            
+            // Name (truncated)
+            let name = if proc.name.len() > 25 { &proc.name[..22] } else { &proc.name };
+            layer.set_fill_color(Theme::text_normal());
+            layer.use_text(name, TINY_SIZE, Mm(cols[0]), Mm(y - 3.0), font);
+            
+            layer.set_fill_color(Theme::text_muted());
+            layer.use_text(&format!("{}%", self.format_num(proc.cpu_avg, 1)), TINY_SIZE, Mm(cols[1]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{}%", self.format_num(proc.cpu_max, 1)), TINY_SIZE, Mm(cols[2]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{}%", self.format_num(proc.memory_avg, 1)), TINY_SIZE, Mm(cols[3]), Mm(y - 3.0), font);
+            layer.use_text(&format!("{} MB", self.format_num(proc.rss_avg_mb, 0)), TINY_SIZE, Mm(cols[4]), Mm(y - 3.0), font);
+            
+            y -= 5.5;
         }
         
         y

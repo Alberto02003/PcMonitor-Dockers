@@ -143,7 +143,7 @@ impl ReportScheduler {
     }
 
     /// Generate filename from pattern
-    fn generate_filename(&self, pattern: &str, name: &str, start: &str, _end: &str) -> String {
+    fn generate_filename(&self, pattern: &str, name: &str, _start: &str, _end: &str) -> String {
         let now = Local::now();
         let date = now.format("%Y-%m-%d").to_string();
         let time = now.format("%H%M%S").to_string();
