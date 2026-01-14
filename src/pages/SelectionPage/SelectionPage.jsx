@@ -15,6 +15,7 @@ import ConnectionForm from './components/ConnectionForm/ConnectionForm.jsx'
 import SettingsModal from './components/SettingsModal/SettingsModal.jsx'
 import UndoSnackbar from './components/UndoSnackbar/UndoSnackbar.jsx'
 import SelectionLoading from './components/SelectionLoading/SelectionLoading.jsx'
+import UpdaterModal from '../../components/UpdaterModal/UpdaterModal.jsx'
 import './SelectionPage.css'
 
 function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
@@ -30,6 +31,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const [selectedId, setSelectedId] = useState(null)
   const [search, setSearch] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isUpdaterOpen, setIsUpdaterOpen] = useState(false)
 
   // Derived state
   const selectedConnection = useMemo(
@@ -271,6 +273,15 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
           onStoreCredentialsChange={handleStoreCredentialsChange}
           onExport={handleExport}
           onImport={handleImportClick}
+          onCheckUpdates={() => {
+            setIsSettingsOpen(false)
+            setIsUpdaterOpen(true)
+          }}
+        />
+
+        <UpdaterModal
+          open={isUpdaterOpen}
+          onClose={() => setIsUpdaterOpen(false)}
         />
       </main>
     </div>

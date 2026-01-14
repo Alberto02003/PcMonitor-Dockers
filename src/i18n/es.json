@@ -379,5 +379,23 @@
     "removeVolumes": "Eliminar volumenes",
     "viewDetails": "Ver detalles",
     "selectStack": "Selecciona un stack para ver sus servicios"
+  },
+  "updater": {
+    "title": "Actualizacion disponible",
+    "checking": "Buscando actualizaciones...",
+    "available": "Nueva version disponible",
+    "notAvailable": "Estas usando la ultima version",
+    "version": "Version",
+    "currentVersion": "Version actual",
+    "newVersion": "Nueva version",
+    "releaseNotes": "Notas de la version",
+    "download": "Descargar e instalar",
+    "downloading": "Descargando...",
+    "installing": "Instalando...",
+    "later": "Mas tarde",
+    "checkNow": "Buscar actualizaciones",
+    "error": "Error al buscar actualizaciones",
+    "restartRequired": "La aplicacion se reiniciara para completar la actualizacion",
+    "progress": "Progreso"
   }
 }

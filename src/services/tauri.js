@@ -538,3 +538,90 @@ export function isTauri() {
   // Tauri v2 uses __TAURI_INTERNALS__ instead of __TAURI__
   return Boolean(window.__TAURI_INTERNALS__ || window.__TAURI__)
 }
+
+// ============================================================================
+// Auto-Updater API
+// ============================================================================
+
+/**
+ * Check for available updates
+ * @returns {Promise<{available: boolean, version?: string, notes?: string, date?: string} | null>}
+ */
+export async function checkForUpdates() {
+  if (!isTauri()) return null
+  
+  try {
+    const { check } = await import('@tauri-apps/plugin-updater')
+    const update = await check()
+    
+    if (update) {
+      return {
+        available: true,
+        version: update.version,
+        notes: update.body,
+        date: update.date,
+        update, // Keep reference for download
+      }
+    }
+    return { available: false }
+  } catch (error) {
+    console.error('Error checking for updates:', error)
+    return null
+  }
+}
+
+/**
+ * Download and install an update
+ * @param {Object} update - Update object from checkForUpdates
+ * @param {Function} onProgress - Progress callback (downloaded, total)
+ * @returns {Promise<boolean>}
+ */
+export async function downloadAndInstallUpdate(update, onProgress) {
+  if (!isTauri() || !update?.update) return false
+  
+  try {
+    const { relaunch } = await import('@tauri-apps/plugin-process')
+    
+    let downloaded = 0
+    let contentLength = 0
+    
+    await update.update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case 'Started':
+          contentLength = event.data.contentLength || 0
+          if (onProgress) onProgress(0, contentLength)
+          break
+        case 'Progress':
+          downloaded += event.data.chunkLength
+          if (onProgress) onProgress(downloaded, contentLength)
+          break
+        case 'Finished':
+          if (onProgress) onProgress(contentLength, contentLength)
+          break
+      }
+    })
+    
+    // Restart app after install
+    await relaunch()
+    return true
+  } catch (error) {
+    console.error('Error installing update:', error)
+    return false
+  }
+}
+
+/**
+ * Get current app version from Tauri
+ * @returns {Promise<string>}
+ */
+export async function getAppVersion() {
+  if (!isTauri()) return '0.0.0'
+  
+  try {
+    const { getVersion } = await import('@tauri-apps/api/app')
+    return await getVersion()
+  } catch (error) {
+    console.error('Error getting app version:', error)
+    return '0.0.0'
+  }
+}

@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
+import { isTauri, getAppVersion } from '../../../../services/tauri.js'
 import './SettingsModal.css'
 
 function SettingsModal({
@@ -9,8 +11,16 @@ function SettingsModal({
   onStoreCredentialsChange,
   onExport,
   onImport,
+  onCheckUpdates,
 }) {
   const { t } = useTranslation()
+  const [appVersion, setAppVersion] = useState('')
+
+  useEffect(() => {
+    if (isTauri()) {
+      getAppVersion().then(setAppVersion)
+    }
+  }, [])
 
   if (!open) return null
 
@@ -96,6 +106,18 @@ function SettingsModal({
               </select>
             </label>
           </div>
+
+          {isTauri() && (
+            <div className="modal-section">
+              <span>{t('updater.title')}</span>
+              <div className="updater-info">
+                <span className="version-badge">v{appVersion}</span>
+                <button type="button" className="btn btn-outline" onClick={onCheckUpdates}>
+                  {t('updater.checkNow')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-outline" onClick={onClose}>

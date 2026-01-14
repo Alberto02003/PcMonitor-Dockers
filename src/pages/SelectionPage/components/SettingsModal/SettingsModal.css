@@ -98,3 +98,20 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.updater-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.version-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(100, 255, 218, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+}

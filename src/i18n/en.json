@@ -379,5 +379,23 @@
     "removeVolumes": "Remove volumes",
     "viewDetails": "View details",
     "selectStack": "Select a stack to view its services"
+  },
+  "updater": {
+    "title": "Update available",
+    "checking": "Checking for updates...",
+    "available": "New version available",
+    "notAvailable": "You are using the latest version",
+    "version": "Version",
+    "currentVersion": "Current version",
+    "newVersion": "New version",
+    "releaseNotes": "Release notes",
+    "download": "Download and install",
+    "downloading": "Downloading...",
+    "installing": "Installing...",
+    "later": "Later",
+    "checkNow": "Check for updates",
+    "error": "Error checking for updates",
+    "restartRequired": "The app will restart to complete the update",
+    "progress": "Progress"
   }
 }
