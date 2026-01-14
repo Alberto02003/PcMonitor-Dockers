@@ -113,8 +113,13 @@ function AppContent() {
 
 function App() {
   // If this is the terminal window, render only the terminal
+  // Still needs SettingsProvider for translations
   if (isTerminalWindow()) {
-    return <TerminalWindow />
+    return (
+      <SettingsProvider>
+        <TerminalWindow />
+      </SettingsProvider>
+    )
   }
 
   return (
