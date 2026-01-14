@@ -5,7 +5,8 @@
 import { useState, useCallback } from 'react'
 import { isTauri } from '../../../services/tauri.js'
 
-const API_BASE_URL = 'http://localhost:3001'
+// Use same API URL as api.js service
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://192.168.1.149:3001'
 
 /**
  * Hook que proporciona funcionalidad para el modal de informes

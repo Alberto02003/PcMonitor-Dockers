@@ -1,8 +1,10 @@
 /**
  * API Service - HTTP client for backend API
+ * URL is configured via VITE_API_URL environment variable in .env file
+ * Default: http://192.168.1.149:3001/api
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://192.168.1.149:3001/api';
 
 /**
  * Generic fetch wrapper with error handling
