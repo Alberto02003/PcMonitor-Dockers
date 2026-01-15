@@ -9,14 +9,14 @@ function AlertsModal({ open, alerts, alertFields, onClose, onSave, onUpdateAlert
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-panel modal-panel-wide"
+        className="modal-panel modal-panel-wide modal-panel-enter"
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
           <h3>{t('alerts.title')}</h3>
-          <button type="button" className="icon-button" onClick={onClose} title={t('common.close')}>
+          <button type="button" className="icon-button interactive-bounce" onClick={onClose} title={t('common.close')}>
             x
           </button>
         </div>
@@ -38,6 +38,7 @@ function AlertsModal({ open, alerts, alertFields, onClose, onSave, onUpdateAlert
                           type="checkbox"
                           checked={Boolean(alert.enabled)}
                           onChange={(event) => onUpdateAlertEnabled(field.key, event.target.checked)}
+                          className="focus-ring"
                         />
                         <span>{t('alerts.active')}</span>
                       </label>
@@ -53,6 +54,7 @@ function AlertsModal({ open, alerts, alertFields, onClose, onSave, onUpdateAlert
                               event.target.value === '' ? '' : Number(event.target.value),
                             )
                           }
+                          className="focus-ring"
                         />
                       )}
                     </div>
@@ -63,7 +65,7 @@ function AlertsModal({ open, alerts, alertFields, onClose, onSave, onUpdateAlert
           </div>
         </div>
         <div className="modal-footer">
-          <button type="button" className="btn btn-outline" onClick={onSave}>
+          <button type="button" className="btn btn-outline interactive-bounce hover-glow" onClick={onSave}>
             {t('alerts.saveAlerts')}
           </button>
         </div>

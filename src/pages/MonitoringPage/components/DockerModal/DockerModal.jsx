@@ -153,14 +153,14 @@ function DockerModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-panel modal-panel-wide"
+        className="modal-panel modal-panel-wide modal-panel-enter"
         role="dialog"
         aria-modal="true"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
           <h3>{t('docker.detailsOf')} {containerName}</h3>
-          <button type="button" className="icon-button" onClick={onClose} title={t('common.close')}>
+          <button type="button" className="icon-button interactive-bounce" onClick={onClose} title={t('common.close')}>
             x
           </button>
         </div>
@@ -169,7 +169,7 @@ function DockerModal({
             type="button"
             role="tab"
             aria-selected={dockerPanel === 'metrics'}
-            className={`modal-tab ${dockerPanel === 'metrics' ? 'is-active' : ''}`}
+            className={`modal-tab interactive-bounce ${dockerPanel === 'metrics' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('metrics')}
           >
             {t('docker.performance')}
@@ -178,7 +178,7 @@ function DockerModal({
             type="button"
             role="tab"
             aria-selected={dockerPanel === 'logs'}
-            className={`modal-tab ${dockerPanel === 'logs' ? 'is-active' : ''}`}
+            className={`modal-tab interactive-bounce ${dockerPanel === 'logs' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('logs')}
           >
             {t('docker.logs')}
@@ -188,7 +188,7 @@ function DockerModal({
             type="button"
             role="tab"
             aria-selected={dockerPanel === 'volumes'}
-            className={`modal-tab ${dockerPanel === 'volumes' ? 'is-active' : ''}`}
+            className={`modal-tab interactive-bounce ${dockerPanel === 'volumes' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('volumes')}
           >
             {t('docker.volumes')}
@@ -197,7 +197,7 @@ function DockerModal({
             type="button"
             role="tab"
             aria-selected={dockerPanel === 'images'}
-            className={`modal-tab ${dockerPanel === 'images' ? 'is-active' : ''}`}
+            className={`modal-tab interactive-bounce ${dockerPanel === 'images' ? 'is-active' : ''}`}
             onClick={() => onPanelChange('images')}
           >
             {t('docker.images')}
@@ -310,7 +310,7 @@ function DockerModal({
                 <span>{t('docker.realtimeLogs')}</span>
                 <div className="logs-controls">
                   <select
-                    className="log-level-filter"
+                    className="log-level-filter focus-ring"
                     value={logLevelFilter}
                     onChange={(e) => setLogLevelFilter(e.target.value)}
                   >
@@ -323,7 +323,7 @@ function DockerModal({
                   
                   <input
                     type="text"
-                    className="log-search"
+                    className="log-search focus-ring"
                     placeholder={t('logs.searchPlaceholder')}
                     value={logSearch}
                     onChange={(e) => setLogSearch(e.target.value)}
@@ -331,7 +331,7 @@ function DockerModal({
 
                   <button
                     type="button"
-                    className={`follow-toggle ${followMode ? 'active' : ''}`}
+                    className={`follow-toggle interactive-bounce ${followMode ? 'active' : ''}`}
                     onClick={() => setFollowMode(!followMode)}
                     title={t('logs.followMode')}
                   >
@@ -340,7 +340,7 @@ function DockerModal({
 
                   <button
                     type="button"
-                    className="export-logs-btn"
+                    className="export-logs-btn interactive-bounce"
                     onClick={handleExportLogs}
                     disabled={logs.length === 0}
                     title={t('logs.exportLogs')}
@@ -364,7 +364,7 @@ function DockerModal({
                   <span className="terminal-dot dot-green" />
                   <span className="terminal-title">docker logs {containerName} --follow</span>
                 </div>
-                <div className="terminal-body">
+                <div className="terminal-body scrollbar-thin">
                   {filteredLogs.length === 0 ? (
                     <div className="terminal-line">
                       <span className="terminal-entry terminal-waiting">

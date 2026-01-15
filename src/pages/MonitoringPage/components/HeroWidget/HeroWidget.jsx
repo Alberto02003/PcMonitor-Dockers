@@ -17,9 +17,9 @@ function HeroWidget({ metrics, lastUpdate }) {
   const statusClass = isOnline ? 'hero-status--online' : 'hero-status--loading'
 
   return (
-    <section className="monitoring-hero">
+    <section className="monitoring-hero animate-fade-in-up">
       <div className="hero-main">
-        <div className="hero-card">
+        <div className="hero-card glass hover-lift">
           <span className="hero-label">{t('hero.status')}</span>
           <p className={`hero-value ${statusClass}`}>
             {isOnline && <span className="hero-status-dot" />}
@@ -29,14 +29,14 @@ function HeroWidget({ metrics, lastUpdate }) {
             {t('hero.lastUpdate')} <LastUpdate timestamp={lastUpdate} />
           </span>
         </div>
-        <div className="hero-card">
+        <div className="hero-card glass hover-lift">
           <span className="hero-label">{t('hero.uptime')}</span>
           <p className="hero-value">{formatUptime(systemInfo.uptime)}</p>
           <span className="hero-subtle">{t('hero.sinceRestart')}</span>
         </div>
       </div>
       <div className="hero-side">
-        <div className="hero-card hero-card--accent">
+        <div className="hero-card hero-card--accent glass hover-lift">
           <span className="hero-label">{t('hero.loadAverage')}</span>
           <p className="hero-value">
             <AnimatedValue 
@@ -51,7 +51,7 @@ function HeroWidget({ metrics, lastUpdate }) {
             <span>15m: <AnimatedValue value={cpu.loadAvg15m || 0} decimals={2} /></span>
           </span>
         </div>
-        <div className="hero-card">
+        <div className="hero-card glass hover-lift">
           <span className="hero-label">{t('hero.privateIp')}</span>
           <p className="hero-value hero-value--mono">{systemInfo.privateIp || '--'}</p>
           <span className="hero-subtle">{t('hero.publicIp')} {systemInfo.publicIp || 'N/A'}</span>

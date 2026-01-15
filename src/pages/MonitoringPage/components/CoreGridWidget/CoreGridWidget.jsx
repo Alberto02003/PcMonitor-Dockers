@@ -63,7 +63,7 @@ function CoreGridWidget({ metrics }) {
 
   return (
     <div className="monitoring-grid">
-      <section className="monitoring-card">
+      <section className="monitoring-card glass hover-lift animate-fade-in-up">
         <div className="card-header">
           <h2>CPU</h2>
           <span className="card-value">
@@ -95,7 +95,7 @@ function CoreGridWidget({ metrics }) {
         </p>
       </section>
 
-      <section className="monitoring-card">
+      <section className="monitoring-card glass hover-lift animate-fade-in-up">
         <div className="card-header">
           <h2>{t('core.memory')}</h2>
           <span className="card-value">
@@ -125,7 +125,7 @@ function CoreGridWidget({ metrics }) {
         <p className="card-footnote">Swap {formatMb(memory.swapUsedMb)}</p>
       </section>
 
-      <section className="monitoring-card">
+      <section className="monitoring-card glass hover-lift animate-fade-in-up">
         <div className="card-header">
           <h2>{t('core.disk')}</h2>
           <span className="card-value">
@@ -155,7 +155,7 @@ function CoreGridWidget({ metrics }) {
         <p className="card-footnote">{disk.mountPoint || '--'}</p>
       </section>
 
-      <section className="monitoring-card">
+      <section className="monitoring-card glass hover-lift animate-fade-in-up">
         <div className="card-header">
           <h2>{t('core.network')}</h2>
           <span className="card-value">{network.interface || '--'}</span>

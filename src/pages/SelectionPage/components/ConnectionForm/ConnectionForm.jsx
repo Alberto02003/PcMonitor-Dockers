@@ -35,7 +35,7 @@ function ConnectionForm({
         <div className="form-tabs">
           <button
             type="button"
-            className={`form-tab ${activeTab === 'basic' ? 'active' : ''}`}
+            className={`form-tab interactive-bounce ${activeTab === 'basic' ? 'active' : ''}`}
             onClick={() => setActiveTab('basic')}
           >
             <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -49,7 +49,7 @@ function ConnectionForm({
           </button>
           <button
             type="button"
-            className={`form-tab ${activeTab === 'auth' ? 'active' : ''}`}
+            className={`form-tab interactive-bounce ${activeTab === 'auth' ? 'active' : ''}`}
             onClick={() => setActiveTab('auth')}
           >
             <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -61,7 +61,7 @@ function ConnectionForm({
           </button>
           <button
             type="button"
-            className={`form-tab ${activeTab === 'organization' ? 'active' : ''}`}
+            className={`form-tab interactive-bounce ${activeTab === 'organization' ? 'active' : ''}`}
             onClick={() => setActiveTab('organization')}
           >
             <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -90,6 +90,7 @@ function ConnectionForm({
                     onChange={onChange}
                     placeholder={t('form.namePlaceholder')}
                     aria-invalid={Boolean(errors.name)}
+                    className="focus-ring"
                   />
                   {errors.name && <span className="field-error">{errors.name}</span>}
                 </label>
@@ -110,6 +111,7 @@ function ConnectionForm({
                     onChange={onChange}
                     placeholder="192.168.1.100"
                     aria-invalid={Boolean(errors.host)}
+                    className="focus-ring"
                   />
                   {errors.host && <span className="field-error">{errors.host}</span>}
                 </label>
@@ -128,6 +130,7 @@ function ConnectionForm({
                     onChange={onChange}
                     placeholder="22"
                     aria-invalid={Boolean(errors.port)}
+                    className="focus-ring"
                   />
                   {errors.port && <span className="field-error">{errors.port}</span>}
                 </label>
@@ -149,6 +152,7 @@ function ConnectionForm({
                     onChange={onChange}
                     placeholder="root"
                     aria-invalid={Boolean(errors.username)}
+                    className="focus-ring"
                   />
                   {errors.username && <span className="field-error">{errors.username}</span>}
                 </label>
@@ -171,6 +175,7 @@ function ConnectionForm({
                   value={formData.notes} 
                   onChange={onChange}
                   placeholder={t('form.notesPlaceholder')}
+                  className="focus-ring scrollbar-thin"
                 />
               </label>
             </div>
@@ -187,7 +192,7 @@ function ConnectionForm({
                   </svg>
                   {t('form.authMethod')}
                 </span>
-                <select name="authType" value={formData.authType} onChange={onChange}>
+                <select name="authType" value={formData.authType} onChange={onChange} className="focus-ring">
                   <option value="password">{t('form.password')}</option>
                   <option value="key">{t('form.sshKey')}</option>
                 </select>
@@ -208,6 +213,7 @@ function ConnectionForm({
                     value={formData.password}
                     onChange={onChange}
                     placeholder="••••••••"
+                    className="focus-ring"
                   />
                 </label>
               ) : (
@@ -223,6 +229,7 @@ function ConnectionForm({
                     value={formData.keyPath} 
                     onChange={onChange}
                     placeholder="~/.ssh/id_rsa"
+                    className="focus-ring"
                   />
                 </label>
               )}
@@ -252,6 +259,7 @@ function ConnectionForm({
                   name="group" 
                   value={formData.group || 'default'} 
                   onChange={onChange}
+                  className="focus-ring"
                 >
                   {allGroups.map(group => (
                     <option key={group.name} value={group.name}>
@@ -299,26 +307,27 @@ function ConnectionForm({
                   </svg>
                   {t('form.tags')}
                 </span>
-                <input
-                  name="tags"
-                  value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
-                  onChange={(e) => {
-                    const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean)
-                    onChange({ target: { name: 'tags', value: tags } })
-                  }}
-                  placeholder={t('form.tagsPlaceholder')}
-                />
+                  <input
+                    name="tags"
+                    value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
+                    onChange={(e) => {
+                      const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean)
+                      onChange({ target: { name: 'tags', value: tags } })
+                    }}
+                    placeholder={t('form.tagsPlaceholder')}
+                    className="focus-ring"
+                  />
               </label>
             </div>
           )}
         </div>
 
         <div className="form-actions">
-          <button className="btn btn-accent" type="submit" disabled={isSaving}>
+          <button className="btn btn-accent interactive-bounce hover-glow" type="submit" disabled={isSaving}>
             {isSaving ? t('actions.saving') : t('actions.save')}
           </button>
           <button
-            className="btn btn-outline"
+            className="btn btn-outline interactive-bounce"
             type="button"
             onClick={onTest}
             disabled={isTesting}
@@ -326,7 +335,7 @@ function ConnectionForm({
             {isTesting ? t('actions.testing') : t('actions.test')}
           </button>
           {selectedConnection && (
-            <button className="btn btn-ghost" type="button" onClick={onDelete}>
+            <button className="btn btn-ghost interactive-bounce" type="button" onClick={onDelete}>
               {t('common.delete')}
             </button>
           )}

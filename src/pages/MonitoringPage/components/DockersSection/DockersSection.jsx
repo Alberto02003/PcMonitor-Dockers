@@ -116,7 +116,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
   }
 
   return (
-    <section className="monitoring-docker">
+    <section className="monitoring-docker animate-fade-in-up">
       <div className="card-header">
         <h2>Dockers</h2>
         <span className="card-value">{containers.length} {containers.length === 1 ? 'container' : 'containers'}</span>
@@ -124,33 +124,33 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
 
       {/* Summary Stats */}
       <div className="docker-stats-grid">
-        <div className="docker-stat-card">
+        <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Total</div>
           <div className="docker-stat-value">{containers.length}</div>
         </div>
 
-        <div className="docker-stat-card">
+        <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Running</div>
           <div className="docker-stat-value" style={{ color: 'var(--status-success)' }}>
             {runningCount}
           </div>
         </div>
 
-        <div className="docker-stat-card">
+        <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Stopped</div>
           <div className="docker-stat-value" style={{ color: 'var(--text-secondary)' }}>
             {stoppedCount}
           </div>
         </div>
 
-        <div className="docker-stat-card">
+        <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Total CPU</div>
           <div className="docker-stat-value" style={{ color: 'var(--accent-cyan)' }}>
             {totalCpu.toFixed(1)}<span className="docker-stat-unit">%</span>
           </div>
         </div>
 
-        <div className="docker-stat-card">
+        <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Total RAM</div>
           <div className="docker-stat-value" style={{ color: 'var(--accent-purple)' }}>
             {totalMemory.toFixed(0)}<span className="docker-stat-unit">MB</span>
@@ -166,7 +166,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
       )}
       
       {/* Containers List with Scroll */}
-      <div className="docker-containers-wrapper">
+                      <div className="docker-containers-wrapper scrollbar-thin">
         {containers.length === 0 ? (
           <div className="docker-empty">
             <p>{t('docker.noContainers')}</p>
@@ -179,7 +179,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
               const isRunning = container.state === 'running'
               
               return (
-                <div key={container.id} className={`docker-card ${!isRunning ? 'is-stopped' : ''}`}>
+                <div key={container.id} className={`docker-card glass hover-lift ${!isRunning ? 'is-stopped' : ''}`}>
                   {/* Header */}
                   <div className="docker-card-header">
                     <div className="docker-card-title">
@@ -252,7 +252,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                           <div key={idx} className="docker-url-group">
                             <button
                               type="button"
-                              className="docker-url-btn"
+                              className="docker-url-btn interactive-bounce"
                               onClick={() => handleOpenUrl(urlInfo.url)}
                               title={urlInfo.url}
                             >
@@ -261,7 +261,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                             </button>
                             <button
                               type="button"
-                              className="docker-copy-btn"
+                              className="docker-copy-btn interactive-bounce"
                               onClick={() => handleCopyUrl(urlInfo.url)}
                               title="Copy URL"
                             >
@@ -280,7 +280,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                         <>
                           <button
                             type="button"
-                            className="btn btn-outline btn-danger btn-sm"
+                            className="btn btn-outline btn-danger btn-sm interactive-bounce"
                             onClick={() => handleStop(container.id)}
                             disabled={actionLoading[container.id]}
                           >
@@ -288,7 +288,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                           </button>
                           <button
                             type="button"
-                            className="btn btn-outline btn-sm"
+                            className="btn btn-outline btn-sm interactive-bounce"
                             onClick={() => handleRestart(container.id)}
                             disabled={actionLoading[container.id]}
                           >
@@ -298,7 +298,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                       ) : (
                         <button
                           type="button"
-                          className="btn btn-outline btn-success btn-sm"
+                          className="btn btn-outline btn-success btn-sm interactive-bounce"
                           onClick={() => handleStart(container.id)}
                           disabled={actionLoading[container.id]}
                         >
@@ -307,7 +307,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                       )}
                       <button
                         type="button"
-                        className="btn btn-accent btn-sm"
+                        className="btn btn-accent btn-sm interactive-bounce hover-glow"
                         onClick={() => onOpenDocker(container)}
                       >
                         {t('actions.viewDetails')}
@@ -315,7 +315,7 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
                     </div>
                     <button
                       type="button"
-                      className="btn btn-outline btn-danger btn-sm docker-remove-btn"
+                      className="btn btn-outline btn-danger btn-sm docker-remove-btn interactive-bounce"
                       onClick={() => handleRemove(container.id, container.name)}
                       disabled={actionLoading[container.id]}
                       title={t('docker.removeAction')}

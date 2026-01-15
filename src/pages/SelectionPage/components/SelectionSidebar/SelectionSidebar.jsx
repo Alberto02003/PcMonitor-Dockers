@@ -66,6 +66,7 @@ function SelectionSidebar({
           placeholder={t('selection.searchPlaceholder')}
           onChange={onSearchChange}
           aria-label={t('selection.searchPlaceholder')}
+          className="focus-ring"
         />
       </div>
 
@@ -84,7 +85,7 @@ function SelectionSidebar({
           filteredConnections.map((item, index) => (
             <div
               key={item.id}
-              className={`connection-card ${item.id === selectedId ? 'is-active' : ''}`}
+              className={`connection-card hover-lift ${item.id === selectedId ? 'is-active' : ''}`}
               style={{ 
                 animationDelay: `${index * 60}ms`,
                 borderLeftColor: item.color || getGroupColor(item.group || 'default')
@@ -144,7 +145,7 @@ function SelectionSidebar({
               <div className="connection-actions">
                 <button
                   type="button"
-                  className={`connection-action-btn ${item.isFavorite ? 'is-active' : ''}`}
+                  className={`connection-action-btn interactive-bounce ${item.isFavorite ? 'is-active' : ''}`}
                   onClick={() => onToggleFavorite(item.id)}
                   title={t('actions.favorite')}
                 >
@@ -152,7 +153,7 @@ function SelectionSidebar({
                 </button>
                 <button
                   type="button"
-                  className={`connection-action-btn ${item.id === defaultId ? 'is-active' : ''}`}
+                  className={`connection-action-btn interactive-bounce ${item.id === defaultId ? 'is-active' : ''}`}
                   onClick={() => onSetDefault(item.id)}
                   title={t('actions.setDefault')}
                 >
@@ -160,7 +161,7 @@ function SelectionSidebar({
                 </button>
                 <button
                   type="button"
-                  className="connection-action-btn connection-action-primary"
+                  className="connection-action-btn connection-action-primary interactive-bounce hover-glow"
                   onClick={() => onConnect(item.id)}
                   title={t('actions.connect')}
                 >
@@ -169,7 +170,7 @@ function SelectionSidebar({
                 </button>
                 <button
                   type="button"
-                  className="connection-action-btn connection-action-danger"
+                  className="connection-action-btn connection-action-danger interactive-bounce"
                   onClick={() => onDelete(item.id)}
                   title={t('common.delete')}
                 >
