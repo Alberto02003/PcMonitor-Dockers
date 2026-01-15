@@ -11,7 +11,6 @@ function MonitoringHeader({
   onSystemTabChange,
   onBack, 
   onOpenAlerts, 
-  onOpenReports, 
   connectionLabel 
 }) {
   const { t } = useTranslation()
@@ -66,9 +65,6 @@ function MonitoringHeader({
           </button>
         </div>
         
-        <button type="button" className="btn btn-primary" onClick={onOpenReports}>
-          {t('monitoring.reports')}
-        </button>
         <button type="button" className="btn btn-accent" onClick={onOpenAlerts}>
           {t('monitoring.alerts')}
         </button>

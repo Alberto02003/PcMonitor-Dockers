@@ -6,12 +6,13 @@ Aplicacion de escritorio para monitorizar servidores Linux remotos via SSH. Mues
 
 - **Conexiones SSH**: Gestiona multiples conexiones a servidores Linux con autenticacion por password o clave SSH
 - **Metricas en tiempo real**: CPU, memoria, disco, red, carga del sistema, temperaturas
+- **Metricas avanzadas**: CPU per-core, memoria detallada, disk I/O, red por interfaz, conexiones TCP, puertos abiertos, procesos
 - **Gestion de Docker**: Lista contenedores, inicia/para/reinicia, visualiza logs y estadisticas
 - **Terminal SSH integrada**: Ejecuta comandos remotos con historial y soporte para ventana externa
 - **Sistema de alertas**: Configura umbrales para CPU, RAM, disco, temperatura, etc. con notificaciones nativas
-- **Informes PDF**: Genera reportes del estado del servidor
-- **Credenciales cifradas**: Las passwords y rutas de claves SSH se cifran con AES-256-GCM
+- **Almacenamiento local**: Credenciales cifradas con Tauri Stronghold, historial de metricas en localStorage (24h)
 - **Multiidioma**: Espanol e Ingles
+- **Sin dependencias externas**: No requiere API REST ni base de datos externa
 
 ## Tecnologias
 
@@ -24,8 +25,8 @@ Aplicacion de escritorio para monitorizar servidores Linux remotos via SSH. Mues
 ### Desktop
 - Tauri 2.9 (Rust)
 - SSH2 (conexiones SSH)
-- AES-GCM (cifrado de credenciales)
-- PrintPDF (generacion de informes)
+- Tauri Stronghold (almacenamiento cifrado de credenciales)
+- localStorage (historial de metricas - 24 horas)
 
 ## Requisitos
 
@@ -66,12 +67,12 @@ src/
 
 src-tauri/
   src/
-    lib.rs          # Comandos Tauri
-    ssh.rs          # Conexiones SSH
-    metrics.rs      # Recoleccion de metricas
-    docker.rs       # Gestion de Docker
-    crypto.rs       # Cifrado AES-256-GCM
-    reports/        # Generacion de PDF
+    lib.rs              # Comandos Tauri
+    ssh.rs              # Conexiones SSH
+    metrics.rs          # Recoleccion de metricas basicas
+    metrics_advanced.rs # Recoleccion de metricas avanzadas
+    docker.rs           # Gestion de Docker
+    security.rs         # Tauri Stronghold (cifrado)
 ```
 
 ## Scripts

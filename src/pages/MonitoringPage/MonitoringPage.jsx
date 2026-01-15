@@ -5,7 +5,7 @@ import { useAlertsConfig } from './hooks/useAlertsConfig.js'
 import { useWidgetOrder } from './hooks/useWidgetOrder.js'
 import { useDockerModal } from './hooks/useDockerModal.js'
 import { useAlertNotifications } from './hooks/useAlertNotifications.js'
-import { useReportsModal } from './hooks/useReportsModal.js'
+
 import { useAdvancedMetrics } from './hooks/useAdvancedMetrics.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { isTauri } from '../../services/tauri.js'
@@ -16,7 +16,7 @@ import DockersSection from './components/DockersSection/DockersSection.jsx'
 import TerminalSection from './components/TerminalSection/TerminalSection.jsx'
 import DockerModal from './components/DockerModal/DockerModal.jsx'
 import AlertsModal from './components/AlertsModal/AlertsModal.jsx'
-import ReportsModal from './components/ReportsModal/ReportsModal.jsx'
+
 import './MonitoringPage.css'
 
 function MonitoringPage({ connection, onBack }) {
@@ -57,13 +57,7 @@ function MonitoringPage({ connection, onBack }) {
     changePanel,
   } = useDockerModal()
 
-  const {
-    reportsOpen,
-    openReports,
-    closeReports,
-    isGenerating,
-    generateReport,
-  } = useReportsModal(connection?.id)
+
 
   // Real-time data from SSH connection
   // Intervals optimized for performance: metrics every 5s, containers every 10s
@@ -228,7 +222,6 @@ function MonitoringPage({ connection, onBack }) {
         onSystemTabChange={handleSystemTabChange}
         onBack={onBack}
         onOpenAlerts={openAlerts}
-        onOpenReports={openReports}
         connectionLabel={connectionLabel}
       />
 
@@ -322,13 +315,7 @@ function MonitoringPage({ connection, onBack }) {
         onUpdateAlertValue={updateAlertValue}
       />
 
-      <ReportsModal
-        open={reportsOpen}
-        connection={connection}
-        onClose={closeReports}
-        onGenerate={generateReport}
-        isGenerating={isGenerating}
-      />
+
     </div>
   )
 }
