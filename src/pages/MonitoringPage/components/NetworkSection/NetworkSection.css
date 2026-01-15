@@ -18,46 +18,48 @@
   color: var(--text-secondary);
 }
 
-/* Interface Selector - Same style as System */
+/* Interface Selector - Same style as ConnectionForm */
 .network-interface-selector {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: rgba(10, 25, 47, 0.5);
-  border: 1px solid rgba(100, 255, 218, 0.15);
-  border-radius: 0.5rem;
+  background: rgba(10, 25, 47, 0.2);
+  border: 1px solid rgba(100, 255, 218, 0.08);
+  border-radius: var(--radius-md);
 }
 
 .network-interface-selector label {
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.9rem;
 }
 
 .network-interface-selector select {
-  background: var(--bg-primary);
-  border: 1px solid rgba(100, 255, 218, 0.15);
-  border-radius: 0.5rem;
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.12);
+  border-radius: var(--radius-sm);
   color: var(--text-primary);
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.92rem;
   min-width: 180px;
   cursor: pointer;
-  transition: border-color 0.2s ease;
-  font-family: 'JetBrains Mono', monospace;
+  transition: var(--transition);
 }
 
 .network-interface-selector select:hover {
-  border-color: var(--accent-cyan);
+  border-color: rgba(100, 255, 218, 0.35);
+  background: var(--light-blue);
 }
 
 .network-interface-selector select:focus {
   outline: none;
-  border-color: var(--accent-cyan);
+  border-color: rgba(100, 255, 218, 0.6);
+  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+}
+
+.network-interface-selector select:focus-visible {
+  outline: 2px solid rgba(100, 255, 218, 0.25);
+  outline-offset: 2px;
 }
 
 /* Throughput Grid - Stat Cards Style */
@@ -323,7 +325,7 @@
 }
 
 .tcp-stat:hover {
-  border-color: currentColor;
+  border-color: var(--accent-cyan);
 }
 
 .tcp-stat.established {

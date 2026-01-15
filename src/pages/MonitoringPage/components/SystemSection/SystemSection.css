@@ -59,6 +59,11 @@
   border: 1px solid rgba(100, 255, 218, 0.15);
   border-radius: 0.5rem;
   padding: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--accent-cyan);
 }
 
 .stat-card-header {
@@ -125,6 +130,11 @@
   border: 1px solid rgba(100, 255, 218, 0.15);
   border-radius: 0.5rem;
   padding: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.breakdown-container:hover {
+  border-color: var(--accent-cyan);
 }
 
 .breakdown-title {
@@ -174,6 +184,11 @@
   border: 1px solid rgba(100, 255, 218, 0.15);
   border-radius: 0.5rem;
   overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.data-table-container:hover {
+  border-color: var(--accent-cyan);
 }
 
 .data-table {
@@ -227,6 +242,11 @@
   border-radius: 0.375rem;
   padding: 0.625rem;
   text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.core-card:hover {
+  border-color: var(--accent-cyan);
 }
 
 .core-label {
@@ -266,4 +286,141 @@
   font-size: 2rem;
   margin-bottom: 0.5rem;
   opacity: 0.5;
+}
+
+/* Process controls - Same style as ConnectionForm inputs */
+.process-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.process-filter {
+  flex: 1;
+  min-width: 200px;
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.12);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.92rem;
+  transition: var(--transition);
+}
+
+.process-filter:hover {
+  border-color: rgba(100, 255, 218, 0.35);
+  background: var(--light-blue);
+}
+
+.process-filter:focus {
+  outline: none;
+  border-color: rgba(100, 255, 218, 0.6);
+  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+}
+
+.process-filter:focus-visible {
+  outline: 2px solid rgba(100, 255, 218, 0.25);
+  outline-offset: 2px;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.sort-btn {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: 0.375rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sort-btn:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.sort-btn.is-active {
+  background: rgba(100, 255, 218, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.state-badge {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.state-r { 
+  background: rgba(100, 255, 218, 0.2); 
+  color: var(--accent-cyan); 
+}
+
+.state-s { 
+  background: rgba(136, 146, 176, 0.2); 
+  color: var(--text-secondary); 
+}
+
+.state-d { 
+  background: rgba(247, 140, 108, 0.2); 
+  color: #f78c6c; 
+}
+
+.state-z { 
+  background: rgba(255, 83, 112, 0.2); 
+  color: #ff5370; 
+}
+
+.state-t { 
+  background: rgba(255, 203, 107, 0.2); 
+  color: #ffcb6b; 
+}
+
+/* Disk selector for DiskTab */
+.disk-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.disk-selector-btn {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  background: rgba(10, 25, 47, 0.5);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.disk-selector-btn:hover {
+  border-color: var(--accent-cyan);
+}
+
+.disk-selector-btn.is-active {
+  background: rgba(100, 255, 218, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+.disk-name {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.disk-mount {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+tr.is-selected td {
+  background: rgba(100, 255, 218, 0.05);
 }
