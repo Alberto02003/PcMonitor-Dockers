@@ -4,7 +4,6 @@ mod metrics_advanced;
 mod docker;
 mod websocket;
 mod security;
-mod reports;
 mod crypto;
 
 use ssh::{ConnectionConfig, ConnectionStatus, SshManager, CommandResult};
@@ -13,12 +12,10 @@ use metrics_advanced::{AdvancedMetricsCollector, AdvancedMetrics};
 use docker::{DockerManager, DockerContainer, DockerImage, DockerVolume, DockerActionResult, DockerInfo, ComposeStack, ComposeService, ComposeActionResult};
 use websocket::WebSocketServer;
 use security::{SecureStorage, FullConnection, validate_host, validate_port, validate_username};
-use reports::{ReportsApiClient, PdfGenerator, ReportScheduler, ReportConfig, ReportResult};
 use crypto::{encrypt_credential, decrypt_credential};
 use parking_lot::Mutex;
 use std::sync::Arc;
 use std::path::PathBuf;
-use std::time::Instant;
 use tauri::{State, Manager, Emitter};
 
 struct AppState {
@@ -26,7 +23,6 @@ struct AppState {
     ws_server: Arc<Mutex<Option<WebSocketServer>>>,
     ws_port: Arc<Mutex<Option<u16>>>,
     secure_storage: Arc<Mutex<Option<SecureStorage>>>,
-    api_base_url: Arc<Mutex<String>>,
 }
 
 // ============================================================================
@@ -630,129 +626,6 @@ async fn compose_service_action(
 }
 
 // ============================================================================
-// Reports Commands
-// ============================================================================
-
-#[tauri::command]
-async fn set_api_base_url(
-    state: State<'_, AppState>,
-    url: String,
-) -> Result<(), String> {
-    *state.api_base_url.lock() = url;
-    Ok(())
-}
-
-#[tauri::command]
-async fn generate_report(
-    state: State<'_, AppState>,
-    config: ReportConfig,
-) -> Result<ReportResult, String> {
-    let api_url = state.api_base_url.lock().clone();
-    
-    if api_url.is_empty() {
-        return Err("API base URL not configured".into());
-    }
-
-    let start_time = Instant::now();
-
-    // Fetch data from API
-    let api_client = ReportsApiClient::new(api_url.clone());
-    let data = match api_client.fetch_full_report(
-        &config.connection_id,
-        &config.period_start,
-        &config.period_end,
-    ).await {
-        Ok(d) => d,
-        Err(e) => {
-            return Ok(ReportResult {
-                success: false,
-                file_path: None,
-                file_size: None,
-                generation_time_ms: start_time.elapsed().as_millis() as u64,
-                error: Some(e),
-            });
-        }
-    };
-
-    // Generate PDF
-    let generator = PdfGenerator::new(&config.language);
-    match generator.generate(&data, &config.output_path) {
-        Ok(file_size) => {
-            let elapsed = start_time.elapsed().as_millis() as u64;
-            
-            // Register in history (fire and forget)
-            let _ = api_client.register_report_history(
-                &config.connection_id,
-                None, // Not scheduled
-                &config.period_start,
-                &config.period_end,
-                &format!("Manual Report - {}", data.connection.name),
-                &config.output_path,
-                Some(file_size),
-                &config.language,
-                "completed",
-                None,
-                Some(elapsed),
-            ).await;
-
-            Ok(ReportResult {
-                success: true,
-                file_path: Some(config.output_path),
-                file_size: Some(file_size),
-                generation_time_ms: elapsed,
-                error: None,
-            })
-        }
-        Err(e) => {
-            Ok(ReportResult {
-                success: false,
-                file_path: None,
-                file_size: None,
-                generation_time_ms: start_time.elapsed().as_millis() as u64,
-                error: Some(e),
-            })
-        }
-    }
-}
-
-#[tauri::command]
-async fn check_scheduled_reports(
-    state: State<'_, AppState>,
-) -> Result<Vec<String>, String> {
-    let api_url = state.api_base_url.lock().clone();
-    
-    if api_url.is_empty() {
-        return Err("API base URL not configured".into());
-    }
-
-    let scheduler = ReportScheduler::new(&api_url);
-    scheduler.check_and_execute().await
-}
-
-#[tauri::command]
-async fn get_report_preview_data(
-    state: State<'_, AppState>,
-    #[allow(non_snake_case)]
-    connectionId: String,
-    start: String,
-    end: String,
-) -> Result<serde_json::Value, String> {
-    let api_url = state.api_base_url.lock().clone();
-    
-    if api_url.is_empty() {
-        return Err("API base URL not configured".into());
-    }
-
-    let api_client = ReportsApiClient::new(api_url);
-    let data = api_client.fetch_full_report(&connectionId, &start, &end)
-        .await
-        .map_err(|e| e.to_string())?;
-    
-    serde_json::to_value(data)
-        .map_err(|e| format!("Failed to serialize data: {}", e))
-}
-
-// ============================================================================
 // App Entry Point
 // ============================================================================
 
@@ -765,7 +638,6 @@ pub fn run() {
         ws_server: Arc::new(Mutex::new(None)),
         ws_port: Arc::new(Mutex::new(None)),
         secure_storage: Arc::new(Mutex::new(None)),
-        api_base_url: Arc::new(Mutex::new(String::new())),
     };
 
     tauri::Builder::default()
@@ -835,11 +707,6 @@ pub fn run() {
             compose_restart,
             compose_logs,
             compose_service_action,
-            // Reports commands
-            set_api_base_url,
-            generate_report,
-            check_scheduled_reports,
-            get_report_preview_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

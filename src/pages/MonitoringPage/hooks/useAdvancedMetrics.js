@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { getAdvancedMetrics, getSystemMetrics, isTauri } from '../../../services/tauri.js'
-import { saveAdvancedMetrics } from '../../../services/api.js'
+import { getAdvancedMetrics, isTauri } from '../../../services/tauri.js'
 
 /**
  * Hook para obtener metricas avanzadas del sistema en tiempo real
@@ -24,27 +23,15 @@ export function useAdvancedMetrics(connectionId, interval = 5000) {
     }
 
     try {
-      // Fetch both basic and advanced metrics
-      const [advancedData, basicData] = await Promise.all([
-        getAdvancedMetrics(connectionId),
-        getSystemMetrics(connectionId).catch(() => null), // Don't fail if basic metrics fail
-      ])
+      // Fetch advanced metrics
+      const advancedData = await getAdvancedMetrics(connectionId)
       
       if (isMountedRef.current) {
         setMetrics(advancedData)
         setLastUpdate(new Date())
         setError(null)
         setLoading(false)
-
-        // Save to database every 3rd fetch (every 15 seconds at default interval)
-        // to reduce database writes while still maintaining good data granularity
-        saveCounterRef.current++
-        if (saveCounterRef.current >= 3) {
-          saveCounterRef.current = 0
-          saveAdvancedMetrics(connectionId, basicData, advancedData).catch(err => {
-            console.warn('Failed to save advanced metrics to database:', err.message)
-          })
-        }
+        // No database persistence - data only in frontend state
       }
     } catch (err) {
       if (isMountedRef.current) {
