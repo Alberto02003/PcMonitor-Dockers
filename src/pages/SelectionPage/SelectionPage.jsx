@@ -3,6 +3,7 @@ import { useNotification } from '../../components/Notification/Notification.jsx'
 import { useSettings } from '../../components/Settings/Settings.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
+import { useAutoUpdater } from '../../hooks/useAutoUpdater.js'
 import { emptyForm } from './constants/formConfig.js'
 import { useConnectionForm } from './hooks/useConnectionForm.js'
 import { useConnectionActions } from './hooks/useConnectionActions.js'
@@ -16,22 +17,44 @@ import SettingsModal from './components/SettingsModal/SettingsModal.jsx'
 import UndoSnackbar from './components/UndoSnackbar/UndoSnackbar.jsx'
 import SelectionLoading from './components/SelectionLoading/SelectionLoading.jsx'
 import UpdaterModal from '../../components/UpdaterModal/UpdaterModal.jsx'
+import UpdateNotification from '../../components/UpdateNotification/UpdateNotification.jsx'
 import './SelectionPage.css'
 
 function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   // Stores and settings
   const connections = useConnectionsStore(state => state.connections)
   const isLoading = useConnectionsStore(state => state.isLoading)
+  const getGroups = useConnectionsStore(state => state.getGroups)
   const { showNotification } = useNotification()
   const { settings, updateSettings, loaded: settingsLoaded } = useSettings()
   const { t } = useTranslation()
   const hasLoaded = !isLoading
 
+  // Get existing groups for form
+  const existingGroups = useMemo(() => getGroups(), [getGroups, connections])
+
   // Local state
   const [selectedId, setSelectedId] = useState(null)
   const [search, setSearch] = useState('')
+  const [selectedGroup, setSelectedGroup] = useState(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false)
+  const [showUpdateNotification, setShowUpdateNotification] = useState(false)
+
+  // Auto-updater hook
+  const { updateInfo, hasUpdate } = useAutoUpdater({
+    checkOnMount: true,
+    checkInterval: 6 * 60 * 60 * 1000, // 6 horas
+    enabled: settings.autoCheckUpdates,
+    onUpdateAvailable: (info) => {
+      // Mostrar notificación cuando hay actualización disponible
+      setShowUpdateNotification(true)
+      showNotification(
+        `${t('updater.newVersionAvailable')} v${info.version}`,
+        'success'
+      )
+    },
+  })
 
   // Derived state
   const selectedConnection = useMemo(
@@ -45,14 +68,25 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   )
 
   const filteredConnections = useMemo(() => {
-    if (!search.trim()) return connections
-    const term = search.trim().toLowerCase()
-    return connections.filter((item) =>
-      [item.name, item.host, item.username, item.notes, String(item.port || 22)]
-        .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(term))
-    )
-  }, [connections, search])
+    let filtered = connections
+
+    // Filter by group
+    if (selectedGroup) {
+      filtered = filtered.filter(item => (item.group || 'default') === selectedGroup)
+    }
+
+    // Filter by search
+    if (search.trim()) {
+      const term = search.trim().toLowerCase()
+      filtered = filtered.filter((item) =>
+        [item.name, item.host, item.username, item.notes, String(item.port || 22)]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(term))
+      )
+    }
+
+    return filtered
+  }, [connections, search, selectedGroup])
 
   const hostSuggestions = useMemo(
     () => Array.from(new Set(connections.map((item) => item.host).filter(Boolean))),
@@ -215,6 +249,18 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
 
   return (
     <div className="selection-layout">
+      {/* Update notification (top-right corner) */}
+      {showUpdateNotification && hasUpdate && (
+        <UpdateNotification
+          updateInfo={updateInfo}
+          onOpenUpdater={() => {
+            setShowUpdateNotification(false)
+            setIsUpdaterOpen(true)
+          }}
+          onDismiss={() => setShowUpdateNotification(false)}
+        />
+      )}
+
       <SelectionSidebar
         connections={connections}
         filteredConnections={filteredConnections}
@@ -227,6 +273,9 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         onToggleFavorite={actions.toggleFavorite}
         onConnect={handleConnect}
         onDelete={handleDelete}
+        groups={existingGroups}
+        selectedGroup={selectedGroup}
+        onSelectGroup={setSelectedGroup}
       />
 
       <main className="selection-main">
@@ -257,6 +306,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
           selectedConnection={selectedConnection}
           hostSuggestions={hostSuggestions}
           userSuggestions={userSuggestions}
+          existingGroups={existingGroups}
         />
 
         <UndoSnackbar

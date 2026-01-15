@@ -11,6 +11,9 @@ export const emptyForm = {
   password: '',
   keyPath: '',
   notes: '',
+  group: 'default',
+  tags: [],
+  color: '#64ffda',
 }
 
 /**
@@ -47,6 +50,9 @@ export function connectionToFormData(connection) {
     password: connection.password || '',
     keyPath: connection.keyPath || '',
     notes: connection.notes || '',
+    group: connection.group || 'default',
+    tags: connection.tags || [],
+    color: connection.color || '#64ffda',
   }
 }
 
@@ -72,5 +78,8 @@ export function formDataToPayload(formData, storeCredentials) {
         ? formData.keyPath
         : '',
     notes: formData.notes,
+    group: formData.group || 'default',
+    tags: Array.isArray(formData.tags) ? formData.tags : [],
+    color: formData.color || '#64ffda',
   }
 }

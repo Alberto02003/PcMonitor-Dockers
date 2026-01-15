@@ -1,0 +1,60 @@
+.group-filter {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(10, 25, 47, 0.3);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  border-radius: 0.5rem;
+}
+
+.group-filter-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.group-filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.group-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  border-radius: 0.375rem;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.group-filter-btn:hover {
+  background: rgba(100, 255, 218, 0.05);
+  border-color: rgba(100, 255, 218, 0.3);
+}
+
+.group-filter-btn.active {
+  background: rgba(100, 255, 218, 0.15);
+  border-color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.group-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.group-label {
+  font-weight: 500;
+}

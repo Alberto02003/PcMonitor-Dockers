@@ -1,5 +1,7 @@
 import { ServerAvatar } from '../../../../components'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
+import GroupFilter from '../GroupFilter/GroupFilter.jsx'
+import { getGroupColor } from '../../../../utils/groups.js'
 import './SelectionSidebar.css'
 
 function SelectionSidebar({
@@ -14,6 +16,9 @@ function SelectionSidebar({
   onConnect,
   onDelete,
   onToggleFavorite,
+  groups = [],
+  selectedGroup,
+  onSelectGroup,
 }) {
   const { t } = useTranslation()
 
@@ -64,6 +69,14 @@ function SelectionSidebar({
         />
       </div>
 
+      {groups.length > 0 && (
+        <GroupFilter
+          groups={groups}
+          selectedGroup={selectedGroup}
+          onSelectGroup={onSelectGroup}
+        />
+      )}
+
       <div className="sidebar-list" role="list">
         {filteredConnections.length === 0 ? (
           <p className="sidebar-empty">{t('selection.noConnections')}</p>
@@ -71,11 +84,19 @@ function SelectionSidebar({
           filteredConnections.map((item, index) => (
             <div
               key={item.id}
-              className={`sidebar-item ${item.id === selectedId ? 'is-active' : ''} ${item.id === defaultId ? 'is-default' : ''}`}
-              style={{ animationDelay: `${index * 60}ms` }}
+              className={`connection-card ${item.id === selectedId ? 'is-active' : ''}`}
+              style={{ 
+                animationDelay: `${index * 60}ms`,
+                borderLeftColor: item.color || getGroupColor(item.group || 'default')
+              }}
             >
-              <div className="item-content">
-                <div className="item-top">
+              {/* Header */}
+              <button 
+                type="button" 
+                className="connection-card-header" 
+                onClick={() => onSelect(item.id)}
+              >
+                <div className="connection-header-left">
                   <ServerAvatar
                     name={item.name}
                     host={item.host}
@@ -83,72 +104,77 @@ function SelectionSidebar({
                     status={getAvatarStatus(item.status)}
                     showStatus={true}
                   />
-                  <button type="button" className="item-main" onClick={() => onSelect(item.id)}>
-                    <div className="item-title">
-                      <p className="item-name">{item.name}</p>
-                      {item.id === defaultId && <span className="default-dot" />}
-                      <span className={`status-pill status-${item.status || 'unknown'}`}>
-                        {getStatusLabel(item.status)}
-                      </span>
+                  <div className="connection-header-info">
+                    <div className="connection-name-row">
+                      <span className="connection-name">{item.name}</span>
+                      {item.id === defaultId && (
+                        <span className="connection-badge badge-default">
+                          <StarIcon />
+                        </span>
+                      )}
+                      {item.isFavorite && (
+                        <span className="connection-badge badge-favorite">
+                          <HeartIcon />
+                        </span>
+                      )}
                     </div>
-                  </button>
+                    <span className="connection-host">
+                      {item.username}@{item.host}:{item.port || 22}
+                    </span>
+                  </div>
                 </div>
+                <span className={`connection-status status-${item.status || 'unknown'}`}>
+                  {getStatusLabel(item.status)}
+                </span>
+              </button>
+
+              {/* Tags */}
+              {item.tags && item.tags.length > 0 && (
+                <div className="connection-tags">
+                  {item.tags.slice(0, 3).map((tag, idx) => (
+                    <span key={idx} className="connection-tag">{tag}</span>
+                  ))}
+                  {item.tags.length > 3 && (
+                    <span className="connection-tag-more">+{item.tags.length - 3}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="connection-actions">
                 <button
                   type="button"
-                  className="item-main item-main-meta"
-                  onClick={() => onSelect(item.id)}
+                  className={`connection-action-btn ${item.isFavorite ? 'is-active' : ''}`}
+                  onClick={() => onToggleFavorite(item.id)}
+                  title={t('actions.favorite')}
                 >
-                  <div className="item-meta">
-                    <div className="meta-block">
-                      <span className="meta-label">{t('form.username')}</span>
-                      <span className="meta-value">
-                        <UserIcon />
-                        {item.username}
-                      </span>
-                    </div>
-                    <div className="meta-block">
-                      <span className="meta-label">IP</span>
-                      <span className="meta-value">
-                        <ServerIcon />
-                        {item.host}:{item.port || 22}
-                      </span>
-                    </div>
-                  </div>
+                  <HeartIcon />
                 </button>
-                <div className="item-actions item-actions-bottom">
-                  <button
-                    type="button"
-                    className={`icon-button ${item.isFavorite ? 'is-active' : ''}`}
-                    onClick={() => onToggleFavorite(item.id)}
-                    title={t('actions.favorite')}
-                  >
-                    <HeartIcon />
-                  </button>
-                  <button
-                    type="button"
-                    className={`icon-button ${item.id === defaultId ? 'is-active' : ''}`}
-                    onClick={() => onSetDefault(item.id)}
-                    title={t('actions.setDefault')}
-                  >
-                    <StarIcon />
-                  </button>
-                  <button
-                    type="button"
-                    className={`icon-button ${item.id === selectedId ? 'is-primary' : ''}`}
-                    onClick={() => onConnect(item.id)}
-                    title={t('actions.connect')}
-                  >
-                    <PlugIcon />
-                  </button>
-                  <button
-                    type="button"
-                    className="icon-button is-danger"
-                    onClick={() => onDelete(item.id)}
-                    title={t('common.delete')}
-                  >
-                    <TrashIcon />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className={`connection-action-btn ${item.id === defaultId ? 'is-active' : ''}`}
+                  onClick={() => onSetDefault(item.id)}
+                  title={t('actions.setDefault')}
+                >
+                  <StarIcon />
+                </button>
+                <button
+                  type="button"
+                  className="connection-action-btn connection-action-primary"
+                  onClick={() => onConnect(item.id)}
+                  title={t('actions.connect')}
+                >
+                  <PlugIcon />
+                  <span>{t('actions.connect')}</span>
+                </button>
+                <button
+                  type="button"
+                  className="connection-action-btn connection-action-danger"
+                  onClick={() => onDelete(item.id)}
+                  title={t('common.delete')}
+                >
+                  <TrashIcon />
+                </button>
               </div>
             </div>
           ))

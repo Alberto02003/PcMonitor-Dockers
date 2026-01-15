@@ -1,0 +1,179 @@
+.update-notification {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.update-notification-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(10, 25, 47, 0.98);
+  border: 2px solid var(--accent-blue);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(100, 255, 218, 0.2);
+  backdrop-filter: blur(10px);
+  min-width: 320px;
+  max-width: 420px;
+}
+
+.update-notification-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(100, 255, 218, 0.15);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: rotateIcon 3s ease-in-out infinite;
+}
+
+@keyframes rotateIcon {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-20deg);
+  }
+  75% {
+    transform: rotate(20deg);
+  }
+}
+
+.update-notification-icon svg {
+  width: 24px;
+  height: 24px;
+  color: var(--accent-blue);
+}
+
+.update-notification-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-notification-text h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.update-notification-text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
+.update-notification-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.update-notification-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.update-notification-btn-primary {
+  background: var(--accent-blue);
+  color: var(--dark-blue);
+}
+
+.update-notification-btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 12px rgba(100, 255, 218, 0.4);
+  transform: translateY(-1px);
+}
+
+.update-notification-btn-primary:active {
+  transform: translateY(0);
+}
+
+.update-notification-btn-dismiss {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.update-notification-btn-dismiss:hover {
+  opacity: 1;
+  background: rgba(100, 255, 218, 0.1);
+}
+
+/* Pulsing glow effect */
+.update-notification::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(45deg, transparent, var(--accent-blue), transparent);
+  border-radius: var(--radius-md);
+  opacity: 0.3;
+  animation: pulse-border 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .update-notification {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  .update-notification-content {
+    min-width: auto;
+    max-width: none;
+  }
+
+  .update-notification-text h4 {
+    font-size: 0.9rem;
+  }
+
+  .update-notification-text p {
+    font-size: 0.8rem;
+  }
+
+  .update-notification-btn-primary {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+  }
+}

@@ -10,6 +10,7 @@ const defaultSettings = {
   windowSize: 'medium',
   storeCredentials: true,
   language: 'es',
+  autoCheckUpdates: true, // Verificar actualizaciones automáticamente
 }
 
 const SettingsContext = createContext(null)

@@ -106,42 +106,6 @@ function generateLabel(containerPort, hostPort, protocol) {
 }
 
 /**
- * Agrupa URLs por tipo
- * @param {Array} urls - Array de URLs
- * @returns {Object} URLs agrupadas por categoría
- */
-export function groupUrlsByType(urls) {
-  const grouped = {
-    web: [],
-    database: [],
-    other: [],
-  }
-
-  for (const urlInfo of urls) {
-    const { containerPort } = urlInfo
-
-    if (isWebPort(containerPort)) {
-      grouped.web.push(urlInfo)
-    } else if (isDatabasePort(containerPort)) {
-      grouped.database.push(urlInfo)
-    } else {
-      grouped.other.push(urlInfo)
-    }
-  }
-
-  return grouped
-}
-
-function isWebPort(port) {
-  return isCommonWebPort(port)
-}
-
-function isDatabasePort(port) {
-  const dbPorts = [3306, 5432, 6379, 27017, 1433, 5984]
-  return dbPorts.includes(port)
-}
-
-/**
  * Formatea la información de puertos para mostrar
  * @param {Array} portMappings - Port mappings
  * @returns {string}

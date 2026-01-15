@@ -47,16 +47,4 @@ export function useTranslation() {
   }
 }
 
-/**
- * HOC para inyectar traducciones en componentes de clase
- * @param {React.Component} Component
- * @returns {React.Component}
- */
-export function withTranslation(Component) {
-  return function TranslatedComponent(props) {
-    const { t, translations, lang } = useTranslation()
-    return <Component {...props} t={t} translations={translations} lang={lang} />
-  }
-}
-
 export default useTranslation

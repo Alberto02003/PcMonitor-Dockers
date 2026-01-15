@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { NotificationProvider } from '../Notification/Notification.jsx'
 import { SettingsProvider } from '../Settings/Settings.jsx'
-import SplashPage from '../../pages/SplashPage/SplashPage.jsx'
 import SelectionPage from '../../pages/SelectionPage/SelectionPage.jsx'
 import MonitoringPage from '../../pages/MonitoringPage/MonitoringPage.jsx'
 import TerminalWindow from '../../pages/TerminalWindow/TerminalWindow.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
+import { showWindow } from '../../services/tauri.js'
 import './App.css'
 
 // Check if we're in the terminal window (based on URL hash)
@@ -42,7 +42,6 @@ function ApiErrorScreen({ error, onRetry }) {
 
 // Main app content
 function AppContent() {
-  const [showSplash, setShowSplash] = useState(true)
   const [activeConnection, setActiveConnection] = useState(null)
   const [currentPage, setCurrentPage] = useState('selection')
   const [allowAutoConnect, setAllowAutoConnect] = useState(true)
@@ -71,19 +70,9 @@ function AppContent() {
     init()
   }, [loadConnections, apiConnected])
 
-  // Splash screen timer
-  useEffect(() => {
-    const timerId = setTimeout(() => setShowSplash(false), 2000)
-    return () => clearTimeout(timerId)
-  }, [])
-
   // Mostrar error de API si existe
-  if (apiError && !showSplash) {
+  if (apiError) {
     return <ApiErrorScreen error={apiError} onRetry={() => window.location.reload()} />
-  }
-
-  if (showSplash) {
-    return <SplashPage />
   }
 
   if (currentPage === 'monitoring') {
@@ -112,6 +101,21 @@ function AppContent() {
 }
 
 function App() {
+  // Show window once React is ready
+  useEffect(() => {
+    const isTauri = typeof window !== 'undefined' && 
+                    window.__TAURI__ !== undefined
+
+    if (isTauri) {
+      // Small delay to ensure everything is rendered
+      setTimeout(() => {
+        showWindow().catch(err => {
+          console.error('Failed to show window:', err)
+        })
+      }, 50)
+    }
+  }, [])
+
   // If this is the terminal window, render only the terminal
   // Still needs SettingsProvider for translations
   if (isTerminalWindow()) {

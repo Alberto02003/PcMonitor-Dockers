@@ -626,6 +626,17 @@ async fn compose_service_action(
 }
 
 // ============================================================================
+// Window Commands
+// ============================================================================
+
+#[tauri::command]
+fn show_window(window: tauri::Window) -> Result<(), String> {
+    window.show().map_err(|e| e.to_string())?;
+    window.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+// ============================================================================
 // App Entry Point
 // ============================================================================
 
@@ -644,6 +655,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(app_state)
@@ -668,6 +680,8 @@ pub fn run() {
             Ok(())
         })
 .invoke_handler(tauri::generate_handler![
+            // Window commands
+            show_window,
             // Credential encryption commands
             encrypt_credentials,
             decrypt_credentials,

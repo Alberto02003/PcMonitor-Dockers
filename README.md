@@ -10,9 +10,10 @@ Aplicacion de escritorio para monitorizar servidores Linux remotos via SSH. Mues
 - **Gestion de Docker**: Lista contenedores, inicia/para/reinicia, visualiza logs y estadisticas
 - **Terminal SSH integrada**: Ejecuta comandos remotos con historial y soporte para ventana externa
 - **Sistema de alertas**: Configura umbrales para CPU, RAM, disco, temperatura, etc. con notificaciones nativas
-- **Almacenamiento local**: Credenciales cifradas con Tauri Stronghold, historial de metricas en localStorage (24h)
-- **Multiidioma**: Espanol e Ingles
+- **Almacenamiento cifrado**: Credenciales cifradas con Tauri Stronghold (AES-256-GCM)
+- **Multiidioma**: Español e Inglés
 - **Sin dependencias externas**: No requiere API REST ni base de datos externa
+- **Solo visualización**: La app muestra datos en tiempo real sin almacenarlos (excepto configuración y credenciales)
 
 ## Tecnologias
 
@@ -25,8 +26,8 @@ Aplicacion de escritorio para monitorizar servidores Linux remotos via SSH. Mues
 ### Desktop
 - Tauri 2.9 (Rust)
 - SSH2 (conexiones SSH)
-- Tauri Stronghold (almacenamiento cifrado de credenciales)
-- localStorage (historial de metricas - 24 horas)
+- Tauri Stronghold (almacenamiento cifrado de credenciales AES-256-GCM)
+- localStorage (configuración de alertas y ajustes de la app)
 
 ## Requisitos
 
@@ -85,6 +86,44 @@ npm run tauri build  # Build aplicacion
 npm run test         # Tests con Vitest
 npm run lint         # ESLint
 ```
+
+## Arquitectura de Datos
+
+### ✅ **Qué SE almacena:**
+- **Credenciales SSH**: Cifradas con Tauri Stronghold (AES-256-GCM)
+- **Configuración de conexiones**: Nombres, hosts, puertos, usuarios
+- **Alertas configuradas**: Umbrales de CPU, RAM, disco, temperatura
+- **Ajustes de la aplicación**: Idioma, tema, preferencias de notificaciones
+
+### ❌ **Qué NO se almacena:**
+- **Métricas del sistema**: Solo se muestran en tiempo real, no se guardan
+- **Historial de rendimiento**: No hay base de datos de métricas históricas
+- **Logs de Docker**: Solo visualización en tiempo real
+- **Estadísticas a largo plazo**: La app es solo para monitoreo en vivo
+
+### 🔒 **Seguridad:**
+- Credenciales cifradas con AES-256-GCM usando Tauri Stronghold
+- Clave de cifrado generada automáticamente y almacenada de forma segura
+- Conexiones SSH directas sin proxy ni servidores intermediarios
+- Sin telemetría ni envío de datos a terceros
+
+## Notas de Desarrollo
+
+### Código Eliminado (No Planificado)
+Las siguientes funcionalidades fueron consideradas pero **NO se implementarán**:
+
+- ❌ **Backend MySQL**: La app no guardará métricas en base de datos
+- ❌ **WebSocket para streaming**: Se usa polling directo vía SSH
+- ❌ **ChartWidget / Métricas históricas**: Solo visualización en tiempo real
+- ❌ **Exportación de datos**: No hay datos que exportar
+
+### Roadmap Futuro
+- ✅ Monitoreo en tiempo real (implementado)
+- ✅ Gestión de Docker (implementado)
+- ✅ Sistema de alertas (implementado)
+- ✅ Terminal SSH integrada (implementado)
+- 🔄 Docker Compose management (en progreso)
+- 📋 Mejoras de UI/UX
 
 ## Licencia
 

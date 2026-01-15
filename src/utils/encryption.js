@@ -10,7 +10,7 @@ const KEY_STORAGE = 'pcmd.key.v1'
  * @param {Uint8Array} bytes
  * @returns {string}
  */
-export function bytesToBase64(bytes) {
+function bytesToBase64(bytes) {
   return btoa(String.fromCharCode(...bytes))
 }
 
@@ -19,7 +19,7 @@ export function bytesToBase64(bytes) {
  * @param {string} value
  * @returns {Uint8Array}
  */
-export function base64ToBytes(value) {
+function base64ToBytes(value) {
   return Uint8Array.from(atob(value), (char) => char.charCodeAt(0))
 }
 
@@ -94,17 +94,4 @@ export async function decryptPayload(payload) {
   return JSON.parse(text)
 }
 
-/**
- * Verifica si hay una clave de cifrado almacenada
- * @returns {boolean}
- */
-export function hasEncryptionKey() {
-  return localStorage.getItem(KEY_STORAGE) !== null
-}
 
-/**
- * Elimina la clave de cifrado (CUIDADO: invalida todos los datos cifrados)
- */
-export function clearEncryptionKey() {
-  localStorage.removeItem(KEY_STORAGE)
-}

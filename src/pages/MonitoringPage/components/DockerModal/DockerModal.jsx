@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { dockerImages, dockerVolumes } from '../../../../services/tauri.js'
+import { dockerImages, dockerVolumes, isTauri } from '../../../../services/tauri.js'
 import { useRealTimeLogs } from '../../../../hooks/useRealTimeData.js'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './DockerModal.css'
@@ -19,6 +19,11 @@ function DockerModal({
   const [volumesLoading, setVolumesLoading] = useState(false)
   const logsEndRef = useRef(null)
 
+  // Logs viewer state
+  const [logLevelFilter, setLogLevelFilter] = useState('all')
+  const [logSearch, setLogSearch] = useState('')
+  const [followMode, setFollowMode] = useState(true)
+
   const container = activeDocker || {}
   const containerName = container.name || t('docker.container')
 
@@ -35,6 +40,58 @@ function DockerModal({
     const num = typeof value === 'string' ? parseFloat(value) : value
     if (isNaN(num)) return '--'
     return num.toFixed(decimals)
+  }
+
+  // Detect log level from log line
+  const detectLogLevel = (line) => {
+    const upperLine = line.toUpperCase()
+    if (upperLine.includes('ERROR') || upperLine.includes('ERRO') || upperLine.includes('[E]')) return 'error'
+    if (upperLine.includes('WARN') || upperLine.includes('WARNING') || upperLine.includes('[W]')) return 'warn'
+    if (upperLine.includes('INFO') || upperLine.includes('[I]')) return 'info'
+    if (upperLine.includes('DEBUG') || upperLine.includes('[D]')) return 'debug'
+    return 'default'
+  }
+
+  // Filter logs by level and search term
+  const filteredLogs = logs.filter(line => {
+    // Filter by level
+    if (logLevelFilter !== 'all') {
+      const level = detectLogLevel(line)
+      if (level !== logLevelFilter) return false
+    }
+
+    // Filter by search term
+    if (logSearch && !line.toLowerCase().includes(logSearch.toLowerCase())) {
+      return false
+    }
+
+    return true
+  })
+
+  // Export logs to file
+  const handleExportLogs = async () => {
+    if (!isTauri()) return
+    
+    try {
+      const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0]
+      const filename = `${containerName}-logs-${timestamp}.txt`
+      
+      const content = logs.join('\n')
+      
+      const dialog = await import('@tauri-apps/plugin-dialog')
+      const fs = await import('@tauri-apps/plugin-fs')
+      
+      const filePath = await dialog.save({
+        defaultPath: filename,
+        filters: [{ name: 'Text Files', extensions: ['txt'] }]
+      })
+      
+      if (filePath) {
+        await fs.writeTextFile(filePath, content)
+      }
+    } catch (error) {
+      console.error('Error exporting logs:', error)
+    }
   }
 
   const fetchImages = useCallback(async () => {
@@ -80,12 +137,12 @@ function DockerModal({
     }
   }, [open, clearLogs])
 
-  // Auto-scroll logs to bottom
+  // Auto-scroll logs to bottom (only if follow mode is enabled)
   useEffect(() => {
-    if (logsEndRef.current && dockerPanel === 'logs') {
+    if (followMode && logsEndRef.current && dockerPanel === 'logs') {
       logsEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [logs, dockerPanel])
+  }, [logs, dockerPanel, followMode])
 
   if (!open) return null
 
@@ -251,9 +308,50 @@ function DockerModal({
             <div className="modal-section">
               <div className="logs-header">
                 <span>{t('docker.realtimeLogs')}</span>
-                <div className="logs-status">
-                  <span className="status-dot live" />
-                  <span>LIVE</span>
+                <div className="logs-controls">
+                  <select
+                    className="log-level-filter"
+                    value={logLevelFilter}
+                    onChange={(e) => setLogLevelFilter(e.target.value)}
+                  >
+                    <option value="all">{t('logs.allLevels')}</option>
+                    <option value="error">{t('logs.errorOnly')}</option>
+                    <option value="warn">{t('logs.warnOnly')}</option>
+                    <option value="info">{t('logs.infoOnly')}</option>
+                    <option value="debug">{t('logs.debugOnly')}</option>
+                  </select>
+                  
+                  <input
+                    type="text"
+                    className="log-search"
+                    placeholder={t('logs.searchPlaceholder')}
+                    value={logSearch}
+                    onChange={(e) => setLogSearch(e.target.value)}
+                  />
+
+                  <button
+                    type="button"
+                    className={`follow-toggle ${followMode ? 'active' : ''}`}
+                    onClick={() => setFollowMode(!followMode)}
+                    title={t('logs.followMode')}
+                  >
+                    {followMode ? '⏸' : '▶'}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="export-logs-btn"
+                    onClick={handleExportLogs}
+                    disabled={logs.length === 0}
+                    title={t('logs.exportLogs')}
+                  >
+                    💾
+                  </button>
+                  
+                  <div className="logs-status">
+                    <span className="status-dot live" />
+                    <span>LIVE</span>
+                  </div>
                 </div>
               </div>
               {logsError && (
@@ -267,16 +365,21 @@ function DockerModal({
                   <span className="terminal-title">docker logs {containerName} --follow</span>
                 </div>
                 <div className="terminal-body">
-                  {logs.length === 0 ? (
+                  {filteredLogs.length === 0 ? (
                     <div className="terminal-line">
-                      <span className="terminal-entry terminal-waiting">{t('docker.waitingLogs')}</span>
+                      <span className="terminal-entry terminal-waiting">
+                        {logs.length === 0 ? t('docker.waitingLogs') : t('logs.noMatchingLogs')}
+                      </span>
                     </div>
                   ) : (
-                    logs.map((line, index) => (
-                      <div key={index} className="terminal-line">
-                        <span className="terminal-entry">{line}</span>
-                      </div>
-                    ))
+                    filteredLogs.map((line, index) => {
+                      const level = detectLogLevel(line)
+                      return (
+                        <div key={index} className="terminal-line">
+                          <span className={`terminal-entry log-level-${level}`}>{line}</span>
+                        </div>
+                      )
+                    })
                   )}
                   <div ref={logsEndRef} />
                 </div>

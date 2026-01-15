@@ -4,7 +4,7 @@
   gap: 1.5rem;
 }
 
-/* Health Score Card */
+/* Health Score Card - Redesigned */
 .health-score-card {
   background: rgba(10, 25, 47, 0.5);
   border: 1px solid rgba(100, 255, 218, 0.15);
@@ -13,6 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 2rem;
   transition: border-color 0.2s ease;
 }
 
@@ -22,6 +23,9 @@
 
 .health-score-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .health-label {
@@ -29,44 +33,82 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
 }
 
-.health-score {
-  font-size: 4rem;
+.health-metrics {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.health-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.health-metric-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.health-metric-value {
+  font-size: 1.75rem;
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
   line-height: 1;
-  margin-bottom: 0.5rem;
 }
 
-.health-unit {
-  font-size: 2rem;
-  margin-left: 0.25rem;
-}
-
-.health-status {
-  font-size: 1.125rem;
+.health-status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 2px solid;
+  font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  align-self: flex-start;
 }
 
-.health-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.health-score-display {
   position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
 }
 
-.health-ring-inner {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background: rgba(10, 25, 47, 0.8);
+.health-circle {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.health-circle-bg {
+  fill: none;
+  stroke: rgba(100, 255, 218, 0.1);
+  stroke-width: 8;
+}
+
+.health-circle-progress {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+
+.health-score-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
 }
 
 /* Quick Stats Grid */

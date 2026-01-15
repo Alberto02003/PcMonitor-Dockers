@@ -38,8 +38,9 @@ lazy_static = "1.4"
 rand = "0.8"
 base64 = "0.21"
 
-# File dialog
-tauri-plugin-dialog = "2"
+# File dialog and filesystem
+tauri-plugin-dialog = "2.6"
+tauri-plugin-fs = "2.4"
 
 # Encryption
 aes-gcm = "0.10"

@@ -21,6 +21,10 @@ export const defaultAlerts = {
   latency: { enabled: false, value: 150 },
   dockerDown: { enabled: true },
   restarts: { enabled: false, value: 3 },
+  // NEW: Advanced alerts
+  cpuTrend: { enabled: false },
+  ramTrend: { enabled: false },
+  cpuRamCombined: { enabled: false },
 }
 
 export const alertFields = [
@@ -39,6 +43,10 @@ export const alertFields = [
   { key: 'latency', label: 'Latencia (ms)', unit: 'ms' },
   { key: 'dockerDown', label: 'Contenedor caido', unit: '', noValue: true },
   { key: 'restarts', label: 'Reinicios (>=)', unit: '' },
+  // NEW: Advanced alerts
+  { key: 'cpuTrend', label: 'CPU Tendencia (+5%/min)', unit: '', noValue: true },
+  { key: 'ramTrend', label: 'RAM Tendencia (+5%/min)', unit: '', noValue: true },
+  { key: 'cpuRamCombined', label: 'CPU + RAM Alto (80%)', unit: '', noValue: true },
 ]
 
 export const defaultWidgetOrder = [

@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../../../../hooks/useTranslation.jsx'
 import { getUsageColor, getProcessState } from '../../../../hooks/useAdvancedMetrics.js'
+import { killProcess } from '../../../../../../services/tauri.js'
+import { useConnectionsStore } from '../../../../../../stores/connectionsStore.js'
 import '../../SystemSection.css'
 
 function ProcessesTab({ processes, loading }) {
   const { t } = useTranslation()
   const [sortBy, setSortBy] = useState('cpu') // cpu, memory, pid
   const [filter, setFilter] = useState('')
+  const [userFilter, setUserFilter] = useState('all')
+  const [stateFilter, setStateFilter] = useState('all')
+  const [killingPid, setKillingPid] = useState(null)
+  const activeConnection = useConnectionsStore((state) => state.activeConnection)
 
   if (!processes?.length && !loading) {
     return (
@@ -15,6 +21,29 @@ function ProcessesTab({ processes, loading }) {
         <p>{t('monitoring.noData')}</p>
       </div>
     )
+  }
+
+  // Get unique users from processes
+  const uniqueUsers = [...new Set((processes || []).map(p => p.username).filter(Boolean))].sort()
+
+  // Handle kill process
+  const handleKillProcess = async (pid, name, signal = 15) => {
+    if (!activeConnection?.id) return
+    
+    const confirmMsg = t('process.killConfirm', { pid, name: name || 'unknown' })
+    if (!window.confirm(confirmMsg)) return
+    
+    setKillingPid(pid)
+    try {
+      await killProcess(activeConnection.id, pid, signal)
+      // Show success notification (you can integrate with your notification system)
+      console.log(t('process.killSuccess'))
+    } catch (error) {
+      console.error('Error killing process:', error)
+      alert(t('process.killError') + ': ' + error.message)
+    } finally {
+      setKillingPid(null)
+    }
   }
 
   // Filter and sort processes
@@ -28,6 +57,16 @@ function ProcessesTab({ processes, loading }) {
       p.command?.toLowerCase().includes(lowerFilter) ||
       p.pid?.toString().includes(lowerFilter)
     )
+  }
+
+  // Filter by user
+  if (userFilter !== 'all') {
+    filteredProcesses = filteredProcesses.filter(p => p.username === userFilter)
+  }
+
+  // Filter by state
+  if (stateFilter !== 'all') {
+    filteredProcesses = filteredProcesses.filter(p => p.state === stateFilter)
   }
 
   // Sort
@@ -104,6 +143,31 @@ function ProcessesTab({ processes, loading }) {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
+        
+        <select
+          className="process-filter-select"
+          value={userFilter}
+          onChange={(e) => setUserFilter(e.target.value)}
+        >
+          <option value="all">{t('process.allUsers')}</option>
+          {uniqueUsers.map(user => (
+            <option key={user} value={user}>{user}</option>
+          ))}
+        </select>
+
+        <select
+          className="process-filter-select"
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value)}
+        >
+          <option value="all">{t('process.allStates')}</option>
+          <option value="R">{t('process.stateRunning')} (R)</option>
+          <option value="S">{t('process.stateSleeping')} (S)</option>
+          <option value="Z">{t('process.stateZombie')} (Z)</option>
+          <option value="D">Uninterruptible (D)</option>
+          <option value="T">Stopped (T)</option>
+        </select>
+
         <div className="sort-buttons">
           <button
             type="button"
@@ -130,7 +194,7 @@ function ProcessesTab({ processes, loading }) {
       </div>
 
       {/* Processes Table */}
-      <div className="data-table-container">
+      <div className="data-table-container processes-table-container">
         <table className="data-table">
           <thead>
             <tr>
@@ -142,6 +206,7 @@ function ProcessesTab({ processes, loading }) {
               <th className="numeric">MEM %</th>
               <th className="numeric">RSS</th>
               <th className="numeric">Threads</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -163,6 +228,17 @@ function ProcessesTab({ processes, loading }) {
                 </td>
                 <td className="numeric">{(proc.memoryRssMb || 0).toFixed(1)} MB</td>
                 <td className="numeric">{proc.threads || 1}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="kill-process-btn"
+                    onClick={() => handleKillProcess(proc.pid, proc.name, 15)}
+                    disabled={killingPid === proc.pid}
+                    title={t('process.killProcess')}
+                  >
+                    {killingPid === proc.pid ? '...' : '×'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

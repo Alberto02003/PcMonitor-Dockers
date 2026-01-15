@@ -5,6 +5,9 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 import { useNotifications, NOTIFICATION_TYPES } from '../../../hooks/useNotifications.js'
+import { useAlertCooldown } from './useAlertCooldown.js'
+import { useTrendDetection } from './useTrendDetection.js'
+import { useAlertHistory } from './useAlertHistory.js'
 
 /**
  * Hook que verifica métricas contra umbrales y envía notificaciones
@@ -25,6 +28,11 @@ export function useAlertNotifications({
   connection,
 }) {
   const { notify, permission, requestPermission, isSupported } = useNotifications()
+  
+  // New enhanced hooks
+  const alertCooldown = useAlertCooldown(300000) // 5 minutes cooldown
+  const trendDetection = useTrendDetection()
+  const { addAlert, history: alertHistory } = useAlertHistory()
   
   // Refs para evitar alertas duplicadas
   const triggeredAlertsRef = useRef(new Set())
@@ -63,34 +71,43 @@ export function useAlertNotifications({
     
     if (value >= threshold) {
       const alertId = `${alertKey}-${connection?.id || 'global'}`
-      if (!triggeredAlertsRef.current.has(alertId)) {
-        console.log(`[useAlertNotifications] ALERT TRIGGERED: ${alertKey}`, {
-          value,
-          threshold,
-          label,
-        })
-        
-        triggeredAlertsRef.current.add(alertId)
-        
-        const valueStr = Number.isInteger(value) ? value.toString() : value.toFixed(1)
-        notify(`[ALERTA] ${connection?.name || 'Servidor'}`, {
-          type: NOTIFICATION_TYPES.WARNING,
-          body: `${label}: ${valueStr}${unit} (umbral: ${threshold}${unit})`,
-        })
-        
-        // Limpiar alerta después de 60 segundos para permitir re-trigger
-        setTimeout(() => {
-          triggeredAlertsRef.current.delete(alertId)
-        }, 60000)
+      
+      // Check cooldown before triggering
+      if (!alertCooldown.canTrigger(alertId)) {
+        return // Alert is in cooldown
       }
+      
+      console.log(`[useAlertNotifications] ALERT TRIGGERED: ${alertKey}`, {
+        value,
+        threshold,
+        label,
+      })
+      
+      // Mark as triggered (start cooldown)
+      alertCooldown.markTriggered(alertId)
+      
+      const valueStr = Number.isInteger(value) ? value.toString() : value.toFixed(1)
+      notify(`[ALERTA] ${connection?.name || 'Servidor'}`, {
+        type: NOTIFICATION_TYPES.WARNING,
+        body: `${label}: ${valueStr}${unit} (umbral: ${threshold}${unit})`,
+      })
+      
+      // Add to history
+      addAlert({
+        type: alertKey,
+        label,
+        value,
+        threshold,
+        unit,
+        connectionId: connection?.id,
+        connectionName: connection?.name,
+      })
     } else {
-      // Si el valor baja del umbral, permitir re-trigger
+      // Si el valor baja del umbral, resetear cooldown
       const alertId = `${alertKey}-${connection?.id || 'global'}`
-      if (triggeredAlertsRef.current.has(alertId)) {
-        triggeredAlertsRef.current.delete(alertId)
-      }
+      alertCooldown.resetCooldown(alertId)
     }
-  }, [alerts, connection?.id, connection?.name, notify])
+  }, [alerts, connection?.id, connection?.name, notify, alertCooldown, addAlert])
 
   // Verificar métricas contra umbrales
   useEffect(() => {
@@ -161,7 +178,87 @@ export function useAlertNotifications({
       }
     }
 
-  }, [metrics, metricsLoading, alerts, checkAndNotify])
+    // === NEW: Record metrics for trend detection ===
+    if (metrics.cpu?.usagePercent != null) {
+      trendDetection.recordValue('cpu', metrics.cpu.usagePercent)
+    }
+    if (metrics.memory?.usagePercent != null) {
+      trendDetection.recordValue('ram', metrics.memory.usagePercent)
+    }
+
+    // === NEW: Check for rising trends ===
+    if (alerts.cpuTrend?.enabled) {
+      const cpuTrend = trendDetection.detectRisingTrend('cpu', 5) // 5% per minute
+      if (cpuTrend) {
+        const alertId = `cpu-trend-${connection?.id || 'global'}`
+        if (alertCooldown.canTrigger(alertId)) {
+          alertCooldown.markTriggered(alertId)
+          notify(`[ALERTA] ${connection?.name || 'Servidor'}`, {
+            type: NOTIFICATION_TYPES.WARNING,
+            body: `CPU aumentando rápidamente: +${cpuTrend.rate.toFixed(1)}%/min (desde ${cpuTrend.startValue.toFixed(1)}% a ${cpuTrend.currentValue.toFixed(1)}%)`,
+          })
+          addAlert({
+            type: 'cpuTrend',
+            label: 'CPU Trend',
+            value: cpuTrend.rate,
+            threshold: 5,
+            unit: '%/min',
+            connectionId: connection?.id,
+            connectionName: connection?.name,
+          })
+        }
+      }
+    }
+
+    if (alerts.ramTrend?.enabled) {
+      const ramTrend = trendDetection.detectRisingTrend('ram', 5) // 5% per minute
+      if (ramTrend) {
+        const alertId = `ram-trend-${connection?.id || 'global'}`
+        if (alertCooldown.canTrigger(alertId)) {
+          alertCooldown.markTriggered(alertId)
+          notify(`[ALERTA] ${connection?.name || 'Servidor'}`, {
+            type: NOTIFICATION_TYPES.WARNING,
+            body: `RAM aumentando rápidamente: +${ramTrend.rate.toFixed(1)}%/min (desde ${ramTrend.startValue.toFixed(1)}% a ${ramTrend.currentValue.toFixed(1)}%)`,
+          })
+          addAlert({
+            type: 'ramTrend',
+            label: 'RAM Trend',
+            value: ramTrend.rate,
+            threshold: 5,
+            unit: '%/min',
+            connectionId: connection?.id,
+            connectionName: connection?.name,
+          })
+        }
+      }
+    }
+
+    // === NEW: Check combined alerts (CPU AND RAM high) ===
+    if (alerts.cpuRamCombined?.enabled) {
+      const cpuHigh = metrics.cpu?.usagePercent >= 80
+      const ramHigh = metrics.memory?.usagePercent >= 80
+      if (cpuHigh && ramHigh) {
+        const alertId = `cpu-ram-combined-${connection?.id || 'global'}`
+        if (alertCooldown.canTrigger(alertId)) {
+          alertCooldown.markTriggered(alertId)
+          notify(`[ALERTA CRÍTICA] ${connection?.name || 'Servidor'}`, {
+            type: NOTIFICATION_TYPES.ERROR,
+            body: `CPU y RAM altos simultáneamente: CPU ${metrics.cpu.usagePercent.toFixed(1)}%, RAM ${metrics.memory.usagePercent.toFixed(1)}%`,
+          })
+          addAlert({
+            type: 'cpuRamCombined',
+            label: 'CPU + RAM Combined',
+            value: metrics.cpu.usagePercent,
+            threshold: 80,
+            unit: '%',
+            connectionId: connection?.id,
+            connectionName: connection?.name,
+          })
+        }
+      }
+    }
+
+  }, [metrics, metricsLoading, alerts, checkAndNotify, trendDetection, alertCooldown, notify, addAlert, connection?.id, connection?.name])
 
   // Verificar contenedores Docker detenidos
   useEffect(() => {
@@ -199,6 +296,7 @@ export function useAlertNotifications({
     isSupported,
     permission,
     requestPermission,
+    alertHistory,
   }
 }
 

@@ -36,6 +36,9 @@ function normalizeConnection(raw) {
     password: raw?.password || '',
     keyPath: raw?.keyPath || '',
     notes: raw?.notes || '',
+    group: raw?.group || 'default',
+    tags: Array.isArray(raw?.tags) ? raw.tags : [],
+    color: raw?.color || '#64ffda',
     isFavorite: Boolean(raw?.isFavorite),
     isDefault: Boolean(raw?.isDefault),
     status: raw?.status || 'unknown',
@@ -62,6 +65,23 @@ export const useConnectionsStore = create((set, get) => ({
   getSelectedConnection: () => {
     const { connections, selectedId } = get()
     return connections.find(c => c.id === selectedId) || null
+  },
+
+  getGroups: () => {
+    const groups = new Set(get().connections.map(c => c.group || 'default'))
+    return Array.from(groups).sort()
+  },
+
+  getByGroup: (group) => get().connections.filter(c => (c.group || 'default') === group),
+
+  getAllTags: () => {
+    const tags = new Set()
+    get().connections.forEach(c => {
+      if (Array.isArray(c.tags)) {
+        c.tags.forEach(tag => tags.add(tag))
+      }
+    })
+    return Array.from(tags).sort()
   },
 
   // === Acciones de Almacenamiento Local ===

@@ -395,6 +395,131 @@
   color: #9ef0d9;
 }
 
+/* Log level syntax highlighting */
+.log-level-error {
+  color: #ff5370 !important;
+}
+
+.log-level-warn {
+  color: #ffcb6b !important;
+}
+
+.log-level-info {
+  color: #64ffda !important;
+}
+
+.log-level-debug {
+  color: #c792ea !important;
+}
+
+.log-level-default {
+  color: #9ef0d9 !important;
+}
+
+/* Logs header controls */
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.logs-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.log-level-filter,
+.log-search {
+  padding: 0.4rem 0.6rem;
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.12);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  transition: var(--transition);
+}
+
+.log-level-filter {
+  min-width: 120px;
+}
+
+.log-search {
+  min-width: 150px;
+}
+
+.log-level-filter:hover,
+.log-search:hover {
+  border-color: rgba(100, 255, 218, 0.3);
+}
+
+.log-level-filter:focus,
+.log-search:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+
+.follow-toggle,
+.export-logs-btn {
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  border: 1px solid rgba(100, 255, 218, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 36px;
+}
+
+.follow-toggle:hover:not(:disabled),
+.export-logs-btn:hover:not(:disabled) {
+  background: rgba(100, 255, 218, 0.1);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.follow-toggle.active {
+  background: rgba(100, 255, 218, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.export-logs-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.logs-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--status-success);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-success);
+}
+
+.status-dot.live {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;

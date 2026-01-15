@@ -191,6 +191,16 @@
   border-color: var(--accent-cyan);
 }
 
+.data-table-title {
+  padding: 1rem 1rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -275,6 +285,69 @@
   transition: width 0.3s ease;
 }
 
+.core-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0.375rem 0;
+}
+
+.core-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+}
+
+.core-breakdown-label {
+  color: var(--text-muted);
+}
+
+.core-breakdown-value {
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+}
+
+/* Load Average Detailed */
+.load-average-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.load-avg-item {
+  display: grid;
+  grid-template-columns: 50px 60px 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.load-avg-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+.load-avg-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+.load-avg-bar {
+  height: 6px;
+  background: rgba(100, 255, 218, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.load-avg-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
 /* No data state */
 .no-data {
   text-align: center;
@@ -322,6 +395,29 @@
 .process-filter:focus-visible {
   outline: 2px solid rgba(100, 255, 218, 0.25);
   outline-offset: 2px;
+}
+
+.process-filter-select {
+  min-width: 150px;
+  background: var(--medium-blue);
+  border: 1px solid rgba(100, 255, 218, 0.12);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.process-filter-select:hover {
+  border-color: rgba(100, 255, 218, 0.35);
+  background: var(--light-blue);
+}
+
+.process-filter-select:focus {
+  outline: none;
+  border-color: rgba(100, 255, 218, 0.6);
+  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
 }
 
 .sort-buttons {
@@ -378,6 +474,29 @@
   color: #ff5370; 
 }
 
+.kill-process-btn {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 83, 112, 0.3);
+  border-radius: 0.25rem;
+  color: var(--status-danger);
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+  line-height: 1;
+}
+
+.kill-process-btn:hover:not(:disabled) {
+  background: rgba(255, 83, 112, 0.15);
+  border-color: var(--status-danger);
+}
+
+.kill-process-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .state-t { 
   background: rgba(255, 203, 107, 0.2); 
   color: #ffcb6b; 
@@ -423,4 +542,138 @@
 
 tr.is-selected td {
   background: rgba(100, 255, 218, 0.05);
+}
+
+/* Disk Tabs - Horizontal selector for DiskTab */
+.disk-tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+}
+
+.disk-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.75rem 1rem;
+  background: rgba(10, 25, 47, 0.3);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  flex: 0 1 auto;
+}
+
+.disk-tab:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(10, 25, 47, 0.5);
+}
+
+.disk-tab.active {
+  background: rgba(100, 255, 218, 0.1);
+  border-color: var(--accent-cyan);
+  border-bottom-width: 2px;
+}
+
+.disk-tab-device {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 0.25rem;
+}
+
+.disk-tab-mount {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.disk-tab-usage {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Inodes section */
+.inodes-info {
+  background: rgba(10, 25, 47, 0.3);
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.inodes-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.inodes-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.inodes-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inodes-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Processes Table with Scroll */
+.processes-table-container {
+  max-height: 600px;
+  overflow-y: auto;
+  overflow-x: auto;
+  position: relative;
+}
+
+.processes-table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.processes-table-container::-webkit-scrollbar-track {
+  background: rgba(10, 25, 47, 0.3);
+  border-radius: 4px;
+}
+
+.processes-table-container::-webkit-scrollbar-thumb {
+  background: rgba(100, 255, 218, 0.3);
+  border-radius: 4px;
+}
+
+.processes-table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 255, 218, 0.5);
+}
+
+/* Keep table header sticky */
+.processes-table-container .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(10, 25, 47, 0.95);
+}
+
+.processes-table-container .data-table thead th {
+  border-bottom: 2px solid rgba(100, 255, 218, 0.2);
 }

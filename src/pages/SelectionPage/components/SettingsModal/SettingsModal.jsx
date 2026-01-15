@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import { isTauri, getAppVersion } from '../../../../services/tauri.js'
+import BackupRestore from '../../../../components/Settings/BackupRestore.jsx'
 import './SettingsModal.css'
 
 function SettingsModal({
@@ -68,29 +69,11 @@ function SettingsModal({
                 onChange={(event) => onStoreCredentialsChange(event.target.checked)}
               />
             </label>
-            <div className="modal-actions">
-              <button type="button" className="btn btn-outline" onClick={onExport}>
-                {t('actions.exportJson')}
-              </button>
-              <button type="button" className="btn btn-outline" onClick={onImport}>
-                {t('actions.importJson')}
-              </button>
-            </div>
           </div>
 
           <div className="modal-section">
-            <span>{t('settings.sectionWindow')}</span>
-            <label className="modal-field">
-              <span>{t('settings.windowSize')}</span>
-              <select
-                value={settings.windowSize}
-                onChange={(event) => onUpdateSettings({ windowSize: event.target.value })}
-              >
-                <option value="small">{t('settings.sizeSmall')}</option>
-                <option value="medium">{t('settings.sizeMedium')}</option>
-                <option value="large">{t('settings.sizeLarge')}</option>
-              </select>
-            </label>
+            <span>{t('settings.sectionBackup')}</span>
+            <BackupRestore />
           </div>
 
           <div className="modal-section">
@@ -110,6 +93,17 @@ function SettingsModal({
           {isTauri() && (
             <div className="modal-section">
               <span>{t('updater.title')}</span>
+              
+              <label className="modal-toggle">
+                <span>{t('updater.autoCheck')}</span>
+                <input
+                  type="checkbox"
+                  checked={settings.autoCheckUpdates}
+                  onChange={(event) => onUpdateSettings({ autoCheckUpdates: event.target.checked })}
+                />
+              </label>
+              <p className="setting-description">{t('updater.autoCheckDescription')}</p>
+              
               <div className="updater-info">
                 <span className="version-badge">v{appVersion}</span>
                 <button type="button" className="btn btn-outline" onClick={onCheckUpdates}>
