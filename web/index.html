@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PC Monitoring Dockers - Monitorea tus servidores remotos y gestiona contenedores Docker de forma sencilla">
+    <title>PC Monitoring Dockers - Monitor remoto SSH & Docker</title>
+    <link rel="icon" type="image/png" href="./assets/logo.png">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <img src="./assets/logo.png" alt="PC Monitoring Dockers Logo" class="logo">
+                <h1 class="hero-title">PC Monitoring Dockers</h1>
+                <p class="hero-subtitle">Monitorea servidores remotos y gestiona contenedores Docker desde una interfaz elegante</p>
+                <div class="hero-actions">
+                    <button id="download-btn" class="btn btn-primary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Descargar para Windows
+                    </button>
+                    <a href="https://github.com/Alberto02003/PcMonitor-Dockers" target="_blank" class="btn btn-secondary">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        Ver en GitHub
+                    </a>
+                </div>
+                <p class="version-info">
+                    Versión actual: <span id="current-version">Cargando...</span>
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Características Principales</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Conexión SSH Segura</h3>
+                    <p class="feature-description">Conéctate a múltiples servidores mediante SSH con autenticación por contraseña o clave privada.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                            <line x1="20" y1="9" x2="23" y2="9"></line>
+                            <line x1="20" y1="14" x2="23" y2="14"></line>
+                            <line x1="1" y1="9" x2="4" y2="9"></line>
+                            <line x1="1" y1="14" x2="4" y2="14"></line>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Gestión de Docker</h3>
+                    <p class="feature-description">Administra contenedores Docker: inicia, detén, reinicia, visualiza logs en tiempo real y monitorea recursos.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Monitoreo en Tiempo Real</h3>
+                    <p class="feature-description">Visualiza CPU, memoria, disco, red y procesos del sistema con gráficos actualizados automáticamente.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Sistema de Alertas</h3>
+                    <p class="feature-description">Configura alertas personalizadas para CPU, memoria, disco y contenedores Docker con detección de tendencias.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            <line x1="9" y1="9" x2="15" y2="15"></line>
+                            <line x1="15" y1="9" x2="9" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Terminal SSH Integrada</h3>
+                    <p class="feature-description">Ejecuta comandos directamente en tus servidores con una terminal SSH integrada y desplegable.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                            <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                            <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Gestión de Procesos</h3>
+                    <p class="feature-description">Filtra y administra procesos del sistema, visualiza detalles y finaliza procesos directamente desde la interfaz.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack">
+        <div class="container">
+            <h2 class="section-title">Tecnologías Utilizadas</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-name">Tauri 2</div>
+                    <div class="tech-description">Framework multiplataforma con Rust</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">React 19</div>
+                    <div class="tech-description">Biblioteca de interfaz de usuario</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Vite 7</div>
+                    <div class="tech-description">Build tool ultrarrápido</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Zustand</div>
+                    <div class="tech-description">Gestión de estado minimalista</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">SSH2</div>
+                    <div class="tech-description">Conexiones SSH nativas</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-name">Recharts</div>
+                    <div class="tech-description">Gráficos interactivos</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download-section">
+        <div class="container">
+            <h2 class="section-title">Descarga Ahora</h2>
+            <p class="download-description">
+                Instalador para Windows (x64) - Firmado digitalmente y con actualizaciones automáticas
+            </p>
+            <button id="download-btn-2" class="btn btn-primary btn-large">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Descargar Instalador (.exe)
+            </button>
+            <p class="download-note">
+                Compatible con Windows 10/11 (64-bit)
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">
+                &copy; 2025 PC Monitoring Dockers - 
+                <a href="https://github.com/Alberto02003/PcMonitor-Dockers" target="_blank" class="footer-link">Open Source en GitHub</a>
+            </p>
+            <p class="footer-text">
+                Desarrollado con <span class="heart">❤️</span> usando Tauri + React
+            </p>
+        </div>
+    </footer>
+
+    <script src="./script.js"></script>
+</body>
+</html>
