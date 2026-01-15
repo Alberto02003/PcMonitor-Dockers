@@ -1,5 +1,6 @@
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import SystemWidgets from '../SystemWidgets/SystemWidgets.jsx'
+import OverviewTab from './tabs/OverviewTab/OverviewTab.jsx'
 import CpuTab from './tabs/CpuTab/CpuTab.jsx'
 import MemoryTab from './tabs/MemoryTab/MemoryTab.jsx'
 import DiskTab from './tabs/DiskTab/DiskTab.jsx'
@@ -22,19 +23,14 @@ function SystemSection({
 }) {
   const { t } = useTranslation()
 
-  // Overview tab muestra los widgets existentes
+  // Overview tab muestra el nuevo Overview con métricas completas
   if (activeTab === 'overview') {
     return (
-      <SystemWidgets
-        widgetOrder={widgetOrder}
-        draggingId={draggingId}
-        dragOverId={dragOverId}
-        onDragStart={onDragStart}
-        onDragEnter={onDragEnter}
+      <OverviewTab
         metrics={metrics}
-        metricsLoading={metricsLoading}
-        metricsError={metricsError}
-        lastUpdate={lastUpdate}
+        advancedMetrics={advancedMetrics}
+        basicMetrics={metrics}
+        loading={metricsLoading || advancedLoading}
       />
     )
   }

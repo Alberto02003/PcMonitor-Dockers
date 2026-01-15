@@ -1,0 +1,409 @@
+.overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Health Score Card */
+.health-score-card {
+  background: rgba(10, 25, 47, 0.5);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s ease;
+}
+
+.health-score-card:hover {
+  border-color: var(--accent-cyan);
+}
+
+.health-score-content {
+  flex: 1;
+}
+
+.health-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.health-score {
+  font-size: 4rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.health-unit {
+  font-size: 2rem;
+  margin-left: 0.25rem;
+}
+
+.health-status {
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.health-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.health-ring-inner {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(10, 25, 47, 0.8);
+}
+
+/* Quick Stats Grid */
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.quick-stat-card {
+  background: rgba(10, 25, 47, 0.5);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.quick-stat-card:hover {
+  border-color: var(--accent-cyan);
+}
+
+.quick-stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.quick-stat-icon.cpu {
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.quick-stat-icon.memory {
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.quick-stat-icon.disk {
+  background: rgba(92, 207, 230, 0.1);
+}
+
+.quick-stat-icon.network {
+  background: rgba(255, 203, 107, 0.1);
+}
+
+.quick-stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.quick-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.quick-stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.2;
+}
+
+.quick-stat-detail {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Overview Grid */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.overview-card {
+  background: rgba(10, 25, 47, 0.5);
+  border: 1px solid rgba(100, 255, 218, 0.15);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  transition: border-color 0.2s ease;
+}
+
+.overview-card:hover {
+  border-color: var(--accent-cyan);
+}
+
+.overview-card-wide {
+  grid-column: span 2;
+}
+
+.overview-card-title {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+}
+
+/* Detail Rows */
+.overview-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.overview-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.detail-value.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+
+/* Load Average */
+.load-average-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.load-item {
+  text-align: center;
+}
+
+.load-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.load-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+.load-bar-container {
+  margin-top: 0.75rem;
+}
+
+.load-bar {
+  height: 6px;
+  background: rgba(100, 255, 218, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.load-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Temperature */
+.temp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.temp-item {
+  text-align: center;
+  padding: 0.75rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+}
+
+.temp-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.temp-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Top Processes Mini Table */
+.processes-mini-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.process-mini-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+  transition: background 0.2s ease;
+}
+
+.process-mini-row:hover {
+  background: rgba(100, 255, 218, 0.1);
+}
+
+.process-name {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.process-stats {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.process-cpu,
+.process-mem {
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+}
+
+.process-mem {
+  color: var(--text-secondary);
+}
+
+/* Disk I/O Grid */
+.disk-io-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.disk-io-item {
+  padding: 0.75rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+}
+
+.disk-io-device {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 0.5rem;
+}
+
+.disk-io-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.io-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.io-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.io-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.io-value.read {
+  color: var(--accent-cyan);
+}
+
+.io-value.write {
+  color: var(--accent-purple);
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .overview-card-wide {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .quick-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .health-score-card {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .health-ring {
+    order: -1;
+  }
+}
