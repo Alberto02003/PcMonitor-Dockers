@@ -465,31 +465,6 @@ function OverviewTab({ metrics, advancedMetrics, basicMetrics, loading }) {
           </div>
         )}
 
-        {/* Network Interfaces Summary */}
-        {basicMetrics?.network && basicMetrics.network.length > 0 && (
-          <div className="overview-card overview-card-wide">
-            <h3 className="overview-card-title">Network Interfaces Activity</h3>
-            <div className="network-interfaces-grid">
-              {basicMetrics.network.map((iface) => (
-                <div key={iface.interface} className="network-interface-item">
-                  <div className="network-interface-name">{iface.interface}</div>
-                  <div className="network-interface-stats">
-                    <div className="network-stat">
-                      <span className="network-stat-label">RX</span>
-                      <span className="network-stat-value rx">{formatSpeed(iface.rxBytes)}</span>
-                      <span className="network-stat-total">{formatBytes(iface.rxBytes)} total</span>
-                    </div>
-                    <div className="network-stat">
-                      <span className="network-stat-label">TX</span>
-                      <span className="network-stat-value tx">{formatSpeed(iface.txBytes)}</span>
-                      <span className="network-stat-total">{formatBytes(iface.txBytes)} total</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
