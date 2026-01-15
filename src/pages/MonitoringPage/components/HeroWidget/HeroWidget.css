@@ -15,12 +15,11 @@
   border: 1px solid rgba(100, 255, 218, 0.1);
   border-radius: var(--radius-md);
   padding: 1.2rem 1.4rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .hero-card:hover {
-  border-color: rgba(100, 255, 218, 0.2);
-  box-shadow: 0 4px 20px rgba(10, 25, 47, 0.3);
+  border-color: var(--accent-cyan);
 }
 
 .hero-card--accent {
