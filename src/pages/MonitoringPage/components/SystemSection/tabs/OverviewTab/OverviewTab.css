@@ -98,8 +98,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
   flex-shrink: 0;
+  color: var(--text-primary);
 }
 
 .quick-stat-icon.cpu {
@@ -380,6 +383,169 @@
 
 .io-value.write {
   color: var(--accent-purple);
+}
+
+.io-ops {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Progress Bar */
+.progress-bar-container {
+  margin-top: 0.75rem;
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(100, 255, 218, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Hardware Specs Grid */
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.spec-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+}
+
+.spec-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.spec-value {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Disks Summary Grid */
+.disks-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.disk-summary-item {
+  padding: 0.75rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+}
+
+.disk-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.disk-summary-mount {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.disk-summary-percent {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.disk-summary-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.disk-summary-size {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.disk-summary-fs {
+  color: var(--text-muted);
+}
+
+/* Network Interfaces Grid */
+.network-interfaces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.network-interface-item {
+  padding: 0.75rem;
+  background: rgba(100, 255, 218, 0.05);
+  border-radius: 0.375rem;
+}
+
+.network-interface-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 0.75rem;
+}
+
+.network-interface-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.network-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.network-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.network-stat-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.network-stat-value.rx {
+  color: var(--accent-cyan);
+}
+
+.network-stat-value.tx {
+  color: var(--accent-purple);
+}
+
+.network-stat-total {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* Responsive */
