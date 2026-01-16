@@ -23,7 +23,7 @@ function UpdaterModal({ open, onClose }) {
     if (open && !updateInfo && !checking) {
       handleCheckUpdates()
     }
-  }, [open])
+  }, [open, updateInfo, checking, handleCheckUpdates])
 
   const handleCheckUpdates = useCallback(async () => {
     setChecking(true)
@@ -51,6 +51,15 @@ function UpdaterModal({ open, onClose }) {
     setProgress({ downloaded: 0, total: 0 })
     
     try {
+      // Guardar release notes ANTES de instalar (para mostrarlas después del reinicio)
+      if (updateInfo.notes && updateInfo.version) {
+        try {
+          localStorage.setItem(`release_notes_${updateInfo.version}`, updateInfo.notes)
+        } catch (e) {
+          console.warn('Could not save release notes:', e)
+        }
+      }
+      
       await downloadAndInstallUpdate(updateInfo, (downloaded, total) => {
         setProgress({ downloaded, total })
       })

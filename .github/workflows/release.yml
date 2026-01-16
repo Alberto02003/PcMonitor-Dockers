@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para obtener historial completo de git
 
       - name: Get version
         id: get_version
@@ -63,6 +65,26 @@ jobs:
         run: |
           sed -i.bak 's/^version = ".*"/version = "${{ steps.get_version.outputs.version }}"/' src-tauri/Cargo.toml
 
+      - name: Generate release notes
+        id: release_notes
+        shell: bash
+        run: |
+          # Obtener el último tag (versión anterior)
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          # Generar release notes user-friendly
+          NOTES=$(node .github/scripts/generate-release-notes.cjs "$PREV_TAG" HEAD)
+          
+          # Guardar en variable de entorno para el siguiente step
+          # Usamos EOF delimiter para contenido multilinea
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # También mostrar en logs para debugging
+          echo "=== Release Notes Generated ==="
+          echo "$NOTES"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -73,13 +95,19 @@ jobs:
           tagName: v${{ steps.get_version.outputs.version }}
           releaseName: 'PC Monitoring Dockers v${{ steps.get_version.outputs.version }}'
           releaseBody: |
-            ## PC Monitoring Dockers v${{ steps.get_version.outputs.version }}
+            # PC Monitoring Dockers v${{ steps.get_version.outputs.version }}
             
-            ### Instalacion
+            ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+            
+            ---
+            
+            ### 📥 Instalación
             
             Descarga el instalador para Windows:
             - **Setup (recomendado)**: `PC.Monitoring.Dockers_${{ steps.get_version.outputs.version }}_x64-setup.exe`
             - **MSI**: `PC.Monitoring.Dockers_${{ steps.get_version.outputs.version }}_x64_en-US.msi`
+            
+            La aplicación se actualizará automáticamente en versiones futuras.
           releaseDraft: false
           prerelease: false
           updaterJsonPreferNsis: true

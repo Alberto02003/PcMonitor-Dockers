@@ -80,12 +80,35 @@ function isNewerVersion(newVersion, oldVersion) {
 }
 
 /**
+ * Obtiene las release notes guardadas para una versión
+ */
+function getReleaseNotes(version) {
+  try {
+    return localStorage.getItem(`release_notes_${version}`)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Elimina las release notes guardadas para una versión
+ */
+function clearReleaseNotes(version) {
+  try {
+    localStorage.removeItem(`release_notes_${version}`)
+  } catch (err) {
+    console.error('Error clearing release notes:', err)
+  }
+}
+
+/**
  * Hook principal
  */
-export function useWhatsNew({ enabled = true, updateInfo = null } = {}) {
+export function useWhatsNew({ enabled = true } = {}) {
   const [shouldShow, setShouldShow] = useState(false)
   const [currentVersion, setCurrentVersion] = useState(null)
   const [isNewVersion, setIsNewVersion] = useState(false)
+  const [releaseNotes, setReleaseNotes] = useState(null)
 
   // Detectar si la app se actualizó
   useEffect(() => {
@@ -101,6 +124,12 @@ export function useWhatsNew({ enabled = true, updateInfo = null } = {}) {
         // Si es una versión nueva y no se ha mostrado el modal
         if (isNewerVersion(version, lastVersion)) {
           setIsNewVersion(true)
+          
+          // Buscar release notes guardadas para esta versión
+          const notes = getReleaseNotes(version)
+          if (notes) {
+            setReleaseNotes(notes)
+          }
           
           // Solo mostrar si no se ha mostrado ya para esta versión
           if (!wasWhatsNewShown(version)) {
@@ -122,6 +151,8 @@ export function useWhatsNew({ enabled = true, updateInfo = null } = {}) {
   const handleClose = useCallback(() => {
     if (currentVersion) {
       markWhatsNewAsShown(currentVersion)
+      // Limpiar release notes después de mostrarlas
+      clearReleaseNotes(currentVersion)
     }
     setShouldShow(false)
   }, [currentVersion])
@@ -135,7 +166,7 @@ export function useWhatsNew({ enabled = true, updateInfo = null } = {}) {
     shouldShow,
     currentVersion,
     isNewVersion,
-    updateInfo,
+    releaseNotes,
     onClose: handleClose,
     show,
   }

@@ -8,7 +8,7 @@ import WhatsNewModal from '../WhatsNewModal/WhatsNewModal.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { useWhatsNew } from '../../hooks/useWhatsNew.js'
-import { showWindow, checkForUpdates } from '../../services/tauri.js'
+import { showWindow } from '../../services/tauri.js'
 import './App.css'
 
 // Check if we're in the terminal window (based on URL hash)
@@ -48,26 +48,12 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState('selection')
   const [allowAutoConnect, setAllowAutoConnect] = useState(true)
   const [apiError, setApiError] = useState(null)
-  const [updateInfo, setUpdateInfo] = useState(null)
   
   const loadConnections = useConnectionsStore(state => state.loadConnections)
   const apiConnected = useConnectionsStore(state => state.apiConnected)
 
   // Hook para detectar si la app se actualizó y mostrar "What's New"
   const whatsNew = useWhatsNew({ enabled: true })
-
-  // Obtener información de la última release si es una versión nueva
-  useEffect(() => {
-    if (whatsNew.isNewVersion && !updateInfo) {
-      checkForUpdates().then(info => {
-        if (info && info.body) {
-          setUpdateInfo(info)
-        }
-      }).catch(err => {
-        console.error('Error fetching update info:', err)
-      })
-    }
-  }, [whatsNew.isNewVersion, updateInfo])
 
   // Inicializar API y cargar conexiones
   useEffect(() => {
@@ -97,12 +83,12 @@ function AppContent() {
   return (
     <>
       {/* Modal What's New - shown after app updates */}
-      {whatsNew.shouldShow && updateInfo && (
+      {whatsNew.shouldShow && whatsNew.releaseNotes && (
         <WhatsNewModal
           open={whatsNew.shouldShow}
           onClose={whatsNew.onClose}
           version={whatsNew.currentVersion}
-          releaseNotes={updateInfo.body}
+          releaseNotes={whatsNew.releaseNotes}
         />
       )}
 
