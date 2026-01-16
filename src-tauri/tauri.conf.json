@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "PC Monitoring Dockers",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "identifier": "com.pcmonitoring.dockers",
   "build": {
     "frontendDist": "../dist",
