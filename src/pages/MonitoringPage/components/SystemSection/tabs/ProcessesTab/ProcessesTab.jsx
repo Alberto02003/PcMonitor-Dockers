@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../../../../hooks/useTranslation.jsx'
-import { getUsageColor, getProcessState } from '../../../../hooks/useAdvancedMetrics.js'
+import { getUsageColor, getProcessState } from '../../../../../../utils/metricsUtils.js'
 import { killProcess } from '../../../../../../services/tauri.js'
 import { useConnectionsStore } from '../../../../../../stores/connectionsStore.js'
 import '../../SystemSection.css'

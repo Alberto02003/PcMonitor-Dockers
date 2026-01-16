@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from '../../../../../../hooks/useTranslation.jsx'
-import { formatBytes, formatSpeed, getUsageColor } from '../../../../hooks/useAdvancedMetrics.js'
+import { formatBytes, formatSpeed, getUsageColor } from '../../../../../../utils/metricsUtils.js'
 import '../../SystemSection.css'
 
 function DiskTab({ disks, basicDisks, loading }) {

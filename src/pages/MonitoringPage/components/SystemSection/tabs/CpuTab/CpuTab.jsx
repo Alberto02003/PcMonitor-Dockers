@@ -1,5 +1,5 @@
 import { useTranslation } from '../../../../../../hooks/useTranslation.jsx'
-import { getUsageColor } from '../../../../hooks/useAdvancedMetrics.js'
+import { getUsageColor } from '../../../../../../utils/metricsUtils.js'
 import '../../SystemSection.css'
 
 function CpuTab({ metrics, basicMetrics, loading }) {

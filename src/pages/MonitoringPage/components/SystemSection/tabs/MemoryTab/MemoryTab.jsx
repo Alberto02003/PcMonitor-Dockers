@@ -1,5 +1,5 @@
 import { useTranslation } from '../../../../../../hooks/useTranslation.jsx'
-import { formatBytes, getUsageColor } from '../../../../hooks/useAdvancedMetrics.js'
+import { formatBytes, getUsageColor } from '../../../../../../utils/metricsUtils.js'
 import '../../SystemSection.css'
 
 function MemoryTab({ metrics, basicMetrics, loading }) {
