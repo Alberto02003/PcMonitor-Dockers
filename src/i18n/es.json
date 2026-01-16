@@ -622,7 +622,11 @@
     "update": "Actualizar",
     "viewDetails": "Ver detalles",
     "autoCheck": "Buscar actualizaciones automaticamente",
-    "autoCheckDescription": "Buscar actualizaciones al iniciar y cada 6 horas"
+    "autoCheckDescription": "Buscar actualizaciones al iniciar y cada 6 horas",
+    "upToDate": "Actualizado",
+    "updateAvailable": "Actualización disponible",
+    "lastCheck": "Última verificación",
+    "checkForUpdates": "Buscar actualizaciones"
   },
   "networkSection": {
     "selectInterface": "Interfaz",

@@ -18,6 +18,7 @@ import UndoSnackbar from './components/UndoSnackbar/UndoSnackbar.jsx'
 import SelectionLoading from './components/SelectionLoading/SelectionLoading.jsx'
 import UpdaterModal from '../../components/UpdaterModal/UpdaterModal.jsx'
 import UpdateNotification from '../../components/UpdateNotification/UpdateNotification.jsx'
+import UpdateBadge from '../../components/UpdateBadge/UpdateBadge.jsx'
 import './SelectionPage.css'
 
 function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
@@ -41,8 +42,8 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false)
   const [showUpdateNotification, setShowUpdateNotification] = useState(false)
 
-  // Auto-updater hook
-  const { updateInfo, hasUpdate } = useAutoUpdater({
+  // Auto-updater hook - Detección automática en segundo plano
+  const { updateInfo, hasUpdate, isChecking, lastCheck } = useAutoUpdater({
     checkOnMount: true,
     checkInterval: 6 * 60 * 60 * 1000, // 6 horas
     enabled: settings.autoCheckUpdates,
@@ -249,6 +250,15 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
 
   return (
     <div className="selection-layout">
+      {/* Update badge (top-left corner) - Detección automática */}
+      <UpdateBadge
+        hasUpdate={hasUpdate}
+        updateInfo={updateInfo}
+        isChecking={isChecking}
+        lastCheck={lastCheck}
+        onClick={() => setIsUpdaterOpen(true)}
+      />
+
       {/* Update notification (top-right corner) */}
       {showUpdateNotification && hasUpdate && (
         <UpdateNotification

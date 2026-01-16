@@ -1,0 +1,193 @@
+/**
+ * Estilos para el badge de actualización
+ * Posicionado en esquina superior izquierda de SelectionPage
+ */
+
+.update-badge {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  padding: 8px 16px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.update-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.update-badge:active {
+  transform: translateY(0);
+}
+
+/* Icono */
+.update-badge-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Texto */
+.update-badge-text {
+  white-space: nowrap;
+}
+
+/* Estados */
+
+/* Checking - mientras busca actualizaciones */
+.update-badge-checking {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.update-badge-checking .update-badge-icon {
+  color: var(--accent-blue);
+}
+
+/* Available - hay actualización disponible */
+.update-badge-available {
+  border-color: var(--status-success);
+  background: linear-gradient(135deg, 
+    rgba(100, 255, 218, 0.1) 0%, 
+    rgba(100, 255, 218, 0.05) 100%);
+  color: var(--status-success);
+}
+
+.update-badge-available .update-badge-icon {
+  color: var(--status-success);
+}
+
+.update-badge-available:hover {
+  border-color: var(--status-success);
+  background: linear-gradient(135deg, 
+    rgba(100, 255, 218, 0.15) 0%, 
+    rgba(100, 255, 218, 0.08) 100%);
+}
+
+/* Up to date - sin actualizaciones */
+.update-badge-uptodate {
+  opacity: 0.7;
+  border-color: var(--border-color);
+}
+
+.update-badge-uptodate:hover {
+  opacity: 1;
+}
+
+/* Dot indicator para actualización disponible */
+.update-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-success);
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animaciones */
+
+/* Pulsación para badge con actualización */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(100, 255, 218, 0.3),
+      0 0 0 0 rgba(100, 255, 218, 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      0 0 0 1px rgba(100, 255, 218, 0.3),
+      0 0 0 8px rgba(100, 255, 218, 0);
+  }
+}
+
+.update-badge.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Pulsación del dot */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+/* Spinning para el icono de checking */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.update-badge-icon.spinning {
+  animation: spin 2s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .update-badge {
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .update-badge-icon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .update-badge-text {
+    display: none;
+  }
+  
+  /* Mostrar solo icono en móvil */
+  .update-badge {
+    padding: 8px;
+    border-radius: 50%;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .update-badge {
+    background: rgba(20, 20, 30, 0.8);
+  }
+  
+  .update-badge-available {
+    background: linear-gradient(135deg, 
+      rgba(100, 255, 218, 0.15) 0%, 
+      rgba(100, 255, 218, 0.08) 100%);
+  }
+}
