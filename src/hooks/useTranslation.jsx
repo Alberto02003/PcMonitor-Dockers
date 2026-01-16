@@ -1,5 +1,9 @@
 /**
  * Hook para internacionalizacion
+ * 
+ * OPTIMIZADO (2026-01-16):
+ * - Fix default parameter {} que causaba recreación de función
+ * - Vercel rule: rerender-functional-setstate
  */
 
 import { useCallback, useMemo } from 'react'
@@ -21,12 +25,13 @@ export function useTranslation() {
 
   /**
    * Funcion para obtener una traduccion especifica
+   * OPTIMIZACIÓN: No usar default parameter {} que causa recreación
    * @param {string} key - Clave de traduccion (ej: "common.save")
    * @param {Object} params - Parametros para interpolacion
    * @returns {string}
    */
-  const t = useCallback((key, params = {}) => {
-    return translate(lang, key, params)
+  const t = useCallback((key, params) => {
+    return translate(lang, key, params || {})
   }, [lang])
 
   /**

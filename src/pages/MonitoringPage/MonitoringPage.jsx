@@ -1,12 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useRealTimeMetrics, useRealTimeContainers } from '../../hooks/useRealTimeData.js'
+import { useRealTimeData } from '../../hooks/useRealTimeData.js'
 import { alertFields } from './constants/alertsConfig.js'
 import { useAlertsConfig } from './hooks/useAlertsConfig.js'
 import { useWidgetOrder } from './hooks/useWidgetOrder.js'
 import { useDockerModal } from './hooks/useDockerModal.js'
 import { useAlertNotifications } from './hooks/useAlertNotifications.js'
-
-import { useAdvancedMetrics } from './hooks/useAdvancedMetrics.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { isTauri } from '../../services/tauri.js'
 import MonitoringHeader from './components/MonitoringHeader/MonitoringHeader.jsx'
@@ -59,28 +57,26 @@ function MonitoringPage({ connection, onBack }) {
 
 
 
-  // Real-time data from SSH connection
-  // Intervals optimized for performance: metrics every 5s, containers every 10s
-  const { 
-    metrics, 
-    loading: metricsLoading, 
-    error: metricsError, 
-    lastUpdate 
-  } = useRealTimeMetrics(connection?.id, 5000)
-  
+  // Real-time data from SSH connection - OPTIMIZED with unified hook
+  // Single polling system with Promise.all for parallel requests
+  // Intervals: metrics 5s, advanced 5s, containers 10s
   const {
+    metrics,
+    metricsLoading,
+    metricsError,
+    advancedMetrics,
+    advancedLoading,
+    advancedError,
     containers,
-    loading: containersLoading,
-    error: containersError,
-    refresh: refreshContainers,
-  } = useRealTimeContainers(connection?.id, 10000)
-
-  // Advanced metrics for detailed system tabs (CPU, Memory, Disk, Processes, Network)
-  const {
-    metrics: advancedMetrics,
-    loading: advancedLoading,
-    error: advancedError,
-  } = useAdvancedMetrics(connection?.id, 5000)
+    containersLoading,
+    containersError,
+    lastUpdate,
+    refreshContainers,
+  } = useRealTimeData(connection?.id, {
+    metricsInterval: 5000,
+    advancedInterval: 5000,
+    containersInterval: 10000,
+  })
 
   // Sistema de notificaciones de alertas
   useAlertNotifications({

@@ -1,8 +1,13 @@
 /**
  * Sparkline - Mini grafico de lineas para mostrar tendencias
+ * 
+ * OPTIMIZADO (2026-01-16):
+ * - Memoización con React.memo y comparador custom
+ * - Solo re-renderiza si cambian dimensiones o último valor de data
+ * - Vercel rule: rendering-hoist-jsx + rerender-memo
  */
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import './Sparkline.css'
 
 /**
@@ -199,5 +204,64 @@ function SparklineBar({
   )
 }
 
-export default Sparkline
-export { SparklineBar }
+// OPTIMIZACIÓN: Memoizar componente con comparador custom
+// Solo re-renderiza si cambian dimensiones o el último valor de data
+const SparklineMemo = memo(Sparkline, (prevProps, nextProps) => {
+  // Comparar dimensiones
+  if (prevProps.width !== nextProps.width || 
+      prevProps.height !== nextProps.height ||
+      prevProps.color !== nextProps.color ||
+      prevProps.fill !== nextProps.fill ||
+      prevProps.showDot !== nextProps.showDot ||
+      prevProps.strokeWidth !== nextProps.strokeWidth) {
+    return false // Props changed, re-render
+  }
+
+  // Comparar arrays de data
+  const prevData = prevProps.data || []
+  const nextData = nextProps.data || []
+
+  // Si longitudes son diferentes, re-render
+  if (prevData.length !== nextData.length) {
+    return false
+  }
+
+  // Si no hay data, no re-render
+  if (prevData.length === 0) {
+    return true
+  }
+
+  // Solo comparar el último valor (optimización para sparklines)
+  // Asumimos que data es append-only y solo cambia el último valor
+  return prevData[prevData.length - 1] === nextData[nextData.length - 1]
+})
+
+SparklineMemo.displayName = 'Sparkline'
+
+// Memoizar también SparklineBar
+const SparklineBarMemo = memo(SparklineBar, (prevProps, nextProps) => {
+  if (prevProps.width !== nextProps.width || 
+      prevProps.height !== nextProps.height ||
+      prevProps.color !== nextProps.color ||
+      prevProps.gap !== nextProps.gap) {
+    return false
+  }
+
+  const prevData = prevProps.data || []
+  const nextData = nextProps.data || []
+
+  if (prevData.length !== nextData.length) {
+    return false
+  }
+
+  if (prevData.length === 0) {
+    return true
+  }
+
+  return prevData[prevData.length - 1] === nextData[nextData.length - 1]
+})
+
+SparklineBarMemo.displayName = 'SparklineBar'
+
+export default SparklineMemo
+export { SparklineBarMemo as SparklineBar }

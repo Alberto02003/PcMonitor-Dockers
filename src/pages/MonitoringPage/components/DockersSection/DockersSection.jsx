@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { dockerStart, dockerStop, dockerRestart, dockerRemove } from '../../../../services/tauri.js'
 import { generateAccessUrls, formatPortsDisplay, openInBrowser, copyToClipboard } from '../../../../utils/dockerUtils.js'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
@@ -84,10 +84,14 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
     }
   }
 
-  const runningCount = containers.filter((c) => c.state === 'running').length
-  const stoppedCount = containers.filter((c) => c.state !== 'running').length
-  const totalCpu = containers.reduce((sum, c) => sum + (c.cpuPercent || 0), 0)
-  const totalMemory = containers.reduce((sum, c) => sum + (c.memoryUsageMb || 0), 0)
+  // OPTIMIZACIÓN: Memoizar cálculos derivados (Vercel rule: rerender-derived-state)
+  // Evita re-calcular en cada render, solo cuando cambian los contenedores
+  const containerStats = useMemo(() => ({
+    runningCount: containers.filter((c) => c.state === 'running').length,
+    stoppedCount: containers.filter((c) => c.state !== 'running').length,
+    totalCpu: containers.reduce((sum, c) => sum + (c.cpuPercent || 0), 0),
+    totalMemory: containers.reduce((sum, c) => sum + (c.memoryUsageMb || 0), 0),
+  }), [containers])
 
   if (loading && containers.length === 0) {
     return (
@@ -132,28 +136,28 @@ function DockersSection({ onOpenDocker, connectionId, containers = [], loading, 
         <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Running</div>
           <div className="docker-stat-value" style={{ color: 'var(--status-success)' }}>
-            {runningCount}
+            {containerStats.runningCount}
           </div>
         </div>
 
         <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Stopped</div>
           <div className="docker-stat-value" style={{ color: 'var(--text-secondary)' }}>
-            {stoppedCount}
+            {containerStats.stoppedCount}
           </div>
         </div>
 
         <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Total CPU</div>
           <div className="docker-stat-value" style={{ color: 'var(--accent-cyan)' }}>
-            {totalCpu.toFixed(1)}<span className="docker-stat-unit">%</span>
+            {containerStats.totalCpu.toFixed(1)}<span className="docker-stat-unit">%</span>
           </div>
         </div>
 
         <div className="docker-stat-card glass hover-lift">
           <div className="docker-stat-label">Total RAM</div>
           <div className="docker-stat-value" style={{ color: 'var(--accent-purple)' }}>
-            {totalMemory.toFixed(0)}<span className="docker-stat-unit">MB</span>
+            {containerStats.totalMemory.toFixed(0)}<span className="docker-stat-unit">MB</span>
           </div>
         </div>
       </div>
