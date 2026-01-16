@@ -18,13 +18,6 @@ function UpdaterModal({ open, onClose }) {
     getAppVersion().then(setCurrentVersion)
   }, [])
 
-  // Check for updates when modal opens
-  useEffect(() => {
-    if (open && !updateInfo && !checking) {
-      handleCheckUpdates()
-    }
-  }, [open, updateInfo, checking, handleCheckUpdates])
-
   const handleCheckUpdates = useCallback(async () => {
     setChecking(true)
     setError(null)
@@ -43,6 +36,13 @@ function UpdaterModal({ open, onClose }) {
       setChecking(false)
     }
   }, [t])
+
+  // Check for updates when modal opens
+  useEffect(() => {
+    if (open && !updateInfo && !checking) {
+      handleCheckUpdates()
+    }
+  }, [open, updateInfo, checking, handleCheckUpdates])
 
   const handleDownload = useCallback(async () => {
     if (!updateInfo?.update) return
