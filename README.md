@@ -35,12 +35,42 @@ Aplicacion de escritorio para monitorizar servidores Linux remotos via SSH. Mues
 - Rust 1.77+
 - Tauri CLI
 
-## Instalacion
+## Instalación para Usuarios
+
+### Descarga la Aplicación
+
+Descarga la última versión desde [Releases](https://github.com/Alberto02003/PcMonitor-Dockers/releases/latest):
+
+- **Recomendado**: `PC.Monitoring.Dockers_X.X.X_x64-setup.exe` (Instalador NSIS)
+- **Alternativo**: `PC.Monitoring.Dockers_X.X.X_x64_en-US.msi` (Instalador MSI)
+
+### Instalación en Windows
+
+Cuando ejecutes el instalador, Windows SmartScreen puede mostrar un mensaje de protección porque la aplicación no tiene un certificado de firma de código (requiere pago anual de ~$300).
+
+**Para instalar de forma segura:**
+
+1. Click derecho en el archivo descargado → **Propiedades**
+2. En la pestaña **General**, marca **"Desbloquear"** → **Aplicar**
+3. Ejecuta el instalador
+4. Si aparece "Windows protegió tu PC":
+   - Click en **"Más información"**
+   - Click en **"Ejecutar de todas formas"**
+
+La aplicación es completamente segura y de código abierto. Puedes verificar el código fuente en este repositorio.
+
+### Actualizaciones Automáticas
+
+Una vez instalada, la aplicación verificará automáticamente nuevas versiones cada 6 horas y te notificará cuando haya actualizaciones disponibles.
+
+---
+
+## Instalación para Desarrolladores
 
 ```bash
 # Clonar repositorio
-git clone <repo-url>
-cd pc-monitoring-dockers
+git clone https://github.com/Alberto02003/PcMonitor-Dockers.git
+cd PcMonitor-Dockers
 
 # Instalar dependencias
 npm install
@@ -48,7 +78,7 @@ npm install
 # Desarrollo
 npm run tauri dev
 
-# Build produccion
+# Build producción
 npm run tauri build
 ```
 

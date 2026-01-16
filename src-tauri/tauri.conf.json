@@ -32,13 +32,26 @@
     "active": true,
     "targets": "all",
     "createUpdaterArtifacts": true,
+    "publisher": "Alberto02003",
+    "copyright": "Copyright © 2024-2026 Alberto02003",
+    "category": "DeveloperTool",
+    "shortDescription": "Monitor and manage Linux servers via SSH with Docker integration",
+    "longDescription": "PC Monitoring Dockers is a desktop application for monitoring Linux servers via SSH, managing Docker containers, and tracking system metrics in real-time.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "en-US"
+      }
+    }
   },
   "plugins": {
     "updater": {
