@@ -1,46 +1,47 @@
 /**
- * Estilos para el badge de actualización
- * Posicionado en esquina superior izquierda de SelectionPage
+ * Badge de actualización
+ * Posicionado en esquina inferior izquierda
+ * Estilo consistente con el sistema de diseño de la app
  */
 
 .update-badge {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  bottom: 20px;
+  left: 20px;
   z-index: 1000;
   
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   
-  padding: 8px 16px;
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
+  /* Estilo glass consistente con cards de la app */
+  background: var(--color-surface);
+  backdrop-filter: blur(12px);
   
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition-normal);
   
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-md);
 }
 
 .update-badge:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-hover);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .update-badge:active {
   transform: translateY(0);
+  box-shadow: var(--shadow-md);
 }
 
 /* Icono */
@@ -53,48 +54,49 @@
 /* Texto */
 .update-badge-text {
   white-space: nowrap;
+  font-size: var(--text-sm);
 }
 
-/* Estados */
+/* ============================================
+   ESTADOS
+   ============================================ */
 
 /* Checking - mientras busca actualizaciones */
 .update-badge-checking {
-  border-color: var(--accent-blue);
-  color: var(--accent-blue);
+  border-color: var(--color-info-border);
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
 }
 
 .update-badge-checking .update-badge-icon {
-  color: var(--accent-blue);
+  color: var(--color-info);
 }
 
 /* Available - hay actualización disponible */
 .update-badge-available {
-  border-color: var(--status-success);
-  background: linear-gradient(135deg, 
-    rgba(100, 255, 218, 0.1) 0%, 
-    rgba(100, 255, 218, 0.05) 100%);
-  color: var(--status-success);
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .update-badge-available .update-badge-icon {
-  color: var(--status-success);
+  color: var(--color-success);
 }
 
 .update-badge-available:hover {
-  border-color: var(--status-success);
-  background: linear-gradient(135deg, 
-    rgba(100, 255, 218, 0.15) 0%, 
-    rgba(100, 255, 218, 0.08) 100%);
+  border-color: var(--color-success);
+  background: rgba(76, 227, 160, 0.2);
 }
 
 /* Up to date - sin actualizaciones */
 .update-badge-uptodate {
-  opacity: 0.7;
-  border-color: var(--border-color);
+  opacity: 0.6;
+  border-color: var(--color-border);
 }
 
 .update-badge-uptodate:hover {
   opacity: 1;
+  border-color: var(--color-border-hover);
 }
 
 /* Dot indicator para actualización disponible */
@@ -102,30 +104,31 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--status-success);
-  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: var(--color-success);
+  animation: pulse-dot 2s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--color-success);
 }
 
-/* Animaciones */
+/* ============================================
+   ANIMACIONES
+   ============================================ */
 
 /* Pulsación para badge con actualización */
 @keyframes pulse {
   0%, 100% {
     box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.1),
-      0 0 0 1px rgba(100, 255, 218, 0.3),
-      0 0 0 0 rgba(100, 255, 218, 0.4);
+      var(--shadow-md),
+      0 0 0 0 var(--color-success-border);
   }
   50% {
     box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.1),
-      0 0 0 1px rgba(100, 255, 218, 0.3),
-      0 0 0 8px rgba(100, 255, 218, 0);
+      var(--shadow-lg),
+      0 0 0 8px rgba(76, 227, 160, 0);
   }
 }
 
 .update-badge.pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse 2s ease-in-out infinite;
 }
 
 /* Pulsación del dot */
@@ -135,8 +138,8 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.2);
+    opacity: 0.5;
+    transform: scale(1.3);
   }
 }
 
@@ -154,13 +157,16 @@
   animation: spin 2s linear infinite;
 }
 
-/* Responsive */
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
 @media (max-width: 768px) {
   .update-badge {
-    top: 12px;
-    left: 12px;
-    padding: 6px 12px;
-    font-size: 12px;
+    bottom: 16px;
+    left: 16px;
+    padding: 8px 12px;
+    font-size: var(--text-xs);
   }
   
   .update-badge-icon {
@@ -169,25 +175,23 @@
   }
   
   .update-badge-text {
-    display: none;
-  }
-  
-  /* Mostrar solo icono en móvil */
-  .update-badge {
-    padding: 8px;
-    border-radius: 50%;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .update-badge {
-    background: rgba(20, 20, 30, 0.8);
+@media (max-width: 480px) {
+  .update-badge-text {
+    display: none;
   }
   
-  .update-badge-available {
-    background: linear-gradient(135deg, 
-      rgba(100, 255, 218, 0.15) 0%, 
-      rgba(100, 255, 218, 0.08) 100%);
+  .update-badge {
+    padding: 10px;
+    border-radius: 50%;
+  }
+  
+  .update-badge-dot {
+    display: none;
   }
 }
