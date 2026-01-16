@@ -715,5 +715,12 @@
     "rss": "RSS",
     "threads": "Hilos",
     "noProcesses": "No hay procesos"
+  },
+  "whatsNew": {
+    "title": "Novedades",
+    "intro": "Tu aplicación se ha actualizado correctamente. Esto es lo nuevo:",
+    "generalImprovements": "Mejoras generales de rendimiento y estabilidad.",
+    "thanks": "¡Gracias por usar PC Monitor!",
+    "getStarted": "¡Empecemos!"
   }
 }

@@ -4,9 +4,11 @@ import { SettingsProvider } from '../Settings/Settings.jsx'
 import SelectionPage from '../../pages/SelectionPage/SelectionPage.jsx'
 import MonitoringPage from '../../pages/MonitoringPage/MonitoringPage.jsx'
 import TerminalWindow from '../../pages/TerminalWindow/TerminalWindow.jsx'
+import WhatsNewModal from '../WhatsNewModal/WhatsNewModal.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
-import { showWindow } from '../../services/tauri.js'
+import { useWhatsNew } from '../../hooks/useWhatsNew.js'
+import { showWindow, checkForUpdates } from '../../services/tauri.js'
 import './App.css'
 
 // Check if we're in the terminal window (based on URL hash)
@@ -46,9 +48,26 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState('selection')
   const [allowAutoConnect, setAllowAutoConnect] = useState(true)
   const [apiError, setApiError] = useState(null)
+  const [updateInfo, setUpdateInfo] = useState(null)
   
   const loadConnections = useConnectionsStore(state => state.loadConnections)
   const apiConnected = useConnectionsStore(state => state.apiConnected)
+
+  // Hook para detectar si la app se actualizó y mostrar "What's New"
+  const whatsNew = useWhatsNew({ enabled: true })
+
+  // Obtener información de la última release si es una versión nueva
+  useEffect(() => {
+    if (whatsNew.isNewVersion && !updateInfo) {
+      checkForUpdates().then(info => {
+        if (info && info.body) {
+          setUpdateInfo(info)
+        }
+      }).catch(err => {
+        console.error('Error fetching update info:', err)
+      })
+    }
+  }, [whatsNew.isNewVersion, updateInfo])
 
   // Inicializar API y cargar conexiones
   useEffect(() => {
@@ -75,28 +94,39 @@ function AppContent() {
     return <ApiErrorScreen error={apiError} onRetry={() => window.location.reload()} />
   }
 
-  if (currentPage === 'monitoring') {
-    return (
-      <MonitoringPage
-        connection={activeConnection}
-        onBack={() => {
-          setAllowAutoConnect(false)
-          setCurrentPage('selection')
-        }}
-      />
-    )
-  }
-
   return (
-    <SelectionPage
-      onConnect={(connection) => {
-        setActiveConnection(connection)
-        setCurrentPage('monitoring')
-        setAllowAutoConnect(false)
-      }}
-      allowAutoConnect={allowAutoConnect}
-      onAutoConnectUsed={() => setAllowAutoConnect(false)}
-    />
+    <>
+      {/* Modal What's New - shown after app updates */}
+      {whatsNew.shouldShow && updateInfo && (
+        <WhatsNewModal
+          open={whatsNew.shouldShow}
+          onClose={whatsNew.onClose}
+          version={whatsNew.currentVersion}
+          releaseNotes={updateInfo.body}
+        />
+      )}
+
+      {/* Main app content */}
+      {currentPage === 'monitoring' ? (
+        <MonitoringPage
+          connection={activeConnection}
+          onBack={() => {
+            setAllowAutoConnect(false)
+            setCurrentPage('selection')
+          }}
+        />
+      ) : (
+        <SelectionPage
+          onConnect={(connection) => {
+            setActiveConnection(connection)
+            setCurrentPage('monitoring')
+            setAllowAutoConnect(false)
+          }}
+          allowAutoConnect={allowAutoConnect}
+          onAutoConnectUsed={() => setAllowAutoConnect(false)}
+        />
+      )}
+    </>
   )
 }
 

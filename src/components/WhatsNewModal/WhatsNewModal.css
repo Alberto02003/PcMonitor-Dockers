@@ -1,0 +1,245 @@
+/**
+ * Estilos para el modal "What's New"
+ * Muestra los cambios después de una actualización
+ */
+
+.whats-new-modal {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  
+  display: flex;
+  flex-direction: column;
+  
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header */
+.whats-new-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.whats-new-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-success) 0%, var(--color-primary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.whats-new-icon svg {
+  width: 28px;
+  height: 28px;
+  color: var(--color-bg-primary);
+}
+
+.whats-new-title {
+  flex: 1;
+}
+
+.whats-new-title h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.whats-new-version {
+  margin: 4px 0 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.whats-new-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.whats-new-close:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+/* Content */
+.whats-new-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.whats-new-intro {
+  margin: 0 0 20px 0;
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.whats-new-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.whats-new-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.whats-new-item:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+  transform: translateX(4px);
+}
+
+.whats-new-bullet {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.whats-new-text {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+.whats-new-empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.whats-new-empty p {
+  margin: 0;
+  font-size: var(--text-base);
+}
+
+/* Footer */
+.whats-new-footer {
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.whats-new-thanks {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.whats-new-btn {
+  min-width: 160px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .whats-new-modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .whats-new-header {
+    padding: 20px;
+  }
+
+  .whats-new-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .whats-new-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .whats-new-title h2 {
+    font-size: var(--text-lg);
+  }
+
+  .whats-new-content {
+    padding: 20px;
+  }
+
+  .whats-new-item {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .whats-new-header {
+    padding: 16px;
+  }
+
+  .whats-new-content {
+    padding: 16px;
+  }
+
+  .whats-new-item {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .whats-new-text {
+    font-size: var(--text-xs);
+  }
+}
