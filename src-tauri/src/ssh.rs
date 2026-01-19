@@ -103,10 +103,10 @@ impl SshManager {
         
         eprintln!("[SSH] Hostname resuelto: {}", socket_addr);
         
-        eprintln!("[SSH] Conectando TCP (timeout: 10s)...");
+        eprintln!("[SSH] Conectando TCP (timeout: 30s)...");
         let tcp = TcpStream::connect_timeout(
             &socket_addr,
-            Duration::from_secs(10),
+            Duration::from_secs(30),
         )
         .map_err(|e| {
             if e.kind() == std::io::ErrorKind::TimedOut {
