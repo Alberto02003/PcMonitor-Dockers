@@ -77,63 +77,113 @@ impl SshManager {
     }
 
     pub fn connect(&self, config: ConnectionConfig) -> Result<ConnectionStatus, SshError> {
+        eprintln!("[SSH] Iniciando conexión...");
+        eprintln!("[SSH] Host: {}", config.host);
+        eprintln!("[SSH] Port: {}", config.port);
+        eprintln!("[SSH] Username: {}", config.username);
+        eprintln!("[SSH] AuthType: {}", config.auth_type);
+        
         let address = format!("{}:{}", config.host, config.port);
+        eprintln!("[SSH] Dirección completa: {}", address);
         
         // Resolve hostname to socket address
         use std::net::ToSocketAddrs;
+        eprintln!("[SSH] Resolviendo hostname...");
         let socket_addr = address
             .to_socket_addrs()
-            .map_err(|e| SshError::ConnectionError(format!("No se pudo resolver {}: {}", address, e)))?
+            .map_err(|e| {
+                eprintln!("[SSH ERROR] Fallo al resolver hostname: {}", e);
+                SshError::ConnectionError(format!("No se pudo resolver {}: {}", address, e))
+            })?
             .next()
-            .ok_or_else(|| SshError::ConnectionError(format!("No se encontro direccion para {}", address)))?;
+            .ok_or_else(|| {
+                eprintln!("[SSH ERROR] No se encontró dirección IP");
+                SshError::ConnectionError(format!("No se encontro direccion para {}", address))
+            })?;
         
+        eprintln!("[SSH] Hostname resuelto: {}", socket_addr);
+        
+        eprintln!("[SSH] Conectando TCP (timeout: 10s)...");
         let tcp = TcpStream::connect_timeout(
             &socket_addr,
             Duration::from_secs(10),
         )
         .map_err(|e| {
             if e.kind() == std::io::ErrorKind::TimedOut {
+                eprintln!("[SSH ERROR] Timeout de conexión TCP");
                 SshError::Timeout
             } else {
+                eprintln!("[SSH ERROR] Error de conexión TCP: {}", e);
                 SshError::ConnectionError(format!("No se pudo conectar a {}: {}", address, e))
             }
         })?;
+        
+        eprintln!("[SSH] TCP conectado exitosamente");
 
+        eprintln!("[SSH] Creando sesión SSH...");
         let mut session = Session::new()
-            .map_err(|e| SshError::ConnectionError(format!("Error creando sesion: {}", e)))?;
+            .map_err(|e| {
+                eprintln!("[SSH ERROR] Error creando sesión: {}", e);
+                SshError::ConnectionError(format!("Error creando sesion: {}", e))
+            })?;
         
         session.set_tcp_stream(tcp);
         session.set_timeout(10000);
         
+        eprintln!("[SSH] Iniciando handshake SSH...");
         session.handshake()
-            .map_err(|e| SshError::ConnectionError(format!("Error en handshake SSH: {}", e)))?;
+            .map_err(|e| {
+                eprintln!("[SSH ERROR] Error en handshake SSH: {}", e);
+                SshError::ConnectionError(format!("Error en handshake SSH: {}", e))
+            })?;
+        
+        eprintln!("[SSH] Handshake completado exitosamente");
 
+        eprintln!("[SSH] Autenticando usuario: {}", config.username);
         match config.auth_type.as_str() {
             "password" => {
+                eprintln!("[SSH] Método: Password");
                 let password = config.password.as_deref().unwrap_or("");
+                eprintln!("[SSH] Password presente: {}", !password.is_empty());
                 session.userauth_password(&config.username, password)
-                    .map_err(|e| SshError::AuthError(format!("Autenticacion fallida: {}", e)))?;
+                    .map_err(|e| {
+                        eprintln!("[SSH ERROR] Autenticación con password fallida: {}", e);
+                        SshError::AuthError(format!("Autenticacion fallida: {}", e))
+                    })?;
             }
             "key" => {
+                eprintln!("[SSH] Método: Public Key");
                 let key_path = config.key_path.as_deref()
-                    .ok_or_else(|| SshError::AuthError("Ruta de clave no especificada".into()))?;
+                    .ok_or_else(|| {
+                        eprintln!("[SSH ERROR] No se especificó ruta de clave");
+                        SshError::AuthError("Ruta de clave no especificada".into())
+                    })?;
+                eprintln!("[SSH] Ruta de clave: {}", key_path);
                 session.userauth_pubkey_file(
                     &config.username,
                     None,
                     std::path::Path::new(key_path),
                     None,
                 )
-                .map_err(|e| SshError::AuthError(format!("Autenticacion con clave fallida: {}", e)))?;
+                .map_err(|e| {
+                    eprintln!("[SSH ERROR] Autenticación con clave fallida: {}", e);
+                    SshError::AuthError(format!("Autenticacion con clave fallida: {}", e))
+                })?;
             }
             _ => {
+                eprintln!("[SSH ERROR] Tipo de autenticación no soportado: {}", config.auth_type);
                 return Err(SshError::AuthError("Tipo de autenticacion no soportado".into()));
             }
         }
 
+        eprintln!("[SSH] Verificando autenticación...");
         if !session.authenticated() {
+            eprintln!("[SSH ERROR] La sesión no está autenticada después del intento");
             return Err(SshError::AuthError("No se pudo autenticar".into()));
         }
 
+        eprintln!("[SSH] ✓ Autenticación exitosa");
+        
         let connection_id = config.id.clone();
         let connection = SshConnection {
             session,
@@ -141,6 +191,8 @@ impl SshManager {
         };
 
         self.connections.lock().insert(connection_id.clone(), connection);
+        
+        eprintln!("[SSH] ✓ Conexión establecida exitosamente: {}", connection_id);
 
         Ok(ConnectionStatus {
             id: connection_id,
