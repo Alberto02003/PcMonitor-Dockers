@@ -175,13 +175,29 @@ impl SecureStorage {
 
     /// Load a full connection with credentials
     pub fn load_full_connection(&self, connection_id: &str) -> Result<FullConnection, SecurityError> {
+        eprintln!("[STORAGE] Cargando conexión: {}", connection_id);
+        
         let connections = self.load_connections()?;
         let stored = connections.iter()
             .find(|c| c.id == connection_id)
-            .ok_or_else(|| SecurityError::NotFound(connection_id.to_string()))?;
+            .ok_or_else(|| {
+                eprintln!("[STORAGE ERROR] Conexión no encontrada: {}", connection_id);
+                SecurityError::NotFound(connection_id.to_string())
+            })?;
 
+        eprintln!("[STORAGE] Conexión encontrada: {}", stored.name);
+        eprintln!("[STORAGE] Cargando credenciales...");
+        
         let credentials = self.load_credentials(connection_id)
-            .unwrap_or(SecureCredentials { password: None, key_path: None });
+            .unwrap_or_else(|e| {
+                eprintln!("[STORAGE WARNING] No se pudieron cargar credenciales: {}", e);
+                SecureCredentials { password: None, key_path: None }
+            });
+
+        eprintln!("[STORAGE] Credenciales cargadas:");
+        eprintln!("[STORAGE]   - Password presente: {}", credentials.password.is_some());
+        eprintln!("[STORAGE]   - Password length: {}", credentials.password.as_ref().map(|p| p.len()).unwrap_or(0));
+        eprintln!("[STORAGE]   - KeyPath presente: {}", credentials.key_path.is_some());
 
         Ok(FullConnection {
             id: stored.id.clone(),

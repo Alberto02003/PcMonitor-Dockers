@@ -5,7 +5,7 @@
 import { useCallback } from 'react'
 import { useConnectionsStore } from '../../../stores/connectionsStore.js'
 import { useTranslation } from '../../../hooks/useTranslation.jsx'
-import { sshConnect, sshTest, isTauri } from '../../../services/tauri.js'
+import { sshConnect, sshTest, isTauri, secureStorageGet } from '../../../services/tauri.js'
 
 /**
  * Hook que proporciona acciones para gestionar conexiones
@@ -78,7 +78,16 @@ export function useConnectionActions({ showNotification, onConnect }) {
 
     if (isTauri()) {
       try {
-        await sshConnect(target)
+        // 🔥 FIX: Cargar credenciales desencriptadas desde Secure Storage
+        console.log('[CONNECT] Cargando credenciales para conexión:', id)
+        const connectionWithCredentials = await secureStorageGet(id)
+        console.log('[CONNECT] Credenciales cargadas:', {
+          id: connectionWithCredentials.id,
+          hasPassword: !!connectionWithCredentials.password,
+          hasKeyPath: !!connectionWithCredentials.keyPath,
+        })
+        
+        await sshConnect(connectionWithCredentials)
         updateStatus(id, 'online')
         await storeUpdateLastConnected(id)
         showNotification(t('notifications.testOk'), 'success')
@@ -87,6 +96,7 @@ export function useConnectionActions({ showNotification, onConnect }) {
         }
         return { success: true }
       } catch (error) {
+        console.error('[CONNECT] Error:', error)
         updateStatus(id, 'offline')
         showNotification(`Error: ${error}`, 'error')
         return { success: false, error }

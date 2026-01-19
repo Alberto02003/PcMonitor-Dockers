@@ -106,7 +106,18 @@ export async function secureStorageGet(connectionId) {
 // ============================================================================
 
 export async function sshConnect(connection) {
-  return invoke('ssh_connect', {
+  console.log('[FRONTEND] sshConnect llamado con:', {
+    id: connection.id,
+    host: connection.host,
+    port: connection.port,
+    username: connection.username,
+    authType: connection.authType,
+    hasPassword: !!connection.password,
+    passwordLength: connection.password?.length || 0,
+    hasKeyPath: !!connection.keyPath,
+  })
+  
+  const config = {
     id: connection.id,
     host: connection.host,
     port: connection.port || 22,
@@ -114,7 +125,21 @@ export async function sshConnect(connection) {
     authType: connection.authType || 'password',
     password: connection.password || null,
     keyPath: connection.keyPath || null,
+  }
+  
+  console.log('[FRONTEND] Enviando a Tauri:', {
+    ...config,
+    password: config.password ? '***HIDDEN***' : null,
   })
+  
+  try {
+    const result = await invoke('ssh_connect', config)
+    console.log('[FRONTEND] Conexión exitosa:', result)
+    return result
+  } catch (error) {
+    console.error('[FRONTEND] Error de conexión:', error)
+    throw error
+  }
 }
 
 export async function sshDisconnect(connectionId) {
