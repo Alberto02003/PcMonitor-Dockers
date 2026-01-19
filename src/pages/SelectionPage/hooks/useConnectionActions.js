@@ -78,14 +78,8 @@ export function useConnectionActions({ showNotification, onConnect }) {
 
     if (isTauri()) {
       try {
-        // 🔥 FIX: Cargar credenciales desencriptadas desde Secure Storage
-        console.log('[CONNECT] Cargando credenciales para conexión:', id)
+        // Cargar credenciales desencriptadas desde Secure Storage
         const connectionWithCredentials = await secureStorageGet(id)
-        console.log('[CONNECT] Credenciales cargadas:', {
-          id: connectionWithCredentials.id,
-          hasPassword: !!connectionWithCredentials.password,
-          hasKeyPath: !!connectionWithCredentials.keyPath,
-        })
         
         await sshConnect(connectionWithCredentials)
         updateStatus(id, 'online')
@@ -96,7 +90,6 @@ export function useConnectionActions({ showNotification, onConnect }) {
         }
         return { success: true }
       } catch (error) {
-        console.error('[CONNECT] Error:', error)
         updateStatus(id, 'offline')
         showNotification(`Error: ${error}`, 'error')
         return { success: false, error }
