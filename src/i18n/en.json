@@ -737,6 +737,7 @@
     "groupName": "Group Name",
     "groupNamePlaceholder": "Enter group name",
     "changeColor": "Change color",
+    "noCustomGroups": "No custom groups yet. Create one to organize your connections!",
     "confirmDelete": "This group contains {{count}} connection(s). They will be moved to 'default'. Continue?",
     "errors": {
       "emptyName": "Group name cannot be empty",

@@ -737,6 +737,7 @@
     "groupName": "Nombre del Grupo",
     "groupNamePlaceholder": "Ingrese el nombre del grupo",
     "changeColor": "Cambiar color",
+    "noCustomGroups": "No hay grupos personalizados todavía. ¡Crea uno para organizar tus conexiones!",
     "confirmDelete": "Este grupo contiene {{count}} conexión(es). Se moverán a 'default'. ¿Continuar?",
     "errors": {
       "emptyName": "El nombre del grupo no puede estar vacío",

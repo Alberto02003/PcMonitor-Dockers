@@ -112,7 +112,7 @@ function GroupModal({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container group-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="group-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
             {mode === 'create' && t('groupModal.createTitle')}
@@ -121,7 +121,7 @@ function GroupModal({
           </h2>
           <button 
             type="button" 
-            className="modal-close interactive-bounce" 
+            className="modal-close" 
             onClick={onClose}
             aria-label={t('common.close')}
           >
@@ -135,7 +135,7 @@ function GroupModal({
               <div className="group-modal-actions">
                 <button 
                   type="button"
-                  className="btn btn-accent interactive-bounce"
+                  className="btn btn-accent"
                   onClick={() => setMode('create')}
                 >
                   <PlusIcon />
@@ -179,10 +179,10 @@ function GroupModal({
                 </div>
 
                 {/* Custom groups */}
-                {customGroups.length > 0 && (
-                  <div className="group-section">
-                    <h3 className="group-section-title">{t('groupModal.customGroups')}</h3>
-                    {customGroups.map(groupName => (
+                <div className="group-section">
+                  <h3 className="group-section-title">{t('groupModal.customGroups')}</h3>
+                  {customGroups.length > 0 ? (
+                    customGroups.map(groupName => (
                       <div 
                         key={groupName} 
                         className="group-item"
@@ -202,27 +202,31 @@ function GroupModal({
                             onClick={() => handleEditGroup(groupName)}
                             title={t('groupModal.changeColor')}
                           />
-                          <button
-                            type="button"
-                            className="group-action-btn interactive-bounce"
-                            onClick={() => handleEditGroup(groupName)}
-                            title={t('common.edit')}
-                          >
-                            <EditIcon />
-                          </button>
-                          <button
-                            type="button"
-                            className="group-action-btn group-action-danger interactive-bounce"
-                            onClick={() => handleDeleteGroup(groupName)}
-                            title={t('common.delete')}
-                          >
-                            <TrashIcon />
-                          </button>
+                        <button
+                          type="button"
+                          className="group-action-btn"
+                          onClick={() => handleEditGroup(groupName)}
+                          title={t('common.edit')}
+                        >
+                          <EditIcon />
+                        </button>
+                        <button
+                          type="button"
+                          className="group-action-btn group-action-danger"
+                          onClick={() => handleDeleteGroup(groupName)}
+                          title={t('common.delete')}
+                        >
+                          <TrashIcon />
+                        </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    ))
+                  ) : (
+                    <div className="group-list-empty">
+                      <p>{t('groupModal.noCustomGroups')}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -235,7 +239,6 @@ function GroupModal({
                 </label>
                 <input
                   type="text"
-                  className="focus-ring"
                   value={groupName}
                   onChange={(e) => {
                     setGroupName(e.target.value)
@@ -276,14 +279,14 @@ function GroupModal({
               <div className="group-form-actions">
                 <button
                   type="button"
-                  className="btn btn-accent interactive-bounce"
+                  className="btn btn-accent"
                   onClick={mode === 'create' ? handleCreateGroup : handleRenameGroup}
                 >
                   {mode === 'create' ? t('common.create') : t('common.save')}
                 </button>
                 <button
                   type="button"
-                  className="btn btn-ghost interactive-bounce"
+                  className="btn btn-ghost"
                   onClick={() => {
                     setMode('list')
                     setSelectedGroup(null)
