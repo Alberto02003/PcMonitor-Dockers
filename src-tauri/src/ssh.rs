@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::io::Read;
 use std::net::TcpStream;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -77,6 +77,7 @@ impl SshManager {
     }
 
     pub fn connect(&self, config: ConnectionConfig) -> Result<ConnectionStatus, SshError> {
+        let start_time = Instant::now();
         eprintln!("[SSH] Iniciando conexión...");
         eprintln!("[SSH] Host: {}", config.host);
         eprintln!("[SSH] Port: {}", config.port);
@@ -87,38 +88,47 @@ impl SshManager {
         eprintln!("[SSH] Dirección completa: {}", address);
         
         // Resolve hostname to socket address
-        use std::net::ToSocketAddrs;
+        use std::net::{ToSocketAddrs, SocketAddr};
         eprintln!("[SSH] Resolviendo hostname...");
-        let socket_addr = address
+        let mut addrs: Vec<SocketAddr> = address
             .to_socket_addrs()
             .map_err(|e| {
                 eprintln!("[SSH ERROR] Fallo al resolver hostname: {}", e);
                 SshError::ConnectionError(format!("No se pudo resolver {}: {}", address, e))
             })?
-            .next()
+            .collect();
+        
+        eprintln!("[SSH] Direcciones resueltas: {:?}", addrs);
+        
+        // Preferir IPv4 sobre IPv6
+        addrs.sort_by_key(|addr| if addr.is_ipv4() { 0 } else { 1 });
+        
+        let socket_addr = addrs.first()
             .ok_or_else(|| {
                 eprintln!("[SSH ERROR] No se encontró dirección IP");
                 SshError::ConnectionError(format!("No se encontro direccion para {}", address))
             })?;
         
-        eprintln!("[SSH] Hostname resuelto: {}", socket_addr);
+        eprintln!("[SSH] Usando dirección: {} (IPv{})", socket_addr, if socket_addr.is_ipv4() { "4" } else { "6" });
         
         eprintln!("[SSH] Conectando TCP (timeout: 30s)...");
+        let tcp_start = Instant::now();
         let tcp = TcpStream::connect_timeout(
-            &socket_addr,
+            socket_addr,
             Duration::from_secs(30),
         )
         .map_err(|e| {
+            let elapsed = tcp_start.elapsed();
             if e.kind() == std::io::ErrorKind::TimedOut {
-                eprintln!("[SSH ERROR] Timeout de conexión TCP");
+                eprintln!("[SSH ERROR] Timeout de conexión TCP después de {:?}", elapsed);
                 SshError::Timeout
             } else {
-                eprintln!("[SSH ERROR] Error de conexión TCP: {}", e);
+                eprintln!("[SSH ERROR] Error de conexión TCP después de {:?}: {}", elapsed, e);
                 SshError::ConnectionError(format!("No se pudo conectar a {}: {}", address, e))
             }
         })?;
         
-        eprintln!("[SSH] TCP conectado exitosamente");
+        eprintln!("[SSH] TCP conectado exitosamente en {:?}", tcp_start.elapsed());
 
         eprintln!("[SSH] Creando sesión SSH...");
         let mut session = Session::new()
