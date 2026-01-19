@@ -722,10 +722,20 @@
   },
   "whatsNew": {
     "title": "Novedades",
+    "buttonTitle": "Novedades",
     "intro": "Tu aplicación se ha actualizado correctamente. Esto es lo nuevo:",
     "generalImprovements": "Mejoras generales de rendimiento y estabilidad.",
     "thanks": "¡Gracias por usar PC Monitor!",
     "getStarted": "¡Empecemos!"
+  },
+  "patchNotes": {
+    "title": "Notas de la Versión",
+    "current": "Actual",
+    "features": "Nuevas Características",
+    "fixes": "Correcciones",
+    "improvements": "Mejoras",
+    "noReleases": "No hay notas de versión detalladas disponibles aún",
+    "noReleasesHint": "Las notas detalladas aparecerán aquí cuando se publiquen nuevas versiones con cambios documentados."
   },
   "groupModal": {
     "title": "Gestionar Grupos",

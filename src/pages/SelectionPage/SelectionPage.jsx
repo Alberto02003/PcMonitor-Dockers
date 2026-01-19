@@ -20,6 +20,7 @@ import UpdaterModal from '../../components/UpdaterModal/UpdaterModal.jsx'
 import UpdateNotification from '../../components/UpdateNotification/UpdateNotification.jsx'
 import UpdateBadge from '../../components/UpdateBadge/UpdateBadge.jsx'
 import GroupModal from '../../components/GroupModal/GroupModal.jsx'
+import PatchNotesModal from '../../components/PatchNotesModal/PatchNotesModal.jsx'
 import './SelectionPage.css'
 
 function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
@@ -40,11 +41,11 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   // Local state
   const [selectedId, setSelectedId] = useState(null)
   const [search, setSearch] = useState('')
-  const [selectedGroup, setSelectedGroup] = useState(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false)
   const [showUpdateNotification, setShowUpdateNotification] = useState(false)
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
+  const [isPatchNotesOpen, setIsPatchNotesOpen] = useState(false)
 
   // Auto-updater hook - Detección automática en segundo plano
   const { updateInfo, hasUpdate, isChecking, lastCheck } = useAutoUpdater({
@@ -75,11 +76,6 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const filteredConnections = useMemo(() => {
     let filtered = connections
 
-    // Filter by group
-    if (selectedGroup) {
-      filtered = filtered.filter(item => (item.group || 'default') === selectedGroup)
-    }
-
     // Filter by search
     if (search.trim()) {
       const term = search.trim().toLowerCase()
@@ -91,7 +87,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
     }
 
     return filtered
-  }, [connections, search, selectedGroup])
+  }, [connections, search])
 
   const hostSuggestions = useMemo(
     () => Array.from(new Set(connections.map((item) => item.host).filter(Boolean))),
@@ -306,9 +302,6 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         onToggleFavorite={actions.toggleFavorite}
         onConnect={handleConnect}
         onDelete={handleDelete}
-        groups={existingGroups}
-        selectedGroup={selectedGroup}
-        onSelectGroup={setSelectedGroup}
       />
 
       <main className="selection-main">
@@ -316,6 +309,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
           onAddNew={handleAddNew}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onManageGroups={() => setIsGroupModalOpen(true)}
+          onWhatsNew={() => setIsPatchNotesOpen(true)}
         />
 
         <input
@@ -376,6 +370,11 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
           onCreateGroup={handleCreateGroup}
           onRenameGroup={handleRenameGroup}
           onDeleteGroup={handleDeleteGroup}
+        />
+
+        <PatchNotesModal
+          open={isPatchNotesOpen}
+          onClose={() => setIsPatchNotesOpen(false)}
         />
       </main>
     </div>

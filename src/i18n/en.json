@@ -722,10 +722,20 @@
   },
   "whatsNew": {
     "title": "What's New",
+    "buttonTitle": "What's New",
     "intro": "Your app has been updated successfully. Here's what's new:",
     "generalImprovements": "General performance and stability improvements.",
     "thanks": "Thank you for using PC Monitor!",
     "getStarted": "Let's get started!"
+  },
+  "patchNotes": {
+    "title": "Patch Notes",
+    "current": "Current",
+    "features": "New Features",
+    "fixes": "Bug Fixes",
+    "improvements": "Improvements",
+    "noReleases": "No detailed release notes available yet",
+    "noReleasesHint": "Detailed patch notes will appear here when new versions with documented changes are released."
   },
   "groupModal": {
     "title": "Manage Groups",

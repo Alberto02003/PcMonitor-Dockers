@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { ServerAvatar } from '../../../../components'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
-import GroupFilter from '../GroupFilter/GroupFilter.jsx'
 import ConnectionGroup from '../../../../components/ConnectionGroup/ConnectionGroup.jsx'
 import { getGroupColor } from '../../../../utils/groups.js'
 import './SelectionSidebar.css'
@@ -18,9 +17,6 @@ function SelectionSidebar({
   onConnect,
   onDelete,
   onToggleFavorite,
-  groups = [],
-  selectedGroup,
-  onSelectGroup,
 }) {
   const { t } = useTranslation()
 
@@ -47,16 +43,8 @@ function SelectionSidebar({
     }
   }
 
-  // Agrupar conexiones por grupo si no hay filtro de grupo activo
+  // Agrupar conexiones por grupo
   const groupedConnections = useMemo(() => {
-    // Si hay un grupo seleccionado, no agrupar (mostrar flat)
-    if (selectedGroup) {
-      return [{
-        name: selectedGroup,
-        connections: filteredConnections
-      }]
-    }
-
     // Agrupar por campo 'group'
     const groups = new Map()
     
@@ -76,7 +64,7 @@ function SelectionSidebar({
         if (b.name === 'default') return 1
         return a.name.localeCompare(b.name)
       })
-  }, [filteredConnections, selectedGroup])
+  }, [filteredConnections])
 
   return (
     <aside className="selection-sidebar">
@@ -88,28 +76,34 @@ function SelectionSidebar({
         <span>
           {connections.length} {t('selection.saved')}
         </span>
-        {defaultId && <span className="summary-dot">{t('selection.defaultLabel')}</span>}
+        <div className="sidebar-summary-right">
+          {defaultId && <span className="summary-dot">{t('selection.defaultLabel')}</span>}
+          <span className="app-version">v{import.meta.env.VITE_APP_VERSION || '0.1.5'}</span>
+        </div>
       </div>
 
-      <div className="sidebar-search">
-        <SearchIcon />
-        <input
-          type="text"
-          value={search}
-          placeholder={t('selection.searchPlaceholder')}
-          onChange={onSearchChange}
-          aria-label={t('selection.searchPlaceholder')}
-          className="focus-ring"
-        />
+      <div className="sidebar-search-container">
+        <div className="sidebar-search">
+          <SearchIcon />
+          <input
+            type="text"
+            value={search}
+            placeholder={t('selection.searchPlaceholder')}
+            onChange={onSearchChange}
+            aria-label={t('selection.searchPlaceholder')}
+          />
+          {search && (
+            <button 
+              type="button"
+              className="search-clear"
+              onClick={() => onSearchChange({ target: { value: '' } })}
+              aria-label="Clear search"
+            >
+              <ClearIcon />
+            </button>
+          )}
+        </div>
       </div>
-
-      {groups.length > 0 && (
-        <GroupFilter
-          groups={groups}
-          selectedGroup={selectedGroup}
-          onSelectGroup={onSelectGroup}
-        />
-      )}
 
       <div className="sidebar-list">
         {filteredConnections.length === 0 ? (
@@ -300,6 +294,20 @@ function SearchIcon() {
       <path
         d="m21 20-4.3-4.3a7 7 0 1 0-1.4 1.4L20 21ZM5 10a5 5 0 1 1 5 5 5 5 0 0 1-5-5Z"
         fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function ClearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
+      <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
+      <path
+        d="M15 9l-6 6M9 9l6 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
       />
     </svg>
   )

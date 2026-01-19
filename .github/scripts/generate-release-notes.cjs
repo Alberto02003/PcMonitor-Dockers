@@ -121,33 +121,33 @@ function groupCommits(commits) {
 }
 
 /**
- * Genera el texto de release notes en formato Markdown
+ * Genera el texto de release notes en formato Markdown (bilingüe EN/ES)
  */
 function generateReleaseNotes(groups) {
   const sections = [];
 
-  // Nueva funcionalidad
+  // Nueva funcionalidad / Features
   if (groups.feature.length > 0) {
-    sections.push('## ✨ Nuevas Funcionalidades\n');
+    sections.push('## Features / Nuevas Funcionalidades\n');
     groups.feature.forEach(desc => {
       sections.push(`- ${desc}`);
     });
     sections.push('');
   }
 
-  // Mejoras
-  if (groups.improvement.length > 0) {
-    sections.push('## ⚡ Mejoras de Rendimiento\n');
-    groups.improvement.forEach(desc => {
+  // Correcciones / Fixes
+  if (groups.fix.length > 0) {
+    sections.push('## Fixes / Correcciones\n');
+    groups.fix.forEach(desc => {
       sections.push(`- ${desc}`);
     });
     sections.push('');
   }
 
-  // Correcciones
-  if (groups.fix.length > 0) {
-    sections.push('## 🐛 Correcciones\n');
-    groups.fix.forEach(desc => {
+  // Mejoras / Improvements
+  if (groups.improvement.length > 0) {
+    sections.push('## Improvements / Mejoras\n');
+    groups.improvement.forEach(desc => {
       sections.push(`- ${desc}`);
     });
     sections.push('');
@@ -155,7 +155,7 @@ function generateReleaseNotes(groups) {
 
   // Otros cambios (solo si hay algo relevante)
   if (groups.other.length > 0) {
-    sections.push('## 🔧 Otros Cambios\n');
+    sections.push('## Other Changes / Otros Cambios\n');
     groups.other.forEach(desc => {
       sections.push(`- ${desc}`);
     });
