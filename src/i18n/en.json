@@ -4,6 +4,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "create": "Create",
     "close": "Close",
     "loading": "Loading...",
     "error": "Error",
@@ -128,7 +129,10 @@
     "requiredFields": "Please complete required fields.",
     "requiredTest": "Complete required fields to test.",
     "testNotification": "Test Notification",
-    "testNotificationMsg": "If you see this message, notifications are working correctly!"
+    "testNotificationMsg": "If you see this message, notifications are working correctly!",
+    "groupCreated": "Group '{{name}}' created.",
+    "groupRenamed": "Group renamed to '{{name}}'.",
+    "groupDeleted": "Group '{{name}}' deleted."
   },
   "settings": {
     "title": "Settings",
@@ -722,5 +726,21 @@
     "generalImprovements": "General performance and stability improvements.",
     "thanks": "Thank you for using PC Monitor!",
     "getStarted": "Let's get started!"
+  },
+  "groupModal": {
+    "title": "Manage Groups",
+    "createTitle": "Create Group",
+    "editTitle": "Edit Group",
+    "createNew": "Create New Group",
+    "predefinedGroups": "Predefined Groups",
+    "customGroups": "Custom Groups",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "Enter group name",
+    "changeColor": "Change color",
+    "confirmDelete": "This group contains {{count}} connection(s). They will be moved to 'default'. Continue?",
+    "errors": {
+      "emptyName": "Group name cannot be empty",
+      "duplicate": "A group with this name already exists"
+    }
   }
 }

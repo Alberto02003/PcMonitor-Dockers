@@ -19,6 +19,7 @@ import SelectionLoading from './components/SelectionLoading/SelectionLoading.jsx
 import UpdaterModal from '../../components/UpdaterModal/UpdaterModal.jsx'
 import UpdateNotification from '../../components/UpdateNotification/UpdateNotification.jsx'
 import UpdateBadge from '../../components/UpdateBadge/UpdateBadge.jsx'
+import GroupModal from '../../components/GroupModal/GroupModal.jsx'
 import './SelectionPage.css'
 
 function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
@@ -26,6 +27,8 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const connections = useConnectionsStore(state => state.connections)
   const isLoading = useConnectionsStore(state => state.isLoading)
   const getGroups = useConnectionsStore(state => state.getGroups)
+  const renameGroup = useConnectionsStore(state => state.renameGroup)
+  const deleteGroup = useConnectionsStore(state => state.deleteGroup)
   const { showNotification } = useNotification()
   const { settings, updateSettings, loaded: settingsLoaded } = useSettings()
   const { t } = useTranslation()
@@ -41,6 +44,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isUpdaterOpen, setIsUpdaterOpen] = useState(false)
   const [showUpdateNotification, setShowUpdateNotification] = useState(false)
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false)
 
   // Auto-updater hook - Detección automática en segundo plano
   const { updateInfo, hasUpdate, isChecking, lastCheck } = useAutoUpdater({
@@ -214,6 +218,25 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
     updateSettings({ storeCredentials: nextValue })
   }, [updateSettings])
 
+  // Group management handlers
+  const handleCreateGroup = useCallback((name, color) => {
+    // Crear grupo se hace automáticamente al asignar una conexión a un nuevo grupo
+    showNotification(t('notifications.groupCreated', { name }), 'success')
+    setIsGroupModalOpen(false)
+  }, [showNotification, t])
+
+  const handleRenameGroup = useCallback(async (oldName, newName) => {
+    await renameGroup(oldName, newName)
+    showNotification(t('notifications.groupRenamed', { name: newName }), 'success')
+    setIsGroupModalOpen(false)
+  }, [renameGroup, showNotification, t])
+
+  const handleDeleteGroup = useCallback(async (groupName) => {
+    await deleteGroup(groupName)
+    showNotification(t('notifications.groupDeleted', { name: groupName }), 'success')
+    setIsGroupModalOpen(false)
+  }, [deleteGroup, showNotification, t])
+
   // Auto-connect effect
   useEffect(() => {
     if (!allowAutoConnect || !hasLoaded || !settingsLoaded) return
@@ -292,6 +315,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         <SelectionTopNav
           onAddNew={handleAddNew}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onManageGroups={() => setIsGroupModalOpen(true)}
         />
 
         <input
@@ -342,6 +366,16 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         <UpdaterModal
           open={isUpdaterOpen}
           onClose={() => setIsUpdaterOpen(false)}
+        />
+
+        <GroupModal
+          open={isGroupModalOpen}
+          onClose={() => setIsGroupModalOpen(false)}
+          existingGroups={existingGroups}
+          connections={connections}
+          onCreateGroup={handleCreateGroup}
+          onRenameGroup={handleRenameGroup}
+          onDeleteGroup={handleDeleteGroup}
         />
       </main>
     </div>

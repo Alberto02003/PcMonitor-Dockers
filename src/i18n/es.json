@@ -4,6 +4,7 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "edit": "Editar",
+    "create": "Crear",
     "close": "Cerrar",
     "loading": "Cargando...",
     "error": "Error",
@@ -128,7 +129,10 @@
     "requiredFields": "Completa los campos requeridos.",
     "requiredTest": "Completa los campos requeridos para probar.",
     "testNotification": "Test de Notificacion",
-    "testNotificationMsg": "Si ves este mensaje, las notificaciones funcionan correctamente!"
+    "testNotificationMsg": "Si ves este mensaje, las notificaciones funcionan correctamente!",
+    "groupCreated": "Grupo '{{name}}' creado.",
+    "groupRenamed": "Grupo renombrado a '{{name}}'.",
+    "groupDeleted": "Grupo '{{name}}' eliminado."
   },
   "settings": {
     "title": "Ajustes",
@@ -722,5 +726,21 @@
     "generalImprovements": "Mejoras generales de rendimiento y estabilidad.",
     "thanks": "¡Gracias por usar PC Monitor!",
     "getStarted": "¡Empecemos!"
+  },
+  "groupModal": {
+    "title": "Gestionar Grupos",
+    "createTitle": "Crear Grupo",
+    "editTitle": "Editar Grupo",
+    "createNew": "Crear Nuevo Grupo",
+    "predefinedGroups": "Grupos Predefinidos",
+    "customGroups": "Grupos Personalizados",
+    "groupName": "Nombre del Grupo",
+    "groupNamePlaceholder": "Ingrese el nombre del grupo",
+    "changeColor": "Cambiar color",
+    "confirmDelete": "Este grupo contiene {{count}} conexión(es). Se moverán a 'default'. ¿Continuar?",
+    "errors": {
+      "emptyName": "El nombre del grupo no puede estar vacío",
+      "duplicate": "Ya existe un grupo con este nombre"
+    }
   }
 }

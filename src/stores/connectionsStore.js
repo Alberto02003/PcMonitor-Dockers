@@ -422,6 +422,62 @@ export const useConnectionsStore = create((set, get) => ({
   },
 
   /**
+   * Renombrar grupo
+   */
+  renameGroup: async (oldName, newName) => {
+    const state = get()
+    const connectionsInGroup = state.connections.filter(c => (c.group || 'default') === oldName)
+    
+    if (connectionsInGroup.length === 0) return
+
+    try {
+      // Actualizar todas las conexiones del grupo
+      const updates = connectionsInGroup.map(c => ({ ...c, group: newName }))
+
+      if (isTauri()) {
+        await Promise.all(updates.map(conn => secureStorageSave(conn)))
+      }
+
+      set(state => ({
+        connections: state.connections.map(c =>
+          (c.group || 'default') === oldName ? { ...c, group: newName } : c
+        )
+      }))
+    } catch (error) {
+      console.error('Failed to rename group:', error)
+      set({ error: error.message })
+    }
+  },
+
+  /**
+   * Eliminar grupo (mover conexiones a 'default')
+   */
+  deleteGroup: async (groupName) => {
+    const state = get()
+    const connectionsInGroup = state.connections.filter(c => (c.group || 'default') === groupName)
+    
+    if (connectionsInGroup.length === 0) return
+
+    try {
+      // Mover todas las conexiones a 'default'
+      const updates = connectionsInGroup.map(c => ({ ...c, group: 'default' }))
+
+      if (isTauri()) {
+        await Promise.all(updates.map(conn => secureStorageSave(conn)))
+      }
+
+      set(state => ({
+        connections: state.connections.map(c =>
+          (c.group || 'default') === groupName ? { ...c, group: 'default' } : c
+        )
+      }))
+    } catch (error) {
+      console.error('Failed to delete group:', error)
+      set({ error: error.message })
+    }
+  },
+
+  /**
    * Reset
    */
   reset: () => set(initialState),

@@ -1,0 +1,202 @@
+.group-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.group-modal-actions {
+  margin-bottom: 1.5rem;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.group-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.group-item:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-hover);
+}
+
+.group-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.group-item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.group-item-count {
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+}
+
+.group-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.group-color-display {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  background: currentColor;
+}
+
+.group-color-display:hover {
+  transform: scale(1.1);
+  border-color: var(--color-border-hover);
+}
+
+.group-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.group-action-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.group-action-btn:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+
+.group-action-danger:hover {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.group-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.group-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.group-form-actions .btn {
+  flex: 1;
+}
+
+/* Color picker específico para el modal */
+.group-form .color-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.group-form .color-picker-input {
+  width: 100%;
+  height: 3rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.group-form .color-picker-input:hover {
+  border-color: var(--color-border-hover);
+}
+
+.group-form .color-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.group-form .color-preset {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.group-form .color-preset:hover {
+  transform: scale(1.1);
+  border-color: var(--color-border-hover);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .group-modal {
+    width: 95%;
+    max-width: none;
+  }
+
+  .group-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .group-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .group-form-actions {
+    flex-direction: column;
+  }
+
+  .group-form-actions .btn {
+    width: 100%;
+  }
+}

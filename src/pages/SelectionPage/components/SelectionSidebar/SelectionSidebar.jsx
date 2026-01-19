@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { ServerAvatar } from '../../../../components'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import GroupFilter from '../GroupFilter/GroupFilter.jsx'
+import ConnectionGroup from '../../../../components/ConnectionGroup/ConnectionGroup.jsx'
 import { getGroupColor } from '../../../../utils/groups.js'
 import './SelectionSidebar.css'
 
@@ -45,6 +47,37 @@ function SelectionSidebar({
     }
   }
 
+  // Agrupar conexiones por grupo si no hay filtro de grupo activo
+  const groupedConnections = useMemo(() => {
+    // Si hay un grupo seleccionado, no agrupar (mostrar flat)
+    if (selectedGroup) {
+      return [{
+        name: selectedGroup,
+        connections: filteredConnections
+      }]
+    }
+
+    // Agrupar por campo 'group'
+    const groups = new Map()
+    
+    filteredConnections.forEach(connection => {
+      const groupName = connection.group || 'default'
+      if (!groups.has(groupName)) {
+        groups.set(groupName, [])
+      }
+      groups.get(groupName).push(connection)
+    })
+
+    // Convertir a array y ordenar (default primero)
+    return Array.from(groups.entries())
+      .map(([name, connections]) => ({ name, connections }))
+      .sort((a, b) => {
+        if (a.name === 'default') return -1
+        if (b.name === 'default') return 1
+        return a.name.localeCompare(b.name)
+      })
+  }, [filteredConnections, selectedGroup])
+
   return (
     <aside className="selection-sidebar">
       <div className="sidebar-header">
@@ -78,106 +111,116 @@ function SelectionSidebar({
         />
       )}
 
-      <div className="sidebar-list" role="list">
+      <div className="sidebar-list">
         {filteredConnections.length === 0 ? (
           <p className="sidebar-empty">{t('selection.noConnections')}</p>
         ) : (
-          filteredConnections.map((item, index) => (
-            <div
-              key={item.id}
-              className={`connection-card hover-lift ${item.id === selectedId ? 'is-active' : ''}`}
-              style={{ 
-                animationDelay: `${index * 60}ms`,
-                borderLeftColor: item.color || getGroupColor(item.group || 'default')
-              }}
+          groupedConnections.map((group) => (
+            <ConnectionGroup
+              key={group.name}
+              name={group.name}
+              color={getGroupColor(group.name)}
+              count={group.connections.length}
+              defaultExpanded={true}
             >
-              {/* Header */}
-              <button 
-                type="button" 
-                className="connection-card-header" 
-                onClick={() => onSelect(item.id)}
-              >
-                <div className="connection-header-left">
-                  <ServerAvatar
-                    name={item.name}
-                    host={item.host}
-                    size="sm"
-                    status={getAvatarStatus(item.status)}
-                    showStatus={true}
-                  />
-                  <div className="connection-header-info">
-                    <div className="connection-name-row">
-                      <span className="connection-name">{item.name}</span>
-                      {item.id === defaultId && (
-                        <span className="connection-badge badge-default">
-                          <StarIcon />
+              {group.connections.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={`connection-card hover-lift ${item.id === selectedId ? 'is-active' : ''}`}
+                  style={{ 
+                    animationDelay: `${index * 60}ms`,
+                    borderLeftColor: item.color || getGroupColor(item.group || 'default')
+                  }}
+                >
+                  {/* Header */}
+                  <button 
+                    type="button" 
+                    className="connection-card-header" 
+                    onClick={() => onSelect(item.id)}
+                  >
+                    <div className="connection-header-left">
+                      <ServerAvatar
+                        name={item.name}
+                        host={item.host}
+                        size="sm"
+                        status={getAvatarStatus(item.status)}
+                        showStatus={true}
+                      />
+                      <div className="connection-header-info">
+                        <div className="connection-name-row">
+                          <span className="connection-name">{item.name}</span>
+                          {item.id === defaultId && (
+                            <span className="connection-badge badge-default">
+                              <StarIcon />
+                            </span>
+                          )}
+                          {item.isFavorite && (
+                            <span className="connection-badge badge-favorite">
+                              <HeartIcon />
+                            </span>
+                          )}
+                        </div>
+                        <span className="connection-host">
+                          {item.username}@{item.host}:{item.port || 22}
                         </span>
-                      )}
-                      {item.isFavorite && (
-                        <span className="connection-badge badge-favorite">
-                          <HeartIcon />
-                        </span>
+                      </div>
+                    </div>
+                    <span className={`connection-status status-${item.status || 'unknown'}`}>
+                      {getStatusLabel(item.status)}
+                    </span>
+                  </button>
+
+                  {/* Tags */}
+                  {item.tags && item.tags.length > 0 && (
+                    <div className="connection-tags">
+                      {item.tags.slice(0, 3).map((tag, idx) => (
+                        <span key={idx} className="connection-tag">{tag}</span>
+                      ))}
+                      {item.tags.length > 3 && (
+                        <span className="connection-tag-more">+{item.tags.length - 3}</span>
                       )}
                     </div>
-                    <span className="connection-host">
-                      {item.username}@{item.host}:{item.port || 22}
-                    </span>
+                  )}
+
+                  {/* Actions */}
+                  <div className="connection-actions">
+                    <button
+                      type="button"
+                      className={`connection-action-btn interactive-bounce ${item.isFavorite ? 'is-active' : ''}`}
+                      onClick={() => onToggleFavorite(item.id)}
+                      title={t('actions.favorite')}
+                    >
+                      <HeartIcon />
+                    </button>
+                    <button
+                      type="button"
+                      className={`connection-action-btn interactive-bounce ${item.id === defaultId ? 'is-active' : ''}`}
+                      onClick={() => onSetDefault(item.id)}
+                      title={t('actions.setDefault')}
+                    >
+                      <StarIcon />
+                    </button>
+                    <button
+                      type="button"
+                      className="connection-action-btn connection-action-primary interactive-bounce hover-glow"
+                      onClick={() => onConnect(item.id)}
+                      title={t('actions.connect')}
+                    >
+                      <PlugIcon />
+                      <span>{t('actions.connect')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="connection-action-btn connection-action-danger interactive-bounce"
+                      onClick={() => onDelete(item.id)}
+                      title={t('common.delete')}
+                    >
+                      <TrashIcon />
+                    </button>
                   </div>
                 </div>
-                <span className={`connection-status status-${item.status || 'unknown'}`}>
-                  {getStatusLabel(item.status)}
-                </span>
-              </button>
-
-              {/* Tags */}
-              {item.tags && item.tags.length > 0 && (
-                <div className="connection-tags">
-                  {item.tags.slice(0, 3).map((tag, idx) => (
-                    <span key={idx} className="connection-tag">{tag}</span>
-                  ))}
-                  {item.tags.length > 3 && (
-                    <span className="connection-tag-more">+{item.tags.length - 3}</span>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="connection-actions">
-                <button
-                  type="button"
-                  className={`connection-action-btn interactive-bounce ${item.isFavorite ? 'is-active' : ''}`}
-                  onClick={() => onToggleFavorite(item.id)}
-                  title={t('actions.favorite')}
-                >
-                  <HeartIcon />
-                </button>
-                <button
-                  type="button"
-                  className={`connection-action-btn interactive-bounce ${item.id === defaultId ? 'is-active' : ''}`}
-                  onClick={() => onSetDefault(item.id)}
-                  title={t('actions.setDefault')}
-                >
-                  <StarIcon />
-                </button>
-                <button
-                  type="button"
-                  className="connection-action-btn connection-action-primary interactive-bounce hover-glow"
-                  onClick={() => onConnect(item.id)}
-                  title={t('actions.connect')}
-                >
-                  <PlugIcon />
-                  <span>{t('actions.connect')}</span>
-                </button>
-                <button
-                  type="button"
-                  className="connection-action-btn connection-action-danger interactive-bounce"
-                  onClick={() => onDelete(item.id)}
-                  title={t('common.delete')}
-                >
-                  <TrashIcon />
-                </button>
-              </div>
-            </div>
+              ))}
+            </ConnectionGroup>
           ))
         )}
       </div>

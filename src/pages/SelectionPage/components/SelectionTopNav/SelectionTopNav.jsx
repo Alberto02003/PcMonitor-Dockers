@@ -1,7 +1,7 @@
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './SelectionTopNav.css'
 
-function SelectionTopNav({ onAddNew, onOpenSettings }) {
+function SelectionTopNav({ onAddNew, onOpenSettings, onManageGroups }) {
   const { t } = useTranslation()
 
   return (
@@ -12,6 +12,12 @@ function SelectionTopNav({ onAddNew, onOpenSettings }) {
           <PlusIcon />
           {t('actions.addNew')}
         </button>
+        {onManageGroups && (
+          <button type="button" className="nav-button nav-button-muted" onClick={onManageGroups}>
+            <FolderIcon />
+            {t('groupModal.title')}
+          </button>
+        )}
         <button type="button" className="nav-button nav-button-muted" onClick={onOpenSettings}>
           <SettingsIcon />
           {t('settings.title')}
@@ -26,6 +32,17 @@ function PlusIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
       <path
         d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+function FolderIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="icon">
+      <path
+        d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"
         fill="currentColor"
       />
     </svg>

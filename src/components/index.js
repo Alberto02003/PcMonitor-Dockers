@@ -16,3 +16,4 @@ export { default as LastUpdate, getRelativeTime } from './LastUpdate/LastUpdate.
 export { default as Sparkline, SparklineBar } from './Sparkline/Sparkline.jsx'
 export { default as AnimatedValue, AnimatedBytes, AnimatedPercent } from './AnimatedValue/AnimatedValue.jsx'
 export { default as ServerAvatar, ServerAvatarGroup, ServerAvatarWithInfo } from './ServerAvatar/ServerAvatar.jsx'
+export { default as ConnectionGroup } from './ConnectionGroup/ConnectionGroup.jsx'
