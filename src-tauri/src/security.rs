@@ -424,7 +424,6 @@ pub fn validate_username(username: &str) -> Result<(), String> {
 }
 
 /// Sanitize command input to prevent injection
-#[allow(dead_code)]
 pub fn sanitize_command_arg(arg: &str) -> String {
     // Remove dangerous characters
     arg.chars()

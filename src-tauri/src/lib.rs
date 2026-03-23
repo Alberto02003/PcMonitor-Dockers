@@ -172,11 +172,18 @@ async fn ssh_disconnect(
     connectionId: String,
 ) -> Result<(), String> {
     let ssh_manager = state.ssh_manager.clone();
-    tokio::task::spawn_blocking(move || {
+    let conn_id = connectionId.clone();
+    let result = tokio::task::spawn_blocking(move || {
         ssh_manager.disconnect(&connectionId).map_err(|e| e.to_string())
     })
     .await
-    .map_err(|e| format!("Task error: {}", e))?
+    .map_err(|e| format!("Task error: {}", e))?;
+
+    // Clear metrics caches for this connection
+    MetricsCollector::clear_cache(&conn_id);
+    AdvancedMetricsCollector::clear_cache(&conn_id);
+
+    result
 }
 
 #[tauri::command]

@@ -10,7 +10,7 @@
  * - Aplicación de clase CSS al body
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export const THEMES = {
   LIGHT: 'light',
@@ -75,47 +75,41 @@ function resolveTheme(preference) {
  */
 export function useTheme() {
   const [theme, setThemeState] = useState(() => getStoredTheme())
-  const [effectiveTheme, setEffectiveTheme] = useState(() => 
-    resolveTheme(getStoredTheme())
-  )
+  const [systemThemeKey, setSystemThemeKey] = useState(0)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const effectiveTheme = useMemo(() => resolveTheme(theme), [theme, systemThemeKey])
 
   // Aplicar tema al body
   useEffect(() => {
-    const resolved = resolveTheme(theme)
-    setEffectiveTheme(resolved)
-    
     // Aplicar clase al body
     document.body.classList.remove('theme-light', 'theme-dark')
-    document.body.classList.add(`theme-${resolved}`)
-    
+    document.body.classList.add(`theme-${effectiveTheme}`)
+
     // Actualizar meta theme-color para móviles
     const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
       metaThemeColor.setAttribute(
         'content',
-        resolved === THEMES.DARK ? '#1a1a1a' : '#ffffff'
+        effectiveTheme === THEMES.DARK ? '#1a1a1a' : '#ffffff'
       )
     }
-  }, [theme])
+  }, [effectiveTheme])
 
   // Escuchar cambios en la preferencia del sistema
   useEffect(() => {
     if (theme !== THEMES.AUTO) return
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
-    const handleChange = (e) => {
-      const newTheme = e.matches ? THEMES.DARK : THEMES.LIGHT
-      setEffectiveTheme(newTheme)
-      document.body.classList.remove('theme-light', 'theme-dark')
-      document.body.classList.add(`theme-${newTheme}`)
+
+    const handleChange = () => {
+      setSystemThemeKey(k => k + 1)
     }
 
     // Modern API
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleChange)
       return () => mediaQuery.removeEventListener('change', handleChange)
-    } 
+    }
     // Legacy API
     else if (mediaQuery.addListener) {
       mediaQuery.addListener(handleChange)

@@ -60,7 +60,7 @@ pub struct CommandResult {
 }
 
 struct SshConnection {
-    session: Session,
+    session: Arc<Session>,
     #[allow(dead_code)]
     config: ConnectionConfig,
 }
@@ -169,7 +169,7 @@ impl SshManager {
 
         let connection_id = config.id.clone();
         let connection = SshConnection {
-            session,
+            session: Arc::new(session),
             config: config.clone(),
         };
 
@@ -195,12 +195,16 @@ impl SshManager {
     }
 
     pub fn execute(&self, connection_id: &str, command: &str) -> Result<CommandResult, SshError> {
-        let connections = self.connections.lock();
-        let connection = connections
-            .get(connection_id)
-            .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+        // Clone the Arc<Session> and drop the lock before doing network I/O
+        let session = {
+            let connections = self.connections.lock();
+            let connection = connections
+                .get(connection_id)
+                .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+            connection.session.clone()
+        };
 
-        let mut channel = connection.session.channel_session()
+        let mut channel = session.channel_session()
             .map_err(|e| SshError::ExecutionError(format!("Error abriendo canal: {}", e)))?;
 
         channel.exec(command)
@@ -231,12 +235,16 @@ impl SshManager {
     where
         F: FnMut(&str, bool), // (data, is_stderr)
     {
-        let connections = self.connections.lock();
-        let connection = connections
-            .get(connection_id)
-            .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+        // Clone the Arc<Session> and drop the lock before doing network I/O
+        let session = {
+            let connections = self.connections.lock();
+            let connection = connections
+                .get(connection_id)
+                .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+            connection.session.clone()
+        };
 
-        let mut channel = connection.session.channel_session()
+        let mut channel = session.channel_session()
             .map_err(|e| SshError::ExecutionError(format!("Error abriendo canal: {}", e)))?;
 
         // Set non-blocking mode

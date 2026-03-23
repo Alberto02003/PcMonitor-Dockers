@@ -5,7 +5,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: var(--color-surface, #1e1e2e);
+  background: var(--color-surface, rgba(23, 42, 69, 0.85));
   border-radius: 8px;
   font-size: 0.8125rem;
 }
@@ -30,30 +30,25 @@
 
 /* Colores por estado */
 .connection-status--connected .connection-status__icon {
-  color: #22c55e;
+  color: var(--color-success, #22c55e);
 }
 
 .connection-status--disconnected .connection-status__icon {
-  color: #6b7280;
+  color: var(--color-text-tertiary, #6b7280);
 }
 
 .connection-status--connecting .connection-status__icon,
 .connection-status--reconnecting .connection-status__icon {
-  color: #f59e0b;
+  color: var(--color-warning, #f59e0b);
 }
 
 .connection-status--error .connection-status__icon {
-  color: #ef4444;
+  color: var(--color-error, #ef4444);
 }
 
 /* Animacion de spin */
 .connection-status__icon--spin {
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* Pulso para conectando */
@@ -64,15 +59,10 @@
   border-radius: 50%;
   background: currentColor;
   opacity: 0.3;
-  animation: pulse 1.5s ease-out infinite;
+  animation: status-ping 1.5s ease-out infinite;
 }
 
-.connection-status--connecting .connection-status__pulse,
-.connection-status--reconnecting .connection-status__pulse {
-  background: #f59e0b;
-}
-
-@keyframes pulse {
+@keyframes status-ping {
   0% {
     transform: scale(0.5);
     opacity: 0.4;
@@ -81,6 +71,11 @@
     transform: scale(2);
     opacity: 0;
   }
+}
+
+.connection-status--connecting .connection-status__pulse,
+.connection-status--reconnecting .connection-status__pulse {
+  background: var(--color-warning, #f59e0b);
 }
 
 /* Info */
@@ -106,7 +101,7 @@
 }
 
 .connection-status__error {
-  color: #ef4444;
+  color: var(--color-error, #ef4444);
   font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;
@@ -140,20 +135,20 @@
 }
 
 .connection-status__btn:hover {
-  background: var(--color-surface-hover, #2a2a3e);
+  background: var(--color-surface-hover, rgba(30, 58, 95, 0.9));
   color: var(--color-text, #fff);
 }
 
 .connection-status__btn--reconnect:hover {
-  color: #22c55e;
+  color: var(--color-success, #22c55e);
 }
 
 .connection-status__btn--disconnect:hover {
-  color: #ef4444;
+  color: var(--color-error, #ef4444);
 }
 
 .connection-status__btn--cancel:hover {
-  color: #f59e0b;
+  color: var(--color-warning, #f59e0b);
 }
 
 /* Banner de error detallado */

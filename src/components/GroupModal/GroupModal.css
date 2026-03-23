@@ -236,6 +236,43 @@
   color: #ff6b6b;
 }
 
+/* Inline Delete Confirmation */
+.group-confirm-delete {
+  padding: 1.25rem;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.group-confirm-delete p {
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.group-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.group-confirm-actions .btn {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+.group-confirm-actions .btn-danger {
+  background: var(--color-error, #ff6b6b);
+  color: #fff;
+  border: none;
+}
+
+.group-confirm-actions .btn-danger:hover {
+  background: var(--color-error-hover, #ff5252);
+}
+
 /* Group Form */
 .group-form {
   display: flex;

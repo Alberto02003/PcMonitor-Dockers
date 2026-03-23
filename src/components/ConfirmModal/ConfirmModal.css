@@ -26,7 +26,7 @@
   width: 90%;
   max-width: 400px;
   padding: 1.5rem;
-  background: var(--color-surface, #1e1e2e);
+  background: var(--color-surface, rgba(23, 42, 69, 0.85));
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   animation: slideUp 0.2s ease-out;
@@ -61,17 +61,17 @@
 /* Variantes de color */
 .confirm-modal--danger .confirm-modal__icon {
   background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--color-error, #ef4444);
 }
 
 .confirm-modal--warning .confirm-modal__icon {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--color-warning, #f59e0b);
 }
 
 .confirm-modal--info .confirm-modal__icon {
   background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  color: var(--color-info, #3b82f6);
 }
 
 .confirm-modal__title {
@@ -116,12 +116,12 @@
 }
 
 .confirm-modal__btn--cancel {
-  background: var(--color-surface-hover, #2a2a3e);
+  background: var(--color-surface-hover, rgba(30, 58, 95, 0.9));
   color: var(--color-text, #fff);
 }
 
 .confirm-modal__btn--cancel:hover:not(:disabled) {
-  background: var(--color-surface-active, #3a3a4e);
+  background: var(--color-surface-active, rgba(36, 59, 83, 0.95));
 }
 
 .confirm-modal__btn--confirm {
@@ -129,27 +129,27 @@
 }
 
 .confirm-modal__btn--danger {
-  background: #ef4444;
+  background: var(--color-error, #ef4444);
 }
 
 .confirm-modal__btn--danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--color-error-hover, #dc2626);
 }
 
 .confirm-modal__btn--warning {
-  background: #f59e0b;
+  background: var(--color-warning, #f59e0b);
 }
 
 .confirm-modal__btn--warning:hover:not(:disabled) {
-  background: #d97706;
+  background: var(--color-warning-hover, #d97706);
 }
 
 .confirm-modal__btn--info {
-  background: #3b82f6;
+  background: var(--color-info, #3b82f6);
 }
 
 .confirm-modal__btn--info:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--color-info-hover, #2563eb);
 }
 
 .confirm-modal__loading {
@@ -162,13 +162,4 @@
   width: 16px;
   height: 16px;
   animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

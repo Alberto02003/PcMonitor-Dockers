@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { DEFAULT_GROUPS, GROUP_COLORS, getGroupColor } from '../../utils/groups.js'
 import './GroupModal.css'
 
-function GroupModal({ 
-  open, 
-  onClose, 
+function GroupModal({
+  open,
+  onClose,
   existingGroups = [],
   onCreateGroup,
   onRenameGroup,
   onDeleteGroup,
   onChangeGroupColor,
-  connections = [] 
+  connections = []
 }) {
   const { t, lang } = useTranslation()
   const [mode, setMode] = useState('list') // 'list' | 'create' | 'edit'
@@ -19,6 +19,7 @@ function GroupModal({
   const [groupName, setGroupName] = useState('')
   const [groupColor, setGroupColor] = useState('#64ffda')
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   // Reset al abrir
   useEffect(() => {
@@ -28,8 +29,27 @@ function GroupModal({
       setGroupName('')
       setGroupColor('#64ffda')
       setError('')
+      setConfirmDelete(null)
     }
   }, [open])
+
+  // Escape key handler
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      if (confirmDelete) {
+        setConfirmDelete(null)
+      } else {
+        onClose()
+      }
+    }
+  }, [onClose, confirmDelete])
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, handleKeyDown])
 
   if (!open) return null
 
@@ -81,17 +101,22 @@ function GroupModal({
 
   const handleDeleteGroup = (group) => {
     const connectionsInGroup = connections.filter(c => c.group === group).length
-    
+
     if (connectionsInGroup > 0) {
-      const confirmed = window.confirm(
-        t('groupModal.confirmDelete', { count: connectionsInGroup })
-      )
-      if (!confirmed) return
+      setConfirmDelete({ group, count: connectionsInGroup })
+      return
     }
 
     if (onDeleteGroup) {
       onDeleteGroup(group)
     }
+  }
+
+  const handleConfirmDelete = () => {
+    if (confirmDelete && onDeleteGroup) {
+      onDeleteGroup(confirmDelete.group)
+    }
+    setConfirmDelete(null)
   }
 
   const handleEditGroup = (group) => {
@@ -110,18 +135,28 @@ function GroupModal({
     return DEFAULT_GROUPS.some(g => g.name === groupName)
   }
 
+  const modalTitle = mode === 'create'
+    ? t('groupModal.createTitle')
+    : mode === 'edit'
+      ? t('groupModal.editTitle')
+      : t('groupModal.title')
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={modalTitle}
+    >
       <div className="group-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">
-            {mode === 'create' && t('groupModal.createTitle')}
-            {mode === 'edit' && t('groupModal.editTitle')}
-            {mode === 'list' && t('groupModal.title')}
+            {modalTitle}
           </h2>
-          <button 
-            type="button" 
-            className="modal-close" 
+          <button
+            type="button"
+            className="modal-close"
             onClick={onClose}
             aria-label={t('common.close')}
           >
@@ -130,10 +165,32 @@ function GroupModal({
         </div>
 
         <div className="modal-body">
-          {mode === 'list' && (
+          {confirmDelete && (
+            <div className="group-confirm-delete">
+              <p>{t('groupModal.confirmDelete', { count: confirmDelete.count })}</p>
+              <div className="group-confirm-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setConfirmDelete(null)}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleConfirmDelete}
+                >
+                  {t('common.delete')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!confirmDelete && mode === 'list' && (
             <>
               <div className="group-modal-actions">
-                <button 
+                <button
                   type="button"
                   className="btn btn-accent"
                   onClick={() => setMode('create')}
@@ -148,8 +205,8 @@ function GroupModal({
                 <div className="group-section">
                   <h3 className="group-section-title">{t('groupModal.predefinedGroups')}</h3>
                   {DEFAULT_GROUPS.map(group => (
-                    <div 
-                      key={group.name} 
+                    <div
+                      key={group.name}
                       className="group-item"
                       style={{ borderLeftColor: group.color }}
                     >
@@ -183,8 +240,8 @@ function GroupModal({
                   <h3 className="group-section-title">{t('groupModal.customGroups')}</h3>
                   {customGroups.length > 0 ? (
                     customGroups.map(groupName => (
-                      <div 
-                        key={groupName} 
+                      <div
+                        key={groupName}
                         className="group-item"
                         style={{ borderLeftColor: getGroupColor(groupName) }}
                       >
@@ -231,13 +288,14 @@ function GroupModal({
             </>
           )}
 
-          {(mode === 'create' || mode === 'edit') && (
+          {!confirmDelete && (mode === 'create' || mode === 'edit') && (
             <div className="group-form">
               <div className="form-field">
-                <label className="field-label">
+                <label className="field-label" htmlFor="group-name-input">
                   {t('groupModal.groupName')}
                 </label>
                 <input
+                  id="group-name-input"
                   type="text"
                   value={groupName}
                   onChange={(e) => {
@@ -251,11 +309,12 @@ function GroupModal({
               </div>
 
               <div className="form-field">
-                <label className="field-label">
+                <label className="field-label" htmlFor="group-color-input">
                   {t('form.color')}
                 </label>
                 <div className="color-picker-wrapper">
                   <input
+                    id="group-color-input"
                     type="color"
                     className="color-picker-input"
                     value={groupColor}

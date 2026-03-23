@@ -133,15 +133,13 @@ export function useWebSocket() {
     return () => {
       // Copy refs to local variables for cleanup
       const timeout = reconnectTimeoutRef.current
-      const socket = wsRef.current
       if (timeout) {
         clearTimeout(timeout)
       }
-      if (socket) {
-        socket.close()
-      }
+      // Use disconnect() to also shut down the backend WebSocket server
+      disconnect()
     }
-  }, [])
+  }, [disconnect])
 
   return {
     state,

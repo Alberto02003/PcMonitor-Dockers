@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Hooks para obtener datos en tiempo real via SSH
  * 
@@ -188,11 +187,11 @@ export function useRealTimeData(connectionId, options = {}) {
           if (fetchCountRef.current % 6 === 1) {
             try {
               await Promise.all([
-                dockerImages(connId).catch(() => null),
-                dockerVolumes(connId).catch(() => null),
+                dockerImages(connId).catch((e) => { console.warn('Failed to fetch Docker images:', e); return null }),
+                dockerVolumes(connId).catch((e) => { console.warn('Failed to fetch Docker volumes:', e); return null }),
               ])
-            } catch {
-              // Ignorar errores en extras
+            } catch (e) {
+              console.warn('Error fetching Docker extras:', e)
             }
           }
         }
@@ -292,6 +291,7 @@ export function useRealTimeData(connectionId, options = {}) {
         setContainersLoading(false)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {
@@ -366,6 +366,7 @@ export function useRealTimeMetrics(connectionId, intervalMs = 3000) {
         setLoading(false)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -446,11 +447,11 @@ export function useRealTimeContainers(connectionId, intervalMs = 5000) {
         if (fetchCountRef.current % 6 === 1) {
           try {
             await Promise.all([
-              dockerImages(connId).catch(() => null),
-              dockerVolumes(connId).catch(() => null),
+              dockerImages(connId).catch((e) => { console.warn('Failed to fetch Docker images:', e); return null }),
+              dockerVolumes(connId).catch((e) => { console.warn('Failed to fetch Docker volumes:', e); return null }),
             ])
-          } catch {
-            // Ignore errors fetching extras
+          } catch (e) {
+            console.warn('Error fetching Docker extras:', e)
           }
         }
       }
@@ -460,6 +461,7 @@ export function useRealTimeContainers(connectionId, intervalMs = 5000) {
         setLoading(false)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -543,6 +545,7 @@ export function useRealTimeLogs(connectionId, containerId, intervalMs = 1000) {
         setLoading(false)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

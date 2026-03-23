@@ -10,6 +10,7 @@ use tokio_tungstenite::{accept_async, tungstenite::Message};
 
 use crate::docker::DockerManager;
 use crate::metrics::MetricsCollector;
+use crate::security::sanitize_command_arg;
 use crate::ssh::SshManager;
 
 /// Messages sent from server to client
@@ -234,7 +235,13 @@ async fn handle_connection(
         }
     }
 
-    // Cleanup
+    // Cleanup: clear all subscriptions so polling tasks detect the change and stop
+    {
+        let mut subs = subscriptions.lock();
+        subs.metrics.clear();
+        subs.containers.clear();
+        subs.logs.clear();
+    }
     write_task.abort();
     log::info!("WebSocket handler finished for: {}", addr);
 }
@@ -387,6 +394,19 @@ async fn handle_client_message(
                     };
 
                     if !subscribed {
+                        break;
+                    }
+
+                    // Validate container ID to prevent command injection
+                    let valid_id = cont_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '-')
+                        && !cont_id.is_empty()
+                        && cont_id.chars().next().map_or(false, |c| c.is_ascii_alphanumeric());
+                    if !valid_id {
+                        let msg = WsOutMessage::Error {
+                            connection_id: Some(conn_id.clone()),
+                            message: format!("Invalid container ID: {}", sanitize_command_arg(&cont_id)),
+                        };
+                        let _ = tx.send(msg).await;
                         break;
                     }
 

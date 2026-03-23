@@ -237,9 +237,17 @@ export async function dockerInfo(connectionId) {
 // Utility: Check if running in Tauri
 // ============================================================================
 
+let _isTauri = null;
 export function isTauri() {
-  // Tauri v2 uses __TAURI_INTERNALS__ instead of __TAURI__
-  return Boolean(window.__TAURI_INTERNALS__ || window.__TAURI__)
+  if (_isTauri === null) {
+    _isTauri = !!(window.__TAURI_INTERNALS__ || window.__TAURI__);
+  }
+  return _isTauri;
+}
+
+/** Reset cached isTauri value (for testing only) */
+export function _resetIsTauriCache() {
+  _isTauri = null;
 }
 
 // ============================================================================

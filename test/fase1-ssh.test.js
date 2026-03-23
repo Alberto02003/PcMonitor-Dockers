@@ -6,17 +6,19 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { invoke } from '@tauri-apps/api/core'
-import { 
-  sshConnect, 
-  sshDisconnect, 
-  sshTest, 
+import {
+  sshConnect,
+  sshDisconnect,
+  sshTest,
   sshIsConnected,
-  isTauri 
+  isTauri,
+  _resetIsTauriCache
 } from '../src/services/tauri.js'
 
 describe('Fase 1.1 - Conexión SSH', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    _resetIsTauriCache()
   })
 
   describe('isTauri()', () => {
@@ -29,6 +31,7 @@ describe('Fase 1.1 - Conexión SSH', () => {
       const originalInternals = window.__TAURI_INTERNALS__
       window.__TAURI_INTERNALS__ = undefined
       window.__TAURI__ = {}
+      _resetIsTauriCache()
       expect(isTauri()).toBe(true)
       // Restore
       window.__TAURI_INTERNALS__ = originalInternals
@@ -40,9 +43,10 @@ describe('Fase 1.1 - Conexión SSH', () => {
       const originalTauri = window.__TAURI__
       window.__TAURI_INTERNALS__ = undefined
       window.__TAURI__ = undefined
-      
+      _resetIsTauriCache()
+
       expect(isTauri()).toBe(false)
-      
+
       // Restore
       window.__TAURI_INTERNALS__ = originalInternals
       window.__TAURI__ = originalTauri

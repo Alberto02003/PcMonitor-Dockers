@@ -2,7 +2,7 @@
  * Hook para integrar sistema de alertas con metricas
  */
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useMemo } from 'react'
 import { useAlertsStore, ALERT_TYPES, ALERT_SEVERITY } from '../stores/alertsStore.js'
 import { useMetricsStore } from '../stores/metricsStore.js'
 
@@ -84,9 +84,9 @@ export function useAlerts() {
   const setThreshold = useAlertsStore((state) => state.setThreshold)
   const setConfig = useAlertsStore((state) => state.setConfig)
 
-  const activeAlerts = alerts.filter((a) => !a.acknowledged)
-  const criticalAlerts = activeAlerts.filter((a) => a.severity === ALERT_SEVERITY.CRITICAL)
-  const warningAlerts = activeAlerts.filter((a) => a.severity === ALERT_SEVERITY.WARNING)
+  const activeAlerts = useMemo(() => alerts.filter((a) => !a.acknowledged), [alerts])
+  const criticalAlerts = useMemo(() => activeAlerts.filter((a) => a.severity === ALERT_SEVERITY.CRITICAL), [activeAlerts])
+  const warningAlerts = useMemo(() => activeAlerts.filter((a) => a.severity === ALERT_SEVERITY.WARNING), [activeAlerts])
 
   // Crear alerta de conexion perdida
   const alertConnectionLost = useCallback((serverName) => {

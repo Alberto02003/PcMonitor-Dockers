@@ -782,7 +782,6 @@ impl AdvancedMetricsCollector {
     }
 
     /// Clear cached state for a connection (call on disconnect)
-    #[allow(dead_code)]
     pub fn clear_cache(connection_id: &str) {
         PREVIOUS_STATE.lock().remove(connection_id);
     }

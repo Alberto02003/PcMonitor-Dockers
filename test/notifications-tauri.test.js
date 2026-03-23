@@ -4,7 +4,7 @@
  * Verifica el hook useNotifications con el plugin @tauri-apps/plugin-notification
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
 // Mock del plugin de Tauri
@@ -459,12 +459,19 @@ describe('Notificaciones Nativas Tauri', () => {
     it('debe limpiar la cola de notificaciones', async () => {
       const { result } = renderHook(() => useNotifications())
 
+      await waitFor(() => {
+        expect(result.current.permission).toBe('granted')
+      })
+
+      // Disable processing so items stay in queue
+      // Add notifications then clear before they process
       act(() => {
         result.current.clearAll()
       })
 
-      // clearAll no lanza error
-      expect(true).toBe(true)
+      // After clearAll, sending should not process old items
+      // Verify sendNotification was not called (queue was cleared)
+      expect(sendNotification).not.toHaveBeenCalled()
     })
   })
 

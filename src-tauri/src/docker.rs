@@ -1,6 +1,48 @@
 use serde::{Deserialize, Serialize};
 use crate::ssh::{SshManager, SshError};
 
+/// Validate a container ID or name: must match `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`
+fn validate_container_id(id: &str) -> Result<&str, SshError> {
+    if id.is_empty() {
+        return Err(SshError::ExecutionError("Container ID cannot be empty".to_string()));
+    }
+    let first = id.chars().next().unwrap();
+    if !first.is_ascii_alphanumeric() {
+        return Err(SshError::ExecutionError(format!("Invalid container ID: must start with alphanumeric character: {}", id)));
+    }
+    if !id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '-') {
+        return Err(SshError::ExecutionError(format!("Invalid container ID: contains illegal characters: {}", id)));
+    }
+    Ok(id)
+}
+
+/// Validate a path: reject shell metacharacters
+fn validate_path(path: &str) -> Result<&str, SshError> {
+    if path.is_empty() {
+        return Err(SshError::ExecutionError("Path cannot be empty".to_string()));
+    }
+    let forbidden = [';', '|', '&', '$', '`', '(', ')', '{', '}', '>', '<', '!', '\n'];
+    if path.chars().any(|c| forbidden.contains(&c)) {
+        return Err(SshError::ExecutionError(format!("Invalid path: contains shell metacharacters: {}", path)));
+    }
+    Ok(path)
+}
+
+/// Validate a project/service name: same rules as container_id
+fn validate_name(name: &str) -> Result<&str, SshError> {
+    if name.is_empty() {
+        return Err(SshError::ExecutionError("Name cannot be empty".to_string()));
+    }
+    let first = name.chars().next().unwrap();
+    if !first.is_ascii_alphanumeric() {
+        return Err(SshError::ExecutionError(format!("Invalid name: must start with alphanumeric character: {}", name)));
+    }
+    if !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.' || c == '-') {
+        return Err(SshError::ExecutionError(format!("Invalid name: contains illegal characters: {}", name)));
+    }
+    Ok(name)
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PortMapping {
@@ -287,6 +329,7 @@ impl DockerManager {
     }
 
     pub fn start_container(ssh_manager: &SshManager, connection_id: &str, container_id: &str) -> Result<DockerActionResult, SshError> {
+        validate_container_id(container_id)?;
         let cmd = format!("{}; $D start {}", Self::docker_cmd_script(), container_id);
         let result = ssh_manager.execute(connection_id, &cmd)?;
         
@@ -303,6 +346,7 @@ impl DockerManager {
     }
 
     pub fn stop_container(ssh_manager: &SshManager, connection_id: &str, container_id: &str) -> Result<DockerActionResult, SshError> {
+        validate_container_id(container_id)?;
         let cmd = format!("{}; $D stop {}", Self::docker_cmd_script(), container_id);
         let result = ssh_manager.execute(connection_id, &cmd)?;
         
@@ -319,6 +363,7 @@ impl DockerManager {
     }
 
     pub fn restart_container(ssh_manager: &SshManager, connection_id: &str, container_id: &str) -> Result<DockerActionResult, SshError> {
+        validate_container_id(container_id)?;
         let cmd = format!("{}; $D restart {}", Self::docker_cmd_script(), container_id);
         let result = ssh_manager.execute(connection_id, &cmd)?;
         
@@ -335,11 +380,12 @@ impl DockerManager {
     }
 
     pub fn get_container_logs(
-        ssh_manager: &SshManager, 
-        connection_id: &str, 
+        ssh_manager: &SshManager,
+        connection_id: &str,
         container_id: &str,
-        tail: u32
+        tail: u32  // u32 is inherently safe - no injection possible
     ) -> Result<Vec<String>, SshError> {
+        validate_container_id(container_id)?;
         let cmd = format!("{}; $D logs {} --tail {} --timestamps 2>&1", Self::docker_cmd_script(), container_id, tail);
         let result = ssh_manager.execute(connection_id, &cmd)?;
         
@@ -471,6 +517,7 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Get services status for a compose stack
     pub fn compose_ps(ssh_manager: &SshManager, connection_id: &str, project_name: &str) -> Result<Vec<ComposeService>, SshError> {
+        validate_name(project_name)?;
         let cmd = format!(
             "{}; $C -p {} ps --format json 2>/dev/null || $C -p {} ps 2>/dev/null",
             Self::compose_cmd_script(),
@@ -532,6 +579,7 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Start a compose stack
     pub fn compose_up(ssh_manager: &SshManager, connection_id: &str, project_path: &str, detach: bool) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
         let detach_flag = if detach { "-d" } else { "" };
         let cmd = format!(
             "cd {} && {}; $C up {} 2>&1",
@@ -557,6 +605,7 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Stop a compose stack
     pub fn compose_down(ssh_manager: &SshManager, connection_id: &str, project_path: &str, remove_volumes: bool) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
         let volumes_flag = if remove_volumes { "-v" } else { "" };
         let cmd = format!(
             "cd {} && {}; $C down {} 2>&1",
@@ -582,6 +631,7 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Restart a compose stack
     pub fn compose_restart(ssh_manager: &SshManager, connection_id: &str, project_path: &str) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
         let cmd = format!(
             "cd {} && {}; $C restart 2>&1",
             project_path,
@@ -605,6 +655,8 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Stop a specific service in a compose stack
     pub fn compose_stop_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
+        validate_name(service_name)?;
         let cmd = format!(
             "cd {} && {}; $C stop {} 2>&1",
             project_path,
@@ -629,6 +681,8 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Start a specific service in a compose stack
     pub fn compose_start_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
+        validate_name(service_name)?;
         let cmd = format!(
             "cd {} && {}; $C start {} 2>&1",
             project_path,
@@ -653,6 +707,8 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Restart a specific service in a compose stack
     pub fn compose_restart_service(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: &str) -> Result<ComposeActionResult, SshError> {
+        validate_path(project_path)?;
+        validate_name(service_name)?;
         let cmd = format!(
             "cd {} && {}; $C restart {} 2>&1",
             project_path,
@@ -677,6 +733,10 @@ pub fn get_docker_info(ssh_manager: &SshManager, connection_id: &str) -> Result<
 
     /// Get logs for a compose stack or service
     pub fn compose_logs(ssh_manager: &SshManager, connection_id: &str, project_path: &str, service_name: Option<&str>, tail: u32) -> Result<Vec<String>, SshError> {
+        validate_path(project_path)?;
+        if let Some(svc) = service_name {
+            validate_name(svc)?;
+        }
         let service_arg = service_name.unwrap_or("");
         let cmd = format!(
             "cd {} && {}; $C logs --tail {} {} 2>&1",

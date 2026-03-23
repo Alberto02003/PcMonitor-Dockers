@@ -1,0 +1,46 @@
+{
+  "version": "1",
+  "skills": [
+    {
+      "repo": "anthropics/skills",
+      "skill": "frontend-design"
+    },
+    {
+      "repo": "dammyjay93/interface-design",
+      "skill": "interface-design"
+    },
+    {
+      "repo": "vercel-labs/agent-skills",
+      "skill": "vercel-react-best-practices"
+    },
+    {
+      "repo": "obra/superpowers",
+      "skill": "brainstorming"
+    },
+    {
+      "repo": "obra/superpowers",
+      "skill": "systematic-debugging"
+    },
+    {
+      "repo": "composiohq/awesome-claude-skills",
+      "skill": "changelog-generator"
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "api-design-principles"
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "error-handling-patterns"
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "postgresql-table-design"
+    },
+    {
+      "repo": "wshobson/agents",
+      "skill": "prompt-engineering-patterns"
+    }
+  ],
+  "installedAt": "2026-03-23T09:00:16.439Z"
+}

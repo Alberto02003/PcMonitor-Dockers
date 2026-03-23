@@ -7,13 +7,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { invoke } from '@tauri-apps/api/core'
-import { getSystemMetrics } from '../src/services/tauri.js'
+import { getSystemMetrics, _resetIsTauriCache } from '../src/services/tauri.js'
 import { useRealTimeMetrics } from '../src/hooks/useRealTimeData.js'
 
 describe('Fase 1.2 - Metricas del Sistema', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
+    _resetIsTauriCache()
   })
 
   afterEach(() => {
@@ -101,6 +102,7 @@ describe('Fase 1.2 - Metricas del Sistema', () => {
       const originalTauri = window.__TAURI__
       window.__TAURI_INTERNALS__ = undefined
       window.__TAURI__ = undefined
+      _resetIsTauriCache()
       
       const { result } = renderHook(() => useRealTimeMetrics('test-conn', 5000))
       

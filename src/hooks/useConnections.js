@@ -123,7 +123,11 @@ export function useConnections({ storeCredentials = true, onError } = {}) {
       const encrypted = await encryptPayload(nextConnections)
       localStorage.setItem(STORAGE_KEY, encrypted)
     } catch (error) {
-      if (onError) onError(error)
+      if (onError) {
+        onError(error)
+      } else {
+        console.error('Failed to persist connections:', error)
+      }
     }
   }, [onError])
 

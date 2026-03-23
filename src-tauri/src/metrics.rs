@@ -507,7 +507,6 @@ impl MetricsCollector {
     }
 
     /// Clear cached specs for a connection (call on disconnect)
-    #[allow(dead_code)]
     pub fn clear_cache(connection_id: &str) {
         SPECS_CACHE.lock().remove(connection_id);
     }
