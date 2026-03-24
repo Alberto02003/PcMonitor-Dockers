@@ -8,7 +8,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { invoke } from '@tauri-apps/api/core'
 import {
-  useConnections,
   normalizeConnection,
   connectionToFormData,
   emptyConnectionForm,

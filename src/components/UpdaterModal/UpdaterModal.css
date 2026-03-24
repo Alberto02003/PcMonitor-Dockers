@@ -1,14 +1,14 @@
 .updater-modal {
   max-width: 540px;
   width: 90%;
-  background: rgba(10, 25, 47, 0.98);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-98);
+  border: 1px solid var(--primary-15);
   backdrop-filter: blur(10px);
 }
 
 .updater-modal .modal-header {
-  background: rgba(10, 25, 47, 0.5);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-50);
+  border-bottom: 1px solid var(--primary-12);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -50,7 +50,7 @@
 .updater-checking .spinner {
   width: 56px;
   height: 56px;
-  border: 4px solid rgba(100, 255, 218, 0.15);
+  border: 4px solid var(--primary-15);
   border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -95,8 +95,8 @@
   justify-content: center;
   font-size: 2.5rem;
   color: var(--accent-blue);
-  background: rgba(100, 255, 218, 0.1);
-  border: 2px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-10);
+  border: 2px solid var(--primary-30);
   border-radius: 50%;
   animation: checkPulse 2s ease-in-out infinite;
 }
@@ -104,7 +104,7 @@
 @keyframes checkPulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4);
+    box-shadow: 0 0 0 0 var(--primary-40);
   }
   50% {
     transform: scale(1.05);
@@ -121,10 +121,10 @@
 .updater-no-update .version-info {
   color: var(--text-secondary);
   font-size: 0.9rem;
-  background: rgba(10, 25, 47, 0.5);
+  background: var(--bg-overlay-50);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  border: 1px solid var(--primary-8);
 }
 
 .updater-no-update .version-info strong {
@@ -158,8 +158,8 @@
   justify-content: center;
   font-size: 2.5rem;
   color: var(--accent-blue);
-  background: rgba(100, 255, 218, 0.1);
-  border: 2px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-10);
+  border: 2px solid var(--primary-30);
   border-radius: 50%;
   animation: bounce 2s ease-in-out infinite;
 }
@@ -184,9 +184,9 @@
   align-items: center;
   gap: 1.5rem;
   padding: 1.25rem;
-  background: rgba(10, 25, 47, 0.6);
+  background: var(--bg-overlay-60);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(100, 255, 218, 0.12);
+  border: 1px solid var(--primary-12);
   width: 100%;
   justify-content: center;
 }
@@ -212,22 +212,22 @@
   font-family: 'Courier New', monospace;
   color: var(--text-primary);
   padding: 0.35rem 0.75rem;
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: var(--radius-sm);
 }
 
 .version-number.new {
   color: var(--accent-blue);
-  background: rgba(100, 255, 218, 0.15);
+  background: var(--primary-15);
   animation: glow 2s ease-in-out infinite;
 }
 
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(100, 255, 218, 0.3);
+    box-shadow: 0 0 5px var(--primary-30);
   }
   50% {
-    box-shadow: 0 0 15px rgba(100, 255, 218, 0.5);
+    box-shadow: 0 0 15px var(--primary-50);
   }
 }
 
@@ -262,8 +262,8 @@
   max-height: 140px;
   overflow-y: auto;
   padding: 1rem;
-  background: rgba(10, 25, 47, 0.6);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  background: var(--bg-overlay-60);
+  border: 1px solid var(--primary-8);
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   line-height: 1.6;
@@ -271,22 +271,54 @@
   color: var(--text-secondary);
 }
 
+.notes-content.parsed {
+  white-space: normal;
+}
+
+.notes-content.parsed ul {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.25rem;
+  list-style: none;
+}
+
+.notes-content.parsed ul li {
+  position: relative;
+  padding-left: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.notes-content.parsed ul li::before {
+  content: '▸';
+  position: absolute;
+  left: -0.5rem;
+  color: var(--accent-blue);
+  font-size: 0.8rem;
+}
+
+.notes-section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 .notes-content::-webkit-scrollbar {
   width: 6px;
 }
 
 .notes-content::-webkit-scrollbar-track {
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: 3px;
 }
 
 .notes-content::-webkit-scrollbar-thumb {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-radius: 3px;
 }
 
 .notes-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 255, 218, 0.3);
+  background: var(--primary-30);
 }
 
 .restart-warning {
@@ -326,8 +358,8 @@
 .progress-bar {
   width: 100%;
   height: 10px;
-  background: rgba(100, 255, 218, 0.1);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  background: var(--primary-10);
+  border: 1px solid var(--primary-20);
   border-radius: 6px;
   overflow: hidden;
   position: relative;
@@ -359,7 +391,7 @@
   border-radius: 6px;
   transition: width 0.3s ease;
   position: relative;
-  box-shadow: 0 0 10px rgba(100, 255, 218, 0.4);
+  box-shadow: 0 0 10px var(--primary-40);
 }
 
 .progress-text {
@@ -367,6 +399,28 @@
   color: var(--text-secondary);
   font-family: 'Courier New', monospace;
   font-weight: 600;
+}
+
+/* Installed state */
+.updater-installed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.updater-installed h3 {
+  margin: 0;
+  color: var(--accent-blue);
+  font-size: 1.15rem;
+}
+
+.updater-installed p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
 }
 
 /* Error state */
@@ -389,14 +443,19 @@
   font-size: 0.9rem;
 }
 
+.updater-error-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
 /* Footer */
 .updater-modal .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(10, 25, 47, 0.3);
-  border-top: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-30);
+  border-top: 1px solid var(--primary-12);
 }
 
 .updater-modal .btn {
@@ -411,13 +470,13 @@
 
 .updater-modal .btn-outline {
   background: transparent;
-  border: 1px solid rgba(100, 255, 218, 0.3);
+  border: 1px solid var(--primary-30);
   color: var(--text-primary);
 }
 
 .updater-modal .btn-outline:hover {
-  background: rgba(100, 255, 218, 0.1);
-  border-color: rgba(100, 255, 218, 0.5);
+  background: var(--primary-10);
+  border-color: var(--primary-50);
 }
 
 .updater-modal .btn-primary {
@@ -428,7 +487,7 @@
 
 .updater-modal .btn-primary:hover {
   filter: brightness(1.1);
-  box-shadow: 0 0 15px rgba(100, 255, 218, 0.4);
+  box-shadow: 0 0 15px var(--primary-40);
 }
 
 .updater-modal .btn-ghost {

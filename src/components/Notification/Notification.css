@@ -8,13 +8,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(10, 25, 47, 0.95);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-95);
+  border: 1px solid var(--primary-15);
   border-radius: var(--radius-md);
   padding: 0.75rem 1.1rem;
   color: var(--text-primary);
   transition: transform 0.25s ease, opacity 0.25s ease;
-  z-index: 9999;
+  z-index: var(--z-toast);
   min-width: 240px;
 }
 

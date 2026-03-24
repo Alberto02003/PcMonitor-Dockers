@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use std::path::PathBuf;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
+use crate::crypto::{encrypt_credential, decrypt_credential};
 
 #[derive(Error, Debug)]
 pub enum SecurityError {
@@ -247,9 +248,8 @@ impl SecureStorage {
         Ok(())
     }
 
-    // Internal storage methods using file-based encryption
-    // In production, this would use OS keychain via Stronghold
-    
+    // Internal storage methods using AES-256-GCM encryption via crypto module
+
     fn store_data(&self, key: &str, value: &str) -> Result<(), SecurityError> {
         use std::fs;
         use std::io::Write;
@@ -260,21 +260,19 @@ impl SecureStorage {
                 .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
         }
 
-        // Create data directory
         let data_dir = self.stronghold_path.parent()
             .unwrap_or(&self.stronghold_path)
             .join("secure_data");
         fs::create_dir_all(&data_dir)
             .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
 
-        // Simple XOR encryption with a derived key (basic protection)
-        // In production, use proper encryption
-        let encrypted = self.simple_encrypt(value);
-        
+        let encrypted = encrypt_credential(value)
+            .map_err(|e| SecurityError::EncryptionError(e.to_string()))?;
+
         let file_path = data_dir.join(format!("{}.enc", STANDARD.encode(key)));
         let mut file = fs::File::create(&file_path)
             .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
-        
+
         file.write_all(encrypted.as_bytes())
             .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
 
@@ -287,9 +285,9 @@ impl SecureStorage {
         let data_dir = self.stronghold_path.parent()
             .unwrap_or(&self.stronghold_path)
             .join("secure_data");
-        
+
         let file_path = data_dir.join(format!("{}.enc", STANDARD.encode(key)));
-        
+
         if !file_path.exists() {
             return Err(SecurityError::NotFound(key.to_string()));
         }
@@ -297,8 +295,45 @@ impl SecureStorage {
         let encrypted = fs::read_to_string(&file_path)
             .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
 
-        let decrypted = self.simple_decrypt(&encrypted);
-        Ok(decrypted)
+        // Try AES-256-GCM first, fall back to legacy XOR for migration
+        match decrypt_credential(&encrypted) {
+            Ok(decrypted) => Ok(decrypted),
+            Err(_) => {
+                // Attempt legacy XOR decryption and re-encrypt with AES
+                match self.legacy_xor_decrypt(&encrypted) {
+                    Some(plaintext) => {
+                        eprintln!("[SECURITY] Migrating key '{}' from XOR to AES-256-GCM", key);
+                        // Re-encrypt with AES and overwrite
+                        if let Ok(new_encrypted) = encrypt_credential(&plaintext) {
+                            let _ = fs::write(&file_path, new_encrypted.as_bytes());
+                        }
+                        Ok(plaintext)
+                    }
+                    None => Err(SecurityError::EncryptionError(
+                        "Failed to decrypt data (neither AES nor legacy format)".to_string()
+                    )),
+                }
+            }
+        }
+    }
+
+    /// Legacy XOR decryption for migration from old format
+    fn legacy_xor_decrypt(&self, data: &str) -> Option<String> {
+        let key = {
+            let path_str = self.stronghold_path.to_string_lossy();
+            let mut k: Vec<u8> = path_str.bytes().collect();
+            while k.len() < 32 {
+                k.extend_from_slice(&k.clone());
+            }
+            k.truncate(32);
+            k
+        };
+        let decoded = STANDARD.decode(data).ok()?;
+        let decrypted: Vec<u8> = decoded.iter()
+            .zip(key.iter().cycle())
+            .map(|(b, k)| b ^ k)
+            .collect();
+        String::from_utf8(decrypted).ok()
     }
 
     fn delete_data(&self, key: &str) -> Result<(), SecurityError> {
@@ -307,51 +342,15 @@ impl SecureStorage {
         let data_dir = self.stronghold_path.parent()
             .unwrap_or(&self.stronghold_path)
             .join("secure_data");
-        
+
         let file_path = data_dir.join(format!("{}.enc", STANDARD.encode(key)));
-        
+
         if file_path.exists() {
             fs::remove_file(&file_path)
                 .map_err(|e| SecurityError::StrongholdError(e.to_string()))?;
         }
 
         Ok(())
-    }
-
-    // Simple encryption (for basic protection - not cryptographically secure)
-    // Replace with proper encryption in production
-    fn simple_encrypt(&self, data: &str) -> String {
-        let key = self.derive_key();
-        let encrypted: Vec<u8> = data.bytes()
-            .zip(key.iter().cycle())
-            .map(|(b, k)| b ^ k)
-            .collect();
-        
-        STANDARD.encode(&encrypted)
-    }
-
-    fn simple_decrypt(&self, data: &str) -> String {
-        let key = self.derive_key();
-        let decoded = STANDARD.decode(data).unwrap_or_default();
-        let decrypted: Vec<u8> = decoded.iter()
-            .zip(key.iter().cycle())
-            .map(|(b, k)| b ^ k)
-            .collect();
-        
-        String::from_utf8(decrypted).unwrap_or_default()
-    }
-
-    fn derive_key(&self) -> Vec<u8> {
-        // Derive a key from the stronghold path (machine-specific)
-        let path_str = self.stronghold_path.to_string_lossy();
-        let mut key: Vec<u8> = path_str.bytes().collect();
-        
-        // Ensure minimum length
-        while key.len() < 32 {
-            key.extend_from_slice(&key.clone());
-        }
-        key.truncate(32);
-        key
     }
 }
 

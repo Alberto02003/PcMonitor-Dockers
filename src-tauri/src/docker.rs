@@ -16,10 +16,16 @@ fn validate_container_id(id: &str) -> Result<&str, SshError> {
     Ok(id)
 }
 
-/// Validate a path: reject shell metacharacters
+/// Validate a path: reject shell metacharacters and path traversal
 fn validate_path(path: &str) -> Result<&str, SshError> {
     if path.is_empty() {
         return Err(SshError::ExecutionError("Path cannot be empty".to_string()));
+    }
+    if path.contains("..") {
+        return Err(SshError::ExecutionError(format!("Invalid path: path traversal not allowed: {}", path)));
+    }
+    if path.contains('\0') {
+        return Err(SshError::ExecutionError("Invalid path: null byte not allowed".to_string()));
     }
     let forbidden = [';', '|', '&', '$', '`', '(', ')', '{', '}', '>', '<', '!', '\n'];
     if path.chars().any(|c| forbidden.contains(&c)) {
@@ -356,6 +362,24 @@ impl DockerManager {
             action: "stop".to_string(),
             message: if result.exit_code == 0 {
                 format!("Container {} stopped", container_id)
+            } else {
+                result.stderr
+            },
+        })
+    }
+
+    pub fn remove_container(ssh_manager: &SshManager, connection_id: &str, container_id: &str, force: bool) -> Result<DockerActionResult, SshError> {
+        validate_container_id(container_id)?;
+        let force_flag = if force { " -f" } else { "" };
+        let cmd = format!("{}; $D rm{} {}", Self::docker_cmd_script(), force_flag, container_id);
+        let result = ssh_manager.execute(connection_id, &cmd)?;
+
+        Ok(DockerActionResult {
+            success: result.exit_code == 0,
+            container_id: container_id.to_string(),
+            action: "remove".to_string(),
+            message: if result.exit_code == 0 {
+                format!("Container {} removed", container_id)
             } else {
                 result.stderr
             },

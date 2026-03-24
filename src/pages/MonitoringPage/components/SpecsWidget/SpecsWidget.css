@@ -10,8 +10,8 @@
 }
 
 .spec-item {
-  background: rgba(10, 25, 47, 0.35);
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  background: var(--bg-overlay-35);
+  border: 1px solid var(--primary-10);
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.75rem;
   display: grid;

@@ -2,7 +2,7 @@
   position: fixed;
   top: 1.5rem;
   right: 1.5rem;
-  z-index: 9999;
+  z-index: var(--z-toast);
   animation: slideInRight 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
@@ -21,12 +21,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(10, 25, 47, 0.98);
+  background: var(--bg-overlay-98);
   border: 2px solid var(--accent-blue);
   border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4),
-              0 0 20px rgba(100, 255, 218, 0.2);
+              0 0 20px var(--primary-20);
   backdrop-filter: blur(10px);
   min-width: 320px;
   max-width: 420px;
@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(100, 255, 218, 0.15);
+  background: var(--primary-15);
   border-radius: 50%;
   flex-shrink: 0;
   animation: rotateIcon 3s ease-in-out infinite;
@@ -106,7 +106,7 @@
 
 .update-notification-btn-primary:hover {
   filter: brightness(1.1);
-  box-shadow: 0 0 12px rgba(100, 255, 218, 0.4);
+  box-shadow: 0 0 12px var(--primary-40);
   transform: translateY(-1px);
 }
 
@@ -125,7 +125,7 @@
 
 .update-notification-btn-dismiss:hover {
   opacity: 1;
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
 }
 
 /* Pulsing glow effect */

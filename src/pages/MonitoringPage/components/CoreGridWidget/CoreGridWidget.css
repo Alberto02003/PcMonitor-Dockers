@@ -5,8 +5,8 @@
 }
 
 .monitoring-card {
-  background: rgba(10, 25, 47, 0.2);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  background: var(--bg-overlay-20);
+  border: 1px solid var(--primary-8);
   border-radius: var(--radius-md);
   padding: 1.25rem;
   transition: border-color 0.2s ease;
@@ -89,7 +89,7 @@
 .progress {
   height: 8px;
   border-radius: 999px;
-  background: rgba(100, 255, 218, 0.08);
+  background: var(--primary-8);
   overflow: hidden;
 }
 

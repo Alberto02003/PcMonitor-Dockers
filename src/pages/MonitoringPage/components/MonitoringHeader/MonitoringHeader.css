@@ -20,9 +20,9 @@
 .view-toggle {
   display: inline-flex;
   align-items: center;
-  border: 1px solid rgba(100, 255, 218, 0.25);
+  border: 1px solid var(--primary-25);
   border-radius: 999px;
-  background: rgba(10, 25, 47, 0.35);
+  background: var(--bg-overlay-35);
   padding: 0.2rem;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .view-tab.is-active {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   color: var(--accent-blue);
 }
 
@@ -63,7 +63,7 @@
   width: 100%;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(100, 255, 218, 0.1);
+  border-top: 1px solid var(--primary-10);
 }
 
 .subtabs-toggle {
@@ -86,13 +86,13 @@
 
 .subtab:hover {
   color: var(--accent-cyan);
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
 }
 
 .subtab.is-active {
-  background: rgba(100, 255, 218, 0.15);
+  background: var(--primary-15);
   color: var(--accent-cyan);
-  border-color: rgba(100, 255, 218, 0.3);
+  border-color: var(--primary-30);
 }
 
 @media (max-width: 720px) {

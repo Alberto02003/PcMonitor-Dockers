@@ -5,12 +5,13 @@
 @import './styles/utilities.css';
 
 :root {
-  /* Legacy variables (for backward compatibility) */
+  /* Legacy variables (bridge to design tokens) */
   --dark-blue: var(--color-bg-primary);
   --medium-blue: var(--color-bg-secondary);
   --light-blue: var(--color-bg-tertiary);
   --accent-blue: var(--color-primary);
   --accent-blue-dark: var(--color-primary-active);
+  --accent-cyan: var(--color-primary);
   --text-primary: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);
   --text-accent: var(--color-text-primary);
@@ -22,6 +23,12 @@
   --radius-sm: var(--radius-md);
   --radius-md: var(--radius-lg);
   --transition: var(--transition-normal);
+
+  /* Semantic status colors (legacy bridge) */
+  --status-success: var(--color-success);
+  --status-warning: var(--color-warning);
+  --status-danger: var(--color-error);
+  --status-info: var(--color-info);
 
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -69,11 +76,38 @@ body {
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-color: var(--dark-blue);
 }
 
 img {
   max-width: 100%;
   display: block;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Global focus-visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* Remove outline for mouse/touch users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Reduced motion: disable all animations globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

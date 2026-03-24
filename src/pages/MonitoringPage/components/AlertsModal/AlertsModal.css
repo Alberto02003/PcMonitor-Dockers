@@ -8,10 +8,10 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  border: 1px solid var(--primary-8);
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.7rem;
-  background: rgba(10, 25, 47, 0.35);
+  background: var(--bg-overlay-35);
 }
 
 .alert-label {
@@ -38,7 +38,7 @@
 .alert-controls input[type='number'] {
   width: 90px;
   background: var(--medium-blue);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  border: 1px solid var(--primary-20);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.35rem 0.5rem;
@@ -58,8 +58,8 @@
 
 /* Botón secundario para prueba de notificaciones */
 .modal-footer .btn-secondary {
-  background: rgba(100, 255, 218, 0.1);
-  border: 1px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-10);
+  border: 1px solid var(--primary-30);
   color: var(--accent-blue);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-sm);
@@ -69,6 +69,6 @@
 }
 
 .modal-footer .btn-secondary:hover {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-color: var(--accent-blue);
 }

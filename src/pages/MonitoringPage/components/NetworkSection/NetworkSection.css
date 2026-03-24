@@ -24,8 +24,8 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: rgba(10, 25, 47, 0.2);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  background: var(--bg-overlay-20);
+  border: 1px solid var(--primary-8);
   border-radius: var(--radius-md);
 }
 
@@ -36,7 +36,7 @@
 
 .network-interface-selector select {
   background: var(--medium-blue);
-  border: 1px solid rgba(100, 255, 218, 0.12);
+  border: 1px solid var(--primary-12);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.65rem 0.8rem;
@@ -47,18 +47,18 @@
 }
 
 .network-interface-selector select:hover {
-  border-color: rgba(100, 255, 218, 0.35);
+  border-color: var(--primary-35);
   background: var(--light-blue);
 }
 
 .network-interface-selector select:focus {
   outline: none;
-  border-color: rgba(100, 255, 218, 0.6);
-  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+  border-color: var(--primary-60);
+  box-shadow: 0 0 0 2px var(--primary-10);
 }
 
 .network-interface-selector select:focus-visible {
-  outline: 2px solid rgba(100, 255, 218, 0.25);
+  outline: 2px solid var(--primary-25);
   outline-offset: 2px;
 }
 
@@ -70,8 +70,8 @@
 }
 
 .throughput-card {
-  background: rgba(10, 25, 47, 0.5);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-50);
+  border: 1px solid var(--primary-15);
   border-radius: 0.5rem;
   padding: 1rem;
   transition: border-color 0.2s ease;
@@ -198,8 +198,8 @@
 
 /* Network Cards - Same as System stat-card */
 .network-card {
-  background: rgba(10, 25, 47, 0.5);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-50);
+  border: 1px solid var(--primary-15);
   border-radius: 0.5rem;
   padding: 1rem;
   transition: border-color 0.2s ease;
@@ -218,7 +218,7 @@
   align-items: center;
   gap: 0.75rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+  border-bottom: 1px solid var(--primary-10);
 }
 
 .total-badge {
@@ -236,8 +236,8 @@
 .ports-table-wrapper {
   overflow-x: auto;
   border-radius: 0.5rem;
-  background: rgba(10, 25, 47, 0.3);
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  background: var(--bg-overlay-30);
+  border: 1px solid var(--primary-10);
 }
 
 .interfaces-table,
@@ -253,8 +253,8 @@
   color: var(--text-secondary);
   font-weight: 600;
   padding: 0.875rem 1rem;
-  background: rgba(10, 25, 47, 0.5);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-50);
+  border-bottom: 1px solid var(--primary-15);
   white-space: nowrap;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -265,7 +265,7 @@
 .ports-table td {
   padding: 0.875rem 1rem;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.05);
+  border-bottom: 1px solid var(--primary-5);
 }
 
 .interfaces-table tbody tr {
@@ -274,7 +274,7 @@
 }
 
 .interfaces-table tbody tr:hover {
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
 }
 
 .interfaces-table tr.selected {
@@ -316,11 +316,11 @@
 }
 
 .tcp-stat {
-  background: rgba(10, 25, 47, 0.5);
+  background: var(--bg-overlay-50);
   border-radius: 0.5rem;
   padding: 1rem;
   text-align: center;
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  border: 1px solid var(--primary-15);
   transition: border-color 0.2s ease;
 }
 
@@ -395,9 +395,9 @@
   font-weight: 600;
   color: var(--text-secondary);
   padding: 0.125rem 0.375rem;
-  background: rgba(10, 25, 47, 0.5);
+  background: var(--bg-overlay-50);
   border-radius: 0.25rem;
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  border: 1px solid var(--primary-10);
 }
 
 .address {
@@ -422,9 +422,9 @@
   color: var(--text-secondary);
   padding: 3rem 2rem;
   font-size: 0.875rem;
-  background: rgba(10, 25, 47, 0.3);
+  background: var(--bg-overlay-30);
   border-radius: 0.5rem;
-  border: 1px dashed rgba(100, 255, 218, 0.15);
+  border: 1px dashed var(--primary-15);
 }
 
 /* Scrollbar */
@@ -437,7 +437,7 @@
 }
 
 .network-section::-webkit-scrollbar-thumb {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-radius: 4px;
 }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatedPercent, AnimatedBytes, Sparkline } from '../../../../components'
 import { useTranslation } from '../../../../hooks/useTranslation.jsx'
+import { formatBytes } from '../../../../utils/metricsUtils.js'
 import './CoreGridWidget.css'
 
 // Hook para mantener historial de valores para sparklines
@@ -45,13 +46,6 @@ function CoreGridWidget({ metrics }) {
   const formatGb = (gb) => {
     if (!gb && gb !== 0) return '--'
     return `${Math.round(gb)} GB`
-  }
-
-  const formatBytes = (bytes) => {
-    if (!bytes && bytes !== 0) return '--'
-    const mb = bytes / 1024 / 1024
-    if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`
-    return `${mb.toFixed(1)} MB`
   }
 
   // Determinar color segun porcentaje

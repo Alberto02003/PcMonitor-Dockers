@@ -3,18 +3,10 @@ import { checkForUpdates, isTauri } from '../services/tauri.js'
 
 /**
  * Hook para gestionar verificaciones automáticas de actualizaciones
- * 
- * @param {Object} options - Configuración
- * @param {boolean} options.checkOnMount - Verificar al montar (inicio de la app)
- * @param {number} options.checkInterval - Intervalo en milisegundos (default: 6 horas)
- * @param {boolean} options.enabled - Si las verificaciones automáticas están habilitadas
- * @param {Function} options.onUpdateAvailable - Callback cuando hay actualización disponible
- * 
- * @returns {Object} - Estado y funciones del updater
  */
 export function useAutoUpdater({
   checkOnMount = true,
-  checkInterval = 6 * 60 * 60 * 1000, // 6 horas por defecto
+  checkInterval = 6 * 60 * 60 * 1000,
   enabled = true,
   onUpdateAvailable = null,
 } = {}) {
@@ -22,55 +14,50 @@ export function useAutoUpdater({
   const [isChecking, setIsChecking] = useState(false)
   const [lastCheck, setLastCheck] = useState(null)
   const [error, setError] = useState(null)
-  
+
   const intervalRef = useRef(null)
   const mountedRef = useRef(false)
+  const onUpdateAvailableRef = useRef(onUpdateAvailable)
+  onUpdateAvailableRef.current = onUpdateAvailable
 
-  // Función para verificar actualizaciones
   const checkUpdate = useCallback(async (silent = false) => {
-    if (!isTauri() || !enabled) return
+    if (!isTauri() || !enabled) return null
 
-    if (!silent) {
-      setIsChecking(true)
-    }
-    setError(null)
+    setIsChecking(true)
+    if (!silent) setError(null)
 
     try {
       const result = await checkForUpdates()
       setLastCheck(new Date())
 
       if (result === null) {
-        setError('Failed to check for updates')
+        if (!silent) setError('Failed to check for updates')
         return null
       }
 
       setUpdateInfo(result)
 
-      // Llamar callback si hay actualización disponible
-      if (result.available && onUpdateAvailable) {
-        onUpdateAvailable(result)
+      if (result.available && onUpdateAvailableRef.current) {
+        onUpdateAvailableRef.current(result)
       }
 
       return result
     } catch (err) {
       console.error('Auto-updater error:', err)
-      setError(err.message || 'Unknown error')
+      if (!silent) setError(err.message || 'Unknown error')
       return null
     } finally {
-      if (!silent) {
-        setIsChecking(false)
-      }
+      setIsChecking(false)
     }
-  }, [enabled, onUpdateAvailable])
+  }, [enabled])
 
-  // Verificación al montar (inicio de la app)
+  // Verificación al montar
   useEffect(() => {
     if (!mountedRef.current && checkOnMount && enabled && isTauri()) {
       mountedRef.current = true
-      // Pequeño delay para no interferir con la carga inicial
       const timer = setTimeout(() => {
-        checkUpdate(true) // Silent check
-      }, 5000) // 5 segundos después del inicio
+        checkUpdate(true)
+      }, 5000)
 
       return () => clearTimeout(timer)
     }
@@ -80,14 +67,12 @@ export function useAutoUpdater({
   useEffect(() => {
     if (!enabled || !isTauri() || checkInterval <= 0) return
 
-    // Limpiar intervalo anterior si existe
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
     }
 
-    // Crear nuevo intervalo
     intervalRef.current = setInterval(() => {
-      checkUpdate(true) // Silent check
+      checkUpdate(true)
     }, checkInterval)
 
     return () => {
@@ -98,26 +83,21 @@ export function useAutoUpdater({
     }
   }, [enabled, checkInterval, checkUpdate])
 
-  // Verificación manual
   const manualCheck = useCallback(async () => {
     return await checkUpdate(false)
   }, [checkUpdate])
 
-  // Resetear estado de actualización (útil después de instalar)
   const resetUpdate = useCallback(() => {
     setUpdateInfo(null)
     setError(null)
   }, [])
 
   return {
-    // Estado
     updateInfo,
     isChecking,
     lastCheck,
     error,
     hasUpdate: updateInfo?.available || false,
-    
-    // Funciones
     checkUpdate: manualCheck,
     resetUpdate,
   }

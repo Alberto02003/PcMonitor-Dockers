@@ -63,7 +63,11 @@ struct SshConnection {
     session: Arc<Session>,
     #[allow(dead_code)]
     config: ConnectionConfig,
+    last_used: Instant,
 }
+
+/// Max idle time before a connection is considered stale (30 minutes)
+const CONNECTION_IDLE_TIMEOUT: Duration = Duration::from_secs(30 * 60);
 
 pub struct SshManager {
     connections: Arc<Mutex<HashMap<String, SshConnection>>>,
@@ -71,9 +75,33 @@ pub struct SshManager {
 
 impl SshManager {
     pub fn new() -> Self {
-        Self {
+        let manager = Self {
             connections: Arc::new(Mutex::new(HashMap::new())),
-        }
+        };
+        manager.start_cleanup_task();
+        manager
+    }
+
+    /// Background task that removes idle connections every 5 minutes
+    fn start_cleanup_task(&self) {
+        let connections = self.connections.clone();
+        std::thread::spawn(move || {
+            loop {
+                std::thread::sleep(Duration::from_secs(5 * 60));
+                let mut conns = connections.lock();
+                let before = conns.len();
+                conns.retain(|id, conn| {
+                    let idle = conn.last_used.elapsed() < CONNECTION_IDLE_TIMEOUT;
+                    if !idle {
+                        eprintln!("[SSH] Cleaning up idle connection: {}", id);
+                    }
+                    idle
+                });
+                if conns.len() < before {
+                    eprintln!("[SSH] Cleaned up {} stale connections", before - conns.len());
+                }
+            }
+        });
     }
 
     pub fn connect(&self, config: ConnectionConfig) -> Result<ConnectionStatus, SshError> {
@@ -171,6 +199,7 @@ impl SshManager {
         let connection = SshConnection {
             session: Arc::new(session),
             config: config.clone(),
+            last_used: Instant::now(),
         };
 
         self.connections.lock().insert(connection_id.clone(), connection);
@@ -195,12 +224,13 @@ impl SshManager {
     }
 
     pub fn execute(&self, connection_id: &str, command: &str) -> Result<CommandResult, SshError> {
-        // Clone the Arc<Session> and drop the lock before doing network I/O
+        // Clone the Arc<Session>, update last_used, and drop the lock before doing network I/O
         let session = {
-            let connections = self.connections.lock();
+            let mut connections = self.connections.lock();
             let connection = connections
-                .get(connection_id)
+                .get_mut(connection_id)
                 .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+            connection.last_used = Instant::now();
             connection.session.clone()
         };
 
@@ -235,12 +265,13 @@ impl SshManager {
     where
         F: FnMut(&str, bool), // (data, is_stderr)
     {
-        // Clone the Arc<Session> and drop the lock before doing network I/O
+        // Clone the Arc<Session>, update last_used, and drop the lock before doing network I/O
         let session = {
-            let connections = self.connections.lock();
+            let mut connections = self.connections.lock();
             let connection = connections
-                .get(connection_id)
+                .get_mut(connection_id)
                 .ok_or_else(|| SshError::NotFound(connection_id.to_string()))?;
+            connection.last_used = Instant::now();
             connection.session.clone()
         };
 

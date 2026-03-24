@@ -5,7 +5,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: var(--color-surface, rgba(23, 42, 69, 0.85));
+  background: var(--color-surface, var(--surface-85));
   border-radius: 8px;
   font-size: 0.8125rem;
 }

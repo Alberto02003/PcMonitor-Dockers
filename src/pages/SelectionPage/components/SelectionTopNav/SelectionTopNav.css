@@ -23,7 +23,7 @@
   align-items: center;
   gap: 0.5rem;
   background: var(--light-blue);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  border: 1px solid var(--primary-20);
   color: var(--text-primary);
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.9rem;
@@ -33,18 +33,18 @@
 }
 
 .nav-button:hover {
-  border-color: rgba(100, 255, 218, 0.5);
+  border-color: var(--primary-50);
   color: var(--accent-blue);
 }
 
 .nav-button:focus-visible {
-  outline: 2px solid rgba(100, 255, 218, 0.4);
+  outline: 2px solid var(--primary-40);
   outline-offset: 2px;
 }
 
 .nav-button-muted {
   background: transparent;
-  border-color: rgba(230, 241, 255, 0.2);
+  border-color: var(--text-soft-20);
   color: var(--text-secondary);
 }
 

@@ -19,7 +19,7 @@
   padding: 2rem;
   background: var(--medium-blue, #172a45);
   border-radius: 12px;
-  border: 1px solid var(--border-soft, rgba(100, 255, 218, 0.12));
+  border: 1px solid var(--border-soft, var(--primary-12));
 }
 
 .db-error-content h2 {
@@ -46,7 +46,7 @@
   text-align: left;
   margin: 1.5rem 0;
   padding: 1rem;
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: 8px;
 }
 
@@ -81,5 +81,5 @@
 
 .db-error-content button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(100, 255, 218, 0.3);
+  box-shadow: 0 4px 12px var(--primary-30);
 }

@@ -433,6 +433,24 @@ async fn docker_restart(
 }
 
 #[tauri::command]
+async fn docker_remove(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)]
+    connectionId: String,
+    #[allow(non_snake_case)]
+    containerId: String,
+    force: bool,
+) -> Result<DockerActionResult, String> {
+    let ssh_manager = state.ssh_manager.clone();
+    tokio::task::spawn_blocking(move || {
+        DockerManager::remove_container(&ssh_manager, &connectionId, &containerId, force)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| format!("Task error: {}", e))?
+}
+
+#[tauri::command]
 async fn docker_logs(
     state: State<'_, AppState>,
     #[allow(non_snake_case)]
@@ -716,6 +734,7 @@ pub fn run() {
             docker_start,
             docker_stop,
             docker_restart,
+            docker_remove,
             docker_logs,
             docker_images,
             docker_volumes,

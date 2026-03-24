@@ -1,174 +1,130 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
-import { invoke } from '@tauri-apps/api/core'
+import { getAppVersion } from '../../services/tauri.js'
+import { parseReleaseBody, hasContent } from '../../utils/releaseNotesParser.js'
 import './PatchNotesModal.css'
 
-function PatchNotesModal({ open, onClose }) {
+const GITHUB_API = 'https://api.github.com/repos/Alberto02003/PcMonitor-Dockers/releases'
+const CACHE_KEY = 'patch_notes_cache'
+const CACHE_TTL = 30 * 60 * 1000 // 30 minutes
+
+/**
+ * Read cached releases from localStorage
+ */
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const { data, ts } = JSON.parse(raw)
+    if (Date.now() - ts > CACHE_TTL) return null
+    return data
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Write releases to localStorage cache
+ */
+function writeCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }))
+  } catch {
+    // localStorage full — ignore
+  }
+}
+
+/**
+ * Unified Patch Notes modal
+ *
+ * Modes:
+ *  - Manual: user clicks "What's New" button → fetches from GitHub, shows multiple releases
+ *  - WhatsNew: auto-shown after app restart with new version → highlights current version,
+ *    can also show from localStorage notes saved before update
+ */
+function PatchNotesModal({ open, onClose, whatsNewMode = false, whatsNewVersion = null, savedNotes = null }) {
   const { t, lang } = useTranslation()
   const [patchNotes, setPatchNotes] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentVersion, setCurrentVersion] = useState('')
 
-  useEffect(() => {
-    if (open) {
-      loadPatchNotes()
-    }
-  }, [open, lang])
-
-  const loadPatchNotes = async () => {
+  const loadPatchNotes = useCallback(async () => {
     setIsLoading(true)
     try {
-      // Obtener versión actual del package.json
-      const version = import.meta.env.VITE_APP_VERSION || '0.1.5'
+      const version = await getAppVersion()
       setCurrentVersion(version)
 
-      // Intentar obtener release notes desde GitHub
-      const response = await fetch(
-        `https://api.github.com/repos/Alberto02003/PcMonitor-Dockers/releases`,
-        {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json'
-          }
+      // Try cache first, then GitHub
+      let releases = readCache()
+      if (!releases) {
+        const response = await fetch(GITHUB_API, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        })
+        if (response.ok) {
+          releases = await response.json()
+          writeCache(releases)
         }
-      )
+      }
 
-      if (response.ok) {
-        const releases = await response.json()
+      if (releases) {
         const parsed = releases.slice(0, 10).map(release => ({
           version: release.tag_name.replace('v', ''),
-          date: new Date(release.published_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US'),
-          notes: parseReleaseNotes(release.body || '', lang),
-          isLatest: release.tag_name.replace('v', '') === version
+          date: new Date(release.published_at).toLocaleDateString(
+            lang === 'es' ? 'es-ES' : 'en-US'
+          ),
+          notes: parseReleaseBody(release.body || ''),
+          isCurrent: release.tag_name.replace('v', '') === version,
         }))
-        
-        // Filtrar solo releases que tengan contenido explicativo
-        const filtered = parsed.filter(release => {
-          const hasContent = 
-            release.notes.features.length > 0 ||
-            release.notes.fixes.length > 0 ||
-            release.notes.improvements.length > 0
-          return hasContent
-        })
-        
-        // Tomar solo las primeras 5 con contenido
+
+        const filtered = parsed.filter(r => hasContent(r.notes))
         setPatchNotes(filtered.slice(0, 5))
+      } else if (savedNotes) {
+        // Offline fallback: use notes saved from the updater
+        setPatchNotes([{
+          version: whatsNewVersion || version,
+          date: new Date().toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US'),
+          notes: parseReleaseBody(savedNotes),
+          isCurrent: true,
+        }])
       } else {
-        // Fallback: notas locales hardcodeadas
-        setPatchNotes(getFallbackNotes(version))
+        setPatchNotes([])
       }
     } catch (error) {
       console.error('Failed to load patch notes:', error)
-      setPatchNotes(getFallbackNotes(currentVersion || '0.1.5'))
+      // Fallback to savedNotes from updater if available
+      if (savedNotes) {
+        const version = currentVersion || whatsNewVersion || '0.0.0'
+        setPatchNotes([{
+          version,
+          date: new Date().toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US'),
+          notes: parseReleaseBody(savedNotes),
+          isCurrent: true,
+        }])
+      } else {
+        setPatchNotes([])
+      }
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [lang, savedNotes, whatsNewVersion])
 
-  const parseReleaseNotes = (body, language = 'en') => {
-    // Parsear markdown y filtrar contenido técnico
-    const lines = body.split('\n')
-    const features = []
-    const fixes = []
-    const improvements = []
-
-    let currentSection = null
-
-    lines.forEach(line => {
-      const trimmed = line.trim()
-      
-      // Detectar secciones bilingües: "## Features / Nuevas Funcionalidades"
-      // También detecta formato solo en inglés o solo en español
-      
-      // Features
-      if (trimmed.match(/^#+\s*(?:✨|🎉|⭐)?\s*(?:features?(?:\s*\/\s*nuevas?\s*funcionalidades?)?|nuevas?\s*funcionalidades?(?:\s*\/\s*features?)?|nuevas?\s*características)/i)) {
-        currentSection = 'features'
-      } 
-      // Fixes
-      else if (trimmed.match(/^#+\s*(?:🐛|🔧|🩹)?\s*(?:fixes?(?:\s*\/\s*correcciones?)?|bug\s*fixes?(?:\s*\/\s*correcciones?)?|correcciones?(?:\s*\/\s*fixes?)?|arreglos?)/i)) {
-        currentSection = 'fixes'
-      } 
-      // Improvements
-      else if (trimmed.match(/^#+\s*(?:⚡|🚀|📈)?\s*(?:improvements?(?:\s*\/\s*mejoras?)?|mejoras?(?:\s*\/\s*improvements?)?|rendimiento|performance)/i)) {
-        currentSection = 'improvements'
-      }
-      // Parsear items de lista
-      else if (trimmed.match(/^[-*]\s+(.+)/)) {
-        const match = trimmed.match(/^[-*]\s+(.+)/)
-        const text = match[1].trim()
-        
-        // Filtrar líneas técnicas (commits, hashes, etc)
-        if (!text.match(/^[a-f0-9]{7,}/i) && !text.match(/^chore|^build|^ci/i)) {
-          if (currentSection === 'features') features.push(text)
-          else if (currentSection === 'fixes') fixes.push(text)
-          else if (currentSection === 'improvements') improvements.push(text)
-        }
-      }
-    })
-
-    return { features, fixes, improvements }
-  }
-
-  const getFallbackNotes = (version) => {
-    // Notas hardcodeadas para la versión actual
-    return [
-      {
-        version: version,
-        date: new Date().toLocaleDateString(),
-        isLatest: true,
-        notes: {
-          features: [
-            'Connection Groups UI with visual organization',
-            'Group management modal (create/rename/delete)',
-            'Automatic update detection badge',
-            "What's New modal after updates",
-            'CI/CD release notes automation'
-          ],
-          fixes: [
-            'SSH connection credential loading from Secure Storage',
-            'IPv4 preference over IPv6 to avoid timeouts',
-            'Connection timeout optimized to 15s'
-          ],
-          improvements: [
-            'Performance optimizations (Sprint 0)',
-            'Unified real-time data hooks',
-            'Extracted metrics utilities',
-            'Added memoization to critical components'
-          ]
-        }
-      },
-      {
-        version: '0.1.4',
-        date: '2026-01-10',
-        isLatest: false,
-        notes: {
-          features: [
-            'Real-time metrics monitoring',
-            'Docker containers management',
-            'SSH connection testing'
-          ],
-          fixes: [
-            'Memory leak in WebSocket connections',
-            'CPU usage calculation accuracy'
-          ],
-          improvements: [
-            'UI/UX enhancements',
-            'Better error handling'
-          ]
-        }
-      }
-    ]
-  }
+  useEffect(() => {
+    if (open) loadPatchNotes()
+  }, [open, loadPatchNotes])
 
   if (!open) return null
+
+  const title = whatsNewMode ? t('whatsNew.title') : t('patchNotes.title')
+  const closeLabel = whatsNewMode ? t('whatsNew.getStarted') : t('common.close')
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="patch-notes-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">{t('patchNotes.title')}</h2>
-          <button 
-            type="button" 
-            className="modal-close" 
+          <h2 className="modal-title">{title}</h2>
+          <button
+            type="button"
+            className="modal-close"
             onClick={onClose}
             aria-label={t('common.close')}
           >
@@ -177,6 +133,10 @@ function PatchNotesModal({ open, onClose }) {
         </div>
 
         <div className="modal-body">
+          {whatsNewMode && (
+            <p className="whats-new-intro">{t('whatsNew.intro')}</p>
+          )}
+
           {isLoading ? (
             <div className="patch-notes-loading">
               <div className="spinner" />
@@ -191,15 +151,17 @@ function PatchNotesModal({ open, onClose }) {
           ) : (
             <div className="patch-notes-list">
               {patchNotes.map((release) => (
-                <div 
-                  key={release.version} 
-                  className={`patch-note-item ${release.isLatest ? 'is-latest' : ''}`}
+                <div
+                  key={release.version}
+                  className={`patch-note-item ${release.isCurrent ? 'is-latest' : ''}`}
                 >
                   <div className="patch-note-header">
                     <div className="patch-note-version-row">
                       <h3 className="patch-note-version">v{release.version}</h3>
-                      {release.isLatest && (
-                        <span className="patch-note-badge">{t('patchNotes.current')}</span>
+                      {release.isCurrent && (
+                        <span className="patch-note-badge">
+                          {whatsNewMode ? 'NEW' : t('patchNotes.current')}
+                        </span>
                       )}
                     </div>
                     <span className="patch-note-date">{release.date}</span>
@@ -207,63 +169,59 @@ function PatchNotesModal({ open, onClose }) {
 
                   <div className="patch-note-content">
                     {release.notes.features.length > 0 && (
-                      <div className="patch-note-section">
-                        <h4 className="patch-note-section-title">
-                          <span className="section-icon">✨</span>
-                          {t('patchNotes.features')}
-                        </h4>
-                        <ul className="patch-note-list">
-                          {release.notes.features.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
+                      <NoteSection
+                        icon="✨"
+                        title={t('patchNotes.features')}
+                        items={release.notes.features}
+                      />
                     )}
-
                     {release.notes.fixes.length > 0 && (
-                      <div className="patch-note-section">
-                        <h4 className="patch-note-section-title">
-                          <span className="section-icon">🐛</span>
-                          {t('patchNotes.fixes')}
-                        </h4>
-                        <ul className="patch-note-list">
-                          {release.notes.fixes.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
+                      <NoteSection
+                        icon="🐛"
+                        title={t('patchNotes.fixes')}
+                        items={release.notes.fixes}
+                      />
                     )}
-
                     {release.notes.improvements.length > 0 && (
-                      <div className="patch-note-section">
-                        <h4 className="patch-note-section-title">
-                          <span className="section-icon">⚡</span>
-                          {t('patchNotes.improvements')}
-                        </h4>
-                        <ul className="patch-note-list">
-                          {release.notes.improvements.map((item, idx) => (
-                            <li key={idx}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
+                      <NoteSection
+                        icon="⚡"
+                        title={t('patchNotes.improvements')}
+                        items={release.notes.improvements}
+                      />
                     )}
                   </div>
                 </div>
               ))}
             </div>
           )}
+
+          {whatsNewMode && !isLoading && patchNotes.length > 0 && (
+            <p className="whats-new-thanks">{t('whatsNew.thanks')}</p>
+          )}
         </div>
 
         <div className="modal-footer">
-          <button 
-            type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
-          >
-            {t('common.close')}
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            {closeLabel}
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function NoteSection({ icon, title, items }) {
+  return (
+    <div className="patch-note-section">
+      <h4 className="patch-note-section-title">
+        <span className="section-icon">{icon}</span>
+        {title}
+      </h4>
+      <ul className="patch-note-list">
+        {items.map((item, idx) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
     </div>
   )
 }

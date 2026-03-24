@@ -48,7 +48,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const [isPatchNotesOpen, setIsPatchNotesOpen] = useState(false)
 
   // Auto-updater hook - Detección automática en segundo plano
-  const { updateInfo, hasUpdate, isChecking, lastCheck } = useAutoUpdater({
+  const { updateInfo, hasUpdate, isChecking, lastCheck, error: updateError, checkUpdate: manualCheckUpdate } = useAutoUpdater({
     checkOnMount: true,
     checkInterval: 6 * 60 * 60 * 1000, // 6 horas
     enabled: settings.autoCheckUpdates,
@@ -360,6 +360,10 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
         <UpdaterModal
           open={isUpdaterOpen}
           onClose={() => setIsUpdaterOpen(false)}
+          updateInfo={updateInfo}
+          isChecking={isChecking}
+          error={updateError}
+          onRetryCheck={manualCheckUpdate}
         />
 
         <GroupModal

@@ -6,7 +6,22 @@
       "Bash(git push:*)",
       "Bash(cargo check:*)",
       "Bash(npm run:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r update C:UsersamartinDocumentsALBERTOPcMonitor-Dockerssrc-taurisrc --include=*.rs)",
+      "Bash(npm list:*)",
+      "Bash(grep -r '\\\\.btn {' /c/Users/amartin/Documents/ALBERTO/PcMonitor-Dockers/src --include=*.css)",
+      "Bash(wc -l test/*.test.js)",
+      "Bash(grep -r console. C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src --include=*.js --include=*.jsx)",
+      "Bash(xargs wc:*)",
+      "Bash(while read:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/amartin/Documents/ALBERTO/PcMonitor-Dockers/**)",
+      "Bash(done)",
+      "Bash(grep -r \"formatBytes\\\\|formatSpeed\\\\|formatUptime\\\\|getUsageColor\\\\|getProcessState\" C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src --include=*.js --include=*.jsx)",
+      "Bash(grep -r \"export.*function\\\\|export.*const\" C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/hooks --include=*.js)",
+      "Bash(find C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/components -type f \\\\\\(-name *.jsx -o -name *.css \\\\\\))",
+      "Bash(wc -l \"C:\\\\Users\\\\amartin\\\\Documents\\\\ALBERTO\\\\PcMonitor-Dockers/src/styles\"/*.css)"
     ]
   }
 }

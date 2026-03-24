@@ -12,7 +12,7 @@
 
 .hero-card {
   background: rgba(10, 25, 47, 0.25);
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  border: 1px solid var(--primary-10);
   border-radius: var(--radius-md);
   padding: 1.2rem 1.4rem;
   transition: border-color 0.2s ease;
@@ -23,7 +23,7 @@
 }
 
 .hero-card--accent {
-  border-color: rgba(100, 255, 218, 0.35);
+  border-color: var(--primary-35);
   background: rgba(48, 63, 96, 0.35);
 }
 

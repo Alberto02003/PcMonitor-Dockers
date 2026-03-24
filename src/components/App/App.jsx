@@ -4,7 +4,7 @@ import { SettingsProvider } from '../Settings/Settings.jsx'
 import SelectionPage from '../../pages/SelectionPage/SelectionPage.jsx'
 import MonitoringPage from '../../pages/MonitoringPage/MonitoringPage.jsx'
 import TerminalWindow from '../../pages/TerminalWindow/TerminalWindow.jsx'
-import WhatsNewModal from '../WhatsNewModal/WhatsNewModal.jsx'
+import PatchNotesModal from '../PatchNotesModal/PatchNotesModal.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { useWhatsNew } from '../../hooks/useWhatsNew.js'
@@ -82,13 +82,14 @@ function AppContent() {
 
   return (
     <>
-      {/* Modal What's New - shown after app updates */}
-      {whatsNew.shouldShow && whatsNew.releaseNotes && (
-        <WhatsNewModal
+      {/* Patch Notes - shown automatically after app updates */}
+      {whatsNew.shouldShow && (
+        <PatchNotesModal
           open={whatsNew.shouldShow}
           onClose={whatsNew.onClose}
-          version={whatsNew.currentVersion}
-          releaseNotes={whatsNew.releaseNotes}
+          whatsNewMode
+          whatsNewVersion={whatsNew.currentVersion}
+          savedNotes={whatsNew.releaseNotes}
         />
       )}
 

@@ -53,8 +53,8 @@
   gap: 1rem;
   color: var(--text-secondary);
   text-align: center;
-  background: rgba(10, 25, 47, 0.5);
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  background: var(--bg-overlay-50);
+  border: 1px solid var(--primary-10);
   border-radius: 10px;
 }
 

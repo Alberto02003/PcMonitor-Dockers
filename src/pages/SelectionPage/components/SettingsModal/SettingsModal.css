@@ -4,7 +4,7 @@
   background: rgba(6, 16, 30, 0.6);
   display: grid;
   place-items: center;
-  z-index: 30;
+  z-index: var(--z-modal);
 }
 
 .modal-panel {
@@ -38,10 +38,10 @@
 }
 
 .modal-section {
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  border: 1px solid var(--primary-8);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.9rem;
-  background: rgba(23, 42, 69, 0.35);
+  background: var(--surface-35);
   color: var(--text-secondary);
   display: grid;
   gap: 0.75rem;
@@ -70,7 +70,7 @@
 
 .modal-field select {
   background: var(--medium-blue);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  border: 1px solid var(--primary-20);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.4rem 0.6rem;
@@ -78,7 +78,7 @@
 }
 
 .modal-field select:focus-visible {
-  outline: 2px solid rgba(100, 255, 218, 0.35);
+  outline: 2px solid var(--primary-35);
   outline-offset: 2px;
 }
 
@@ -110,8 +110,8 @@
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   padding: 0.25rem 0.6rem;
-  background: rgba(100, 255, 218, 0.1);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  background: var(--primary-10);
+  border: 1px solid var(--primary-20);
   border-radius: var(--radius-sm);
   color: var(--accent);
 }

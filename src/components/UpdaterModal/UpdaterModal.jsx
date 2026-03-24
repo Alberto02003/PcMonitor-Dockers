@@ -1,57 +1,49 @@
-import { useState, useEffect, useCallback } from 'react'
-import { checkForUpdates, downloadAndInstallUpdate, getAppVersion } from '../../services/tauri.js'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { downloadAndInstallUpdate, relaunchApp, getAppVersion } from '../../services/tauri.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
+import { parseReleaseBody, hasContent } from '../../utils/releaseNotesParser.js'
+import { formatBytes } from '../../utils/metricsUtils.js'
 import './UpdaterModal.css'
 
-function UpdaterModal({ open, onClose }) {
+function UpdaterModal({ open, onClose, updateInfo, isChecking, error: checkError, onRetryCheck }) {
   const { t } = useTranslation()
-  
-  const [checking, setChecking] = useState(false)
-  const [updateInfo, setUpdateInfo] = useState(null)
+
   const [currentVersion, setCurrentVersion] = useState('')
   const [downloading, setDownloading] = useState(false)
+  const [installed, setInstalled] = useState(false)
   const [progress, setProgress] = useState({ downloaded: 0, total: 0 })
-  const [error, setError] = useState(null)
+  const [downloadError, setDownloadError] = useState(null)
 
-  // Get current version on mount
   useEffect(() => {
     getAppVersion().then(setCurrentVersion)
   }, [])
 
-  const handleCheckUpdates = useCallback(async () => {
-    setChecking(true)
-    setError(null)
-    setUpdateInfo(null)
-    
-    try {
-      const result = await checkForUpdates()
-      if (result === null) {
-        setError(t('updater.error'))
-      } else {
-        setUpdateInfo(result)
-      }
-    } catch (err) {
-      setError(err?.message || t('updater.error'))
-    } finally {
-      setChecking(false)
-    }
-  }, [t])
-
-  // Check for updates when modal opens
+  // Reset download state when modal reopens
   useEffect(() => {
-    if (open && !updateInfo && !checking) {
-      handleCheckUpdates()
+    if (open) {
+      setDownloading(false)
+      setInstalled(false)
+      setProgress({ downloaded: 0, total: 0 })
+      setDownloadError(null)
     }
-  }, [open, updateInfo, checking, handleCheckUpdates])
+  }, [open])
+
+  // Trigger check when modal opens with no info
+  useEffect(() => {
+    if (open && !updateInfo && !isChecking && onRetryCheck) {
+      onRetryCheck()
+    }
+  }, [open, updateInfo, isChecking, onRetryCheck])
 
   const handleDownload = useCallback(async () => {
     if (!updateInfo?.update) return
-    
+
     setDownloading(true)
+    setDownloadError(null)
     setProgress({ downloaded: 0, total: 0 })
-    
+
     try {
-      // Guardar release notes ANTES de instalar (para mostrarlas después del reinicio)
+      // Save release notes before install for post-restart display
       if (updateInfo.notes && updateInfo.version) {
         try {
           localStorage.setItem(`release_notes_${updateInfo.version}`, updateInfo.notes)
@@ -59,62 +51,72 @@ function UpdaterModal({ open, onClose }) {
           console.warn('Could not save release notes:', e)
         }
       }
-      
+
       await downloadAndInstallUpdate(updateInfo, (downloaded, total) => {
         setProgress({ downloaded, total })
       })
-      // App will restart, so we don't need to handle success
+
+      setInstalled(true)
+      setDownloading(false)
     } catch (err) {
-      setError(err?.message || 'Download failed')
+      setDownloadError(err?.message || t('updater.error'))
       setDownloading(false)
     }
-  }, [updateInfo])
+  }, [updateInfo, t])
 
-  const formatBytes = (bytes) => {
-    if (!bytes) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
-  }
+  const handleRestart = useCallback(async () => {
+    await relaunchApp()
+  }, [])
 
-  const progressPercent = progress.total > 0 
-    ? Math.round((progress.downloaded / progress.total) * 100) 
+  const progressPercent = progress.total > 0
+    ? Math.round((progress.downloaded / progress.total) * 100)
     : 0
 
   if (!open) return null
+
+  const error = downloadError || checkError
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal updater-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{t('updater.title')}</h2>
-          <button type="button" className="btn btn-ghost btn-close" onClick={onClose}>
-            x
-          </button>
+          {!downloading && (
+            <button type="button" className="btn btn-ghost btn-close" onClick={onClose}>
+              x
+            </button>
+          )}
         </div>
 
         <div className="modal-body">
           {/* Checking state */}
-          {checking && (
+          {isChecking && !downloading && (
             <div className="updater-checking">
               <div className="spinner" />
               <p>{t('updater.checking')}</p>
             </div>
           )}
 
-          {/* Error state */}
-          {error && !checking && (
+          {/* Error state (check or download) */}
+          {error && !isChecking && !downloading && !installed && (
             <div className="updater-error">
               <p>{error}</p>
-              <button type="button" className="btn btn-outline" onClick={handleCheckUpdates}>
-                {t('actions.retry')}
-              </button>
+              <div className="updater-error-actions">
+                {downloadError ? (
+                  <button type="button" className="btn btn-outline" onClick={handleDownload}>
+                    {t('updater.retryDownload') || t('actions.retry')}
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-outline" onClick={onRetryCheck}>
+                    {t('actions.retry')}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
           {/* No update available */}
-          {updateInfo && !updateInfo.available && !checking && (
+          {updateInfo && !updateInfo.available && !isChecking && !error && (
             <div className="updater-no-update">
               <div className="check-icon">✓</div>
               <p>{t('updater.notAvailable')}</p>
@@ -128,11 +130,11 @@ function UpdaterModal({ open, onClose }) {
           )}
 
           {/* Update available */}
-          {updateInfo?.available && !downloading && !checking && (
+          {updateInfo?.available && !downloading && !isChecking && !installed && !downloadError && (
             <div className="updater-available">
               <div className="update-icon">↑</div>
               <h3>{t('updater.available')}</h3>
-              
+
               <div className="version-comparison">
                 <div className="version-item">
                   <span className="version-label">{t('updater.currentVersion')}</span>
@@ -145,14 +147,7 @@ function UpdaterModal({ open, onClose }) {
                 </div>
               </div>
 
-              {updateInfo.notes && (
-                <div className="release-notes">
-                  <h4>{t('updater.releaseNotes')}</h4>
-                  <div className="notes-content">
-                    {updateInfo.notes}
-                  </div>
-                </div>
-              )}
+              {updateInfo.notes && <ParsedNotes notes={updateInfo.notes} t={t} />}
 
               <p className="restart-warning">{t('updater.restartRequired')}</p>
             </div>
@@ -170,10 +165,20 @@ function UpdaterModal({ open, onClose }) {
               </p>
             </div>
           )}
+
+          {/* Installed - pending restart */}
+          {installed && (
+            <div className="updater-installed">
+              <div className="check-icon">✓</div>
+              <h3>{t('updater.installed')}</h3>
+              <p>{t('updater.restartToApply')}</p>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">
-          {updateInfo?.available && !downloading && (
+          {/* Update available - show download + later */}
+          {updateInfo?.available && !downloading && !installed && !downloadError && (
             <>
               <button type="button" className="btn btn-outline" onClick={onClose}>
                 {t('updater.later')}
@@ -183,13 +188,65 @@ function UpdaterModal({ open, onClose }) {
               </button>
             </>
           )}
-          
-          {!updateInfo?.available && !checking && !error && (
+
+          {/* Installed - restart now or later */}
+          {installed && (
+            <>
+              <button type="button" className="btn btn-outline" onClick={onClose}>
+                {t('updater.restartLater')}
+              </button>
+              <button type="button" className="btn btn-primary" onClick={handleRestart}>
+                {t('updater.restartNow')}
+              </button>
+            </>
+          )}
+
+          {/* No update / error without download - close */}
+          {!updateInfo?.available && !isChecking && !error && !installed && (
             <button type="button" className="btn btn-outline" onClick={onClose}>
               {t('common.close')}
             </button>
           )}
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ParsedNotes({ notes, t }) {
+  const parsed = useMemo(() => parseReleaseBody(notes), [notes])
+
+  if (!hasContent(parsed)) {
+    return (
+      <div className="release-notes">
+        <h4>{t('updater.releaseNotes')}</h4>
+        <div className="notes-content">{notes}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="release-notes">
+      <h4>{t('updater.releaseNotes')}</h4>
+      <div className="notes-content parsed">
+        {parsed.features.length > 0 && (
+          <div className="notes-section">
+            <span className="notes-section-title">✨ {t('patchNotes.features')}</span>
+            <ul>{parsed.features.map((item, i) => <li key={i}>{item}</li>)}</ul>
+          </div>
+        )}
+        {parsed.fixes.length > 0 && (
+          <div className="notes-section">
+            <span className="notes-section-title">🐛 {t('patchNotes.fixes')}</span>
+            <ul>{parsed.fixes.map((item, i) => <li key={i}>{item}</li>)}</ul>
+          </div>
+        )}
+        {parsed.improvements.length > 0 && (
+          <div className="notes-section">
+            <span className="notes-section-title">⚡ {t('patchNotes.improvements')}</span>
+            <ul>{parsed.improvements.map((item, i) => <li key={i}>{item}</li>)}</ul>
+          </div>
+        )}
       </div>
     </div>
   )

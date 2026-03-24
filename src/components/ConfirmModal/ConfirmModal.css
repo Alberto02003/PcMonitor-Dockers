@@ -3,7 +3,7 @@
 .confirm-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +26,7 @@
   width: 90%;
   max-width: 400px;
   padding: 1.5rem;
-  background: var(--color-surface, rgba(23, 42, 69, 0.85));
+  background: var(--color-surface, var(--surface-85));
   border-radius: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   animation: slideUp 0.2s ease-out;

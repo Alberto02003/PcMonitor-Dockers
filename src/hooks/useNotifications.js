@@ -113,7 +113,7 @@ export function useNotifications() {
   useEffect(() => {
     async function initPermissions() {
       if (!isSupported()) {
-        console.log('[Notifications] Tauri not supported')
+        // Tauri not supported
         setPermission('denied')
         return
       }
@@ -122,18 +122,14 @@ export function useNotifications() {
       permissionCheckedRef.current = true
       
       try {
-        console.log('[Notifications] Checking permission...')
         let granted = await isPermissionGranted()
-        
+
         if (!granted) {
-          console.log('[Notifications] Permission not granted, requesting...')
           const result = await requestPermission()
           granted = result === 'granted'
-          console.log('[Notifications] Permission request result:', result)
         }
-        
+
         const newPermission = granted ? 'granted' : 'denied'
-        console.log('[Notifications] Final permission:', newPermission)
         setPermission(newPermission)
       } catch (error) {
         console.warn('[Notifications] Error checking/requesting permission:', error)
@@ -160,12 +156,10 @@ export function useNotifications() {
     const { title, options } = queueRef.current.shift()
 
     try {
-      console.log('[Notifications] Sending notification:', title, options.body)
       await sendNotification({
         title,
         body: options.body || '',
       })
-      console.log('[Notifications] Notification sent successfully')
     } catch (error) {
       console.error('[Notifications] Error sending notification:', error)
     }
@@ -240,21 +234,9 @@ export function useNotifications() {
       body = '',
     } = options
 
-    console.log('[Notifications] notify() called:', { title, type, body, preferences, permission })
-
-    // Verificar si las notificaciones están habilitadas
-    if (!preferences.enabled) {
-      console.log('[Notifications] Notifications disabled in preferences')
-      return
-    }
-    if (!preferences.desktop) {
-      console.log('[Notifications] Desktop notifications disabled')
-      return
-    }
-    if (preferences.types[type] === false) {
-      console.log('[Notifications] Type disabled:', type)
-      return
-    }
+    if (!preferences.enabled) return
+    if (!preferences.desktop) return
+    if (preferences.types[type] === false) return
 
     // Verificar si Tauri está disponible
     if (!isSupported()) {
@@ -273,7 +255,7 @@ export function useNotifications() {
       },
     })
 
-    console.log('[Notifications] Added to queue, processing...')
+    // Process queue
 
     // Procesar cola
     processQueue()
@@ -290,9 +272,7 @@ export function useNotifications() {
     }
 
     try {
-      console.log('[Notifications] Direct send:', title, body)
       await sendNotification({ title, body })
-      console.log('[Notifications] Direct send successful')
       return true
     } catch (error) {
       console.error('[Notifications] Direct send error:', error)

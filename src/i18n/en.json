@@ -630,7 +630,12 @@
     "upToDate": "Up to date",
     "updateAvailable": "Update available",
     "lastCheck": "Last check",
-    "checkForUpdates": "Check for updates"
+    "checkForUpdates": "Check for updates",
+    "installed": "Update installed",
+    "restartToApply": "Restart the app to apply changes",
+    "restartNow": "Restart now",
+    "restartLater": "Restart later",
+    "retryDownload": "Retry download"
   },
   "networkSection": {
     "selectInterface": "Interface",

@@ -3,16 +3,16 @@
 .group-modal {
   max-width: 600px;
   width: 90%;
-  background: rgba(10, 25, 47, 0.98);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-98);
+  border: 1px solid var(--primary-15);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xl);
 }
 
 .group-modal .modal-header {
-  background: rgba(10, 25, 47, 0.5);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-50);
+  border-bottom: 1px solid var(--primary-12);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -50,7 +50,7 @@
 }
 
 .group-modal .modal-close:hover {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
   color: var(--text-primary);
 }
 
@@ -71,17 +71,17 @@
 }
 
 .group-modal .modal-body::-webkit-scrollbar-track {
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: 3px;
 }
 
 .group-modal .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-radius: 3px;
 }
 
 .group-modal .modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 255, 218, 0.3);
+  background: var(--primary-30);
 }
 
 /* Actions Button */
@@ -123,8 +123,8 @@
   letter-spacing: 0.08em;
   margin: 0;
   padding: 0.25rem 0.5rem;
-  background: rgba(100, 255, 218, 0.05);
-  border-left: 3px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-5);
+  border-left: 3px solid var(--primary-30);
   border-radius: var(--radius-sm);
 }
 
@@ -134,16 +134,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  background: rgba(23, 42, 69, 0.35);
-  border: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--surface-35);
+  border: 1px solid var(--primary-12);
   border-left: 3px solid var(--accent-blue);
   border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
 .group-item:hover {
-  background: rgba(23, 42, 69, 0.5);
-  border-color: rgba(100, 255, 218, 0.2);
+  background: var(--surface-50);
+  border-color: var(--primary-20);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -176,7 +176,7 @@
 .group-color-display {
   width: 2.25rem;
   height: 2.25rem;
-  border: 2px solid rgba(100, 255, 218, 0.2);
+  border: 2px solid var(--primary-20);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -196,11 +196,11 @@
 
 .group-color-display:hover {
   transform: scale(1.08);
-  border-color: rgba(100, 255, 218, 0.4);
+  border-color: var(--primary-40);
 }
 
 .group-color-display:hover::after {
-  border-color: rgba(100, 255, 218, 0.2);
+  border-color: var(--primary-20);
 }
 
 /* Action Buttons */
@@ -212,7 +212,7 @@
   height: 2.25rem;
   padding: 0;
   background: transparent;
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  border: 1px solid var(--primary-20);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   cursor: pointer;
@@ -225,8 +225,8 @@
 }
 
 .group-action-btn:hover {
-  background: rgba(100, 255, 218, 0.1);
-  border-color: rgba(100, 255, 218, 0.4);
+  background: var(--primary-10);
+  border-color: var(--primary-40);
   color: var(--accent-blue);
 }
 
@@ -298,8 +298,8 @@
 .group-form input[type="text"] {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(23, 42, 69, 0.5);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  background: var(--surface-50);
+  border: 1px solid var(--primary-20);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.95rem;
@@ -310,7 +310,7 @@
   outline: none;
   border-color: var(--accent-blue);
   background: rgba(23, 42, 69, 0.7);
-  box-shadow: 0 0 0 3px rgba(100, 255, 218, 0.1);
+  box-shadow: 0 0 0 3px var(--primary-10);
 }
 
 .group-form input[type="text"]::placeholder {
@@ -338,7 +338,7 @@
 .color-picker-input {
   width: 100%;
   height: 3.5rem;
-  border: 2px solid rgba(100, 255, 218, 0.2);
+  border: 2px solid var(--primary-20);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -346,14 +346,14 @@
 }
 
 .color-picker-input:hover {
-  border-color: rgba(100, 255, 218, 0.4);
-  box-shadow: 0 0 0 4px rgba(100, 255, 218, 0.05);
+  border-color: var(--primary-40);
+  box-shadow: 0 0 0 4px var(--primary-5);
 }
 
 .color-picker-input:focus {
   outline: none;
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 4px rgba(100, 255, 218, 0.1);
+  box-shadow: 0 0 0 4px var(--primary-10);
 }
 
 .color-presets {
@@ -365,7 +365,7 @@
 .color-preset {
   width: 100%;
   aspect-ratio: 1;
-  border: 2px solid rgba(100, 255, 218, 0.15);
+  border: 2px solid var(--primary-15);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -384,11 +384,11 @@
 
 .color-preset:hover {
   transform: scale(1.12);
-  border-color: rgba(100, 255, 218, 0.4);
+  border-color: var(--primary-40);
 }
 
 .color-preset:hover::after {
-  border-color: rgba(100, 255, 218, 0.2);
+  border-color: var(--primary-20);
 }
 
 /* Form Actions */
@@ -397,7 +397,7 @@
   gap: 0.75rem;
   margin-top: 0.5rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(100, 255, 218, 0.08);
+  border-top: 1px solid var(--primary-8);
 }
 
 .group-form-actions .btn {
@@ -411,8 +411,8 @@
 .group-list-empty {
   text-align: center;
   padding: 2rem 1.5rem;
-  background: rgba(10, 25, 47, 0.3);
-  border: 1px dashed rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-30);
+  border: 1px dashed var(--primary-15);
   border-radius: var(--radius-md);
 }
 

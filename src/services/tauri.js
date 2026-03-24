@@ -12,44 +12,6 @@ export async function showWindow() {
 }
 
 // ============================================================================
-// Credential Encryption API - AES-256-GCM encryption for credentials
-// ============================================================================
-
-/**
- * Encrypt credentials before storing in database
- * @param {string|null} password - Plain text password
- * @param {string|null} keyPath - Plain text key path
- * @returns {Promise<{password: string|null, keyPath: string|null}>} Encrypted values
- */
-export async function encryptCredentials(password, keyPath) {
-  const [encryptedPassword, encryptedKeyPath] = await invoke('encrypt_credentials', {
-    password: password || null,
-    keyPath: keyPath || null,
-  })
-  return {
-    password: encryptedPassword,
-    keyPath: encryptedKeyPath,
-  }
-}
-
-/**
- * Decrypt credentials loaded from database
- * @param {string|null} encryptedPassword - Encrypted password
- * @param {string|null} encryptedKeyPath - Encrypted key path  
- * @returns {Promise<{password: string|null, keyPath: string|null}>} Decrypted values
- */
-export async function decryptCredentials(encryptedPassword, encryptedKeyPath) {
-  const [password, keyPath] = await invoke('decrypt_credentials', {
-    encryptedPassword: encryptedPassword || null,
-    encryptedKeyPath: encryptedKeyPath || null,
-  })
-  return {
-    password,
-    keyPath,
-  }
-}
-
-// ============================================================================
 // Secure Storage API - Encrypted credential storage using Rust backend
 // ============================================================================
 
@@ -147,10 +109,6 @@ export async function wsStart() {
 
 export async function wsStop() {
   return invoke('ws_stop')
-}
-
-export async function wsPort() {
-  return invoke('ws_port')
 }
 
 // ============================================================================
@@ -295,36 +253,36 @@ export async function checkForUpdates() {
  */
 export async function downloadAndInstallUpdate(update, onProgress) {
   if (!isTauri() || !update?.update) return false
-  
-  try {
-    const { relaunch } = await import('@tauri-apps/plugin-process')
-    
-    let downloaded = 0
-    let contentLength = 0
-    
-    await update.update.downloadAndInstall((event) => {
-      switch (event.event) {
-        case 'Started':
-          contentLength = event.data.contentLength || 0
-          if (onProgress) onProgress(0, contentLength)
-          break
-        case 'Progress':
-          downloaded += event.data.chunkLength
-          if (onProgress) onProgress(downloaded, contentLength)
-          break
-        case 'Finished':
-          if (onProgress) onProgress(contentLength, contentLength)
-          break
-      }
-    })
-    
-    // Restart app after install
-    await relaunch()
-    return true
-  } catch (error) {
-    console.error('Error installing update:', error)
-    return false
-  }
+
+  let downloaded = 0
+  let contentLength = 0
+
+  await update.update.downloadAndInstall((event) => {
+    switch (event.event) {
+      case 'Started':
+        contentLength = event.data.contentLength || 0
+        if (onProgress) onProgress(0, contentLength)
+        break
+      case 'Progress':
+        downloaded += event.data.chunkLength || 0
+        if (onProgress) onProgress(downloaded, contentLength)
+        break
+      case 'Finished':
+        if (onProgress) onProgress(contentLength, contentLength)
+        break
+    }
+  })
+
+  return true
+}
+
+/**
+ * Restart the app (call after downloadAndInstallUpdate)
+ */
+export async function relaunchApp() {
+  if (!isTauri()) return
+  const { relaunch } = await import('@tauri-apps/plugin-process')
+  await relaunch()
 }
 
 /**

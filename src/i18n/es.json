@@ -630,7 +630,12 @@
     "upToDate": "Actualizado",
     "updateAvailable": "Actualización disponible",
     "lastCheck": "Última verificación",
-    "checkForUpdates": "Buscar actualizaciones"
+    "checkForUpdates": "Buscar actualizaciones",
+    "installed": "Actualización instalada",
+    "restartToApply": "Reinicia la aplicación para aplicar los cambios",
+    "restartNow": "Reiniciar ahora",
+    "restartLater": "Reiniciar después",
+    "retryDownload": "Reintentar descarga"
   },
   "networkSection": {
     "selectInterface": "Interfaz",

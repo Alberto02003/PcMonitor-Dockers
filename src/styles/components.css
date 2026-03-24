@@ -65,13 +65,15 @@
   box-shadow: var(--shadow-glow-sm);
 }
 
-.btn--secondary {
+.btn--secondary,
+.btn-secondary {
   background: var(--color-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
 }
 
-.btn--secondary:hover:not(:disabled) {
+.btn--secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) {
   background: var(--color-surface-hover);
   border-color: var(--color-border-hover);
 }
@@ -80,31 +82,35 @@
 .btn-ghost {
   background: transparent;
   color: var(--color-text-secondary);
-  border: 1px solid rgba(230, 241, 255, 0.2);
+  border: 1px solid var(--text-soft-20);
 }
 
 .btn--ghost:hover:not(:disabled),
 .btn-ghost:hover:not(:disabled) {
   background: var(--color-surface);
   color: var(--color-text-primary);
-  border-color: rgba(230, 241, 255, 0.5);
+  border-color: var(--text-soft-50);
 }
 
-.btn--danger {
+.btn--danger,
+.btn-danger {
   background: var(--color-error);
   color: white;
 }
 
-.btn--danger:hover:not(:disabled) {
+.btn--danger:hover:not(:disabled),
+.btn-danger:hover:not(:disabled) {
   background: var(--color-error-hover);
 }
 
-.btn--success {
+.btn--success,
+.btn-success {
   background: var(--color-success);
   color: var(--color-text-inverse);
 }
 
-.btn--success:hover:not(:disabled) {
+.btn--success:hover:not(:disabled),
+.btn-success:hover:not(:disabled) {
   background: var(--color-success-hover);
 }
 
@@ -125,13 +131,13 @@
 .btn--outline,
 .btn-outline {
   background: transparent;
-  border: 1px solid rgba(100, 255, 218, 0.5);
+  border: 1px solid var(--primary-50);
   color: var(--color-primary);
 }
 
 .btn--outline:hover:not(:disabled),
 .btn-outline:hover:not(:disabled) {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
   border-color: var(--color-primary);
 }
 

@@ -4,8 +4,8 @@
   max-width: 700px;
   width: 92%;
   max-height: 85vh;
-  background: rgba(10, 25, 47, 0.98);
-  border: 1px solid rgba(100, 255, 218, 0.15);
+  background: var(--bg-overlay-98);
+  border: 1px solid var(--primary-15);
   backdrop-filter: blur(10px);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xl);
@@ -14,8 +14,8 @@
 }
 
 .patch-notes-modal .modal-header {
-  background: rgba(10, 25, 47, 0.5);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-50);
+  border-bottom: 1px solid var(--primary-12);
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
 }
 
 .patch-notes-modal .modal-close:hover {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
   color: var(--text-primary);
 }
 
@@ -76,17 +76,17 @@
 }
 
 .patch-notes-modal .modal-body::-webkit-scrollbar-track {
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: 3px;
 }
 
 .patch-notes-modal .modal-body::-webkit-scrollbar-thumb {
-  background: rgba(100, 255, 218, 0.2);
+  background: var(--primary-20);
   border-radius: 3px;
 }
 
 .patch-notes-modal .modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 255, 218, 0.3);
+  background: var(--primary-30);
 }
 
 /* Loading State */
@@ -102,7 +102,7 @@
 .patch-notes-loading .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(100, 255, 218, 0.15);
+  border: 4px solid var(--primary-15);
   border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -146,6 +146,22 @@
   line-height: 1.6;
 }
 
+/* What's New intro/thanks text */
+.patch-notes-modal .whats-new-intro {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.patch-notes-modal .whats-new-thanks {
+  margin: 1.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0.8;
+}
+
 /* Patch Notes List */
 .patch-notes-list {
   display: flex;
@@ -155,25 +171,25 @@
 
 /* Patch Note Item */
 .patch-note-item {
-  background: rgba(23, 42, 69, 0.35);
-  border: 1px solid rgba(100, 255, 218, 0.12);
-  border-left: 3px solid rgba(100, 255, 218, 0.3);
+  background: var(--surface-35);
+  border: 1px solid var(--primary-12);
+  border-left: 3px solid var(--primary-30);
   border-radius: var(--radius-md);
   padding: 1.25rem 1.5rem;
   transition: all 0.2s ease;
 }
 
 .patch-note-item:hover {
-  background: rgba(23, 42, 69, 0.5);
-  border-color: rgba(100, 255, 218, 0.2);
-  box-shadow: 0 4px 12px rgba(10, 25, 47, 0.3);
+  background: var(--surface-50);
+  border-color: var(--primary-20);
+  box-shadow: 0 4px 12px var(--bg-overlay-30);
 }
 
 .patch-note-item.is-latest {
   border-left-color: var(--accent-blue);
   border-left-width: 4px;
-  background: rgba(23, 42, 69, 0.5);
-  box-shadow: 0 0 20px rgba(100, 255, 218, 0.08);
+  background: var(--surface-50);
+  box-shadow: 0 0 20px var(--primary-8);
 }
 
 /* Patch Note Header */
@@ -183,7 +199,7 @@
   align-items: flex-start;
   margin-bottom: 1rem;
   padding-bottom: 0.875rem;
-  border-bottom: 1px solid rgba(100, 255, 218, 0.08);
+  border-bottom: 1px solid var(--primary-8);
 }
 
 .patch-note-version-row {
@@ -205,8 +221,8 @@
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.625rem;
-  background: rgba(100, 255, 218, 0.15);
-  border: 1px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-15);
+  border: 1px solid var(--primary-30);
   border-radius: var(--radius-full);
   font-size: 0.7rem;
   font-weight: 600;
@@ -218,7 +234,7 @@
 
 @keyframes badge-glow {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4);
+    box-shadow: 0 0 0 0 var(--primary-40);
   }
   50% {
     box-shadow: 0 0 0 4px rgba(100, 255, 218, 0);
@@ -295,8 +311,8 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(10, 25, 47, 0.3);
-  border-top: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-30);
+  border-top: 1px solid var(--primary-12);
   flex-shrink: 0;
 }
 
@@ -313,12 +329,12 @@
 .patch-notes-modal .btn-ghost {
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid rgba(100, 255, 218, 0.2);
+  border: 1px solid var(--primary-20);
 }
 
 .patch-notes-modal .btn-ghost:hover {
-  background: rgba(100, 255, 218, 0.1);
-  border-color: rgba(100, 255, 218, 0.4);
+  background: var(--primary-10);
+  border-color: var(--primary-40);
   color: var(--text-primary);
 }
 

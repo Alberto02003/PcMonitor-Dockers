@@ -1,15 +1,15 @@
 .connection-form {
-  background: rgba(10, 25, 47, 0.2);
+  background: var(--bg-overlay-20);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  border: 1px solid var(--primary-8);
   overflow: hidden;
 }
 
 /* Tabs */
 .form-tabs {
   display: flex;
-  background: rgba(10, 25, 47, 0.5);
-  border-bottom: 1px solid rgba(100, 255, 218, 0.12);
+  background: var(--bg-overlay-50);
+  border-bottom: 1px solid var(--primary-12);
 }
 
 .form-tab {
@@ -30,13 +30,13 @@
 }
 
 .form-tab:hover {
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   color: var(--text-primary);
 }
 
 .form-tab.active {
   color: var(--accent-blue);
-  background: rgba(100, 255, 218, 0.08);
+  background: var(--primary-8);
 }
 
 .form-tab.active::after {
@@ -133,7 +133,7 @@
 .field select,
 .field textarea {
   background: var(--medium-blue);
-  border: 1px solid rgba(100, 255, 218, 0.12);
+  border: 1px solid var(--primary-12);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 0.65rem 0.8rem;
@@ -153,19 +153,19 @@
 .field select:focus,
 .field textarea:focus {
   outline: none;
-  border-color: rgba(100, 255, 218, 0.6);
-  box-shadow: 0 0 0 2px rgba(100, 255, 218, 0.1);
+  border-color: var(--primary-60);
+  box-shadow: 0 0 0 2px var(--primary-10);
 }
 
 .field input:focus-visible,
 .field select:focus-visible,
 .field textarea:focus-visible {
-  outline: 2px solid rgba(100, 255, 218, 0.25);
+  outline: 2px solid var(--primary-25);
   outline-offset: 2px;
 }
 
 .field select:hover {
-  border-color: rgba(100, 255, 218, 0.35);
+  border-color: var(--primary-35);
   background: var(--light-blue);
 }
 
@@ -217,7 +217,7 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding: 1rem;
-  background: rgba(100, 255, 218, 0.05);
+  background: var(--primary-5);
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--accent-blue);
 }
@@ -242,7 +242,7 @@
   gap: 1rem;
   margin-top: 1.75rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(100, 255, 218, 0.08);
+  border-top: 1px solid var(--primary-8);
 }
 
 .btn {
@@ -256,7 +256,7 @@
 }
 
 .btn:focus-visible {
-  outline: 2px solid rgba(100, 255, 218, 0.4);
+  outline: 2px solid var(--primary-40);
   outline-offset: 2px;
 }
 
@@ -271,22 +271,22 @@
 
 .btn-outline {
   background: transparent;
-  border-color: rgba(100, 255, 218, 0.5);
+  border-color: var(--primary-50);
   color: var(--accent-blue);
 }
 
 .btn-outline:hover {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
 }
 
 .btn-ghost {
   background: transparent;
-  border-color: rgba(230, 241, 255, 0.2);
+  border-color: var(--text-soft-20);
   color: var(--text-primary);
 }
 
 .btn-ghost:hover {
-  border-color: rgba(230, 241, 255, 0.5);
+  border-color: var(--text-soft-50);
 }
 
 /* Color Picker */
@@ -299,7 +299,7 @@
 .color-picker-input {
   width: 60px;
   height: 40px;
-  border: 1px solid rgba(100, 255, 218, 0.12);
+  border: 1px solid var(--primary-12);
   border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 0.25rem;
@@ -349,7 +349,7 @@
   }
 
   .form-tab {
-    border-bottom: 1px solid rgba(100, 255, 218, 0.08);
+    border-bottom: 1px solid var(--primary-8);
   }
 
   .form-tab.active::after {

@@ -27,6 +27,39 @@
   --color-primary-hover: #7affdf;
   --color-primary-active: #52d1b2;
   --color-primary-muted: rgba(100, 255, 218, 0.15);
+
+  /* Primary opacity scale (for borders, backgrounds, glows) */
+  --primary-5: rgba(100, 255, 218, 0.05);
+  --primary-8: rgba(100, 255, 218, 0.08);
+  --primary-10: rgba(100, 255, 218, 0.1);
+  --primary-12: rgba(100, 255, 218, 0.12);
+  --primary-15: rgba(100, 255, 218, 0.15);
+  --primary-20: rgba(100, 255, 218, 0.2);
+  --primary-25: rgba(100, 255, 218, 0.25);
+  --primary-30: rgba(100, 255, 218, 0.3);
+  --primary-35: rgba(100, 255, 218, 0.35);
+  --primary-40: rgba(100, 255, 218, 0.4);
+  --primary-50: rgba(100, 255, 218, 0.5);
+  --primary-60: rgba(100, 255, 218, 0.6);
+
+  /* Background overlay scale */
+  --bg-overlay-20: rgba(10, 25, 47, 0.2);
+  --bg-overlay-30: rgba(10, 25, 47, 0.3);
+  --bg-overlay-35: rgba(10, 25, 47, 0.35);
+  --bg-overlay-50: rgba(10, 25, 47, 0.5);
+  --bg-overlay-60: rgba(10, 25, 47, 0.6);
+  --bg-overlay-80: rgba(10, 25, 47, 0.8);
+  --bg-overlay-95: rgba(10, 25, 47, 0.95);
+  --bg-overlay-98: rgba(10, 25, 47, 0.98);
+
+  /* Surface overlay scale */
+  --surface-35: rgba(23, 42, 69, 0.35);
+  --surface-50: rgba(23, 42, 69, 0.5);
+  --surface-85: rgba(23, 42, 69, 0.85);
+
+  /* Text opacity scale */
+  --text-soft-20: rgba(230, 241, 255, 0.2);
+  --text-soft-50: rgba(230, 241, 255, 0.5);
   
   /* ============================================
      SEMANTIC COLORS - Mejorado contraste WCAG AA

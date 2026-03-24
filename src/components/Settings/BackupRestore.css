@@ -5,8 +5,8 @@
 }
 
 .backup-section {
-  background: rgba(10, 25, 47, 0.3);
-  border: 1px solid rgba(100, 255, 218, 0.1);
+  background: var(--bg-overlay-30);
+  border: 1px solid var(--primary-10);
   border-radius: 0.5rem;
   padding: 1.5rem;
   display: flex;
@@ -36,14 +36,14 @@
 }
 
 .export-icon {
-  background: rgba(100, 255, 218, 0.15);
-  border: 1px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-15);
+  border: 1px solid var(--primary-30);
   color: var(--accent-cyan);
 }
 
 .import-icon {
-  background: rgba(100, 255, 218, 0.15);
-  border: 1px solid rgba(100, 255, 218, 0.3);
+  background: var(--primary-15);
+  border: 1px solid var(--primary-30);
   color: var(--accent-cyan);
 }
 
@@ -70,8 +70,8 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: rgba(10, 25, 47, 0.3);
-  border: 1px solid rgba(100, 255, 218, 0.08);
+  background: var(--bg-overlay-30);
+  border: 1px solid var(--primary-8);
   border-radius: 0.375rem;
 }
 
@@ -115,23 +115,23 @@
 
 .export-button {
   background: transparent;
-  border-color: rgba(100, 255, 218, 0.3);
+  border-color: var(--primary-30);
   color: var(--accent-cyan);
 }
 
 .export-button:hover:not(:disabled) {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
   border-color: var(--accent-cyan);
 }
 
 .import-button {
   background: transparent;
-  border-color: rgba(100, 255, 218, 0.3);
+  border-color: var(--primary-30);
   color: var(--accent-cyan);
 }
 
 .import-button:hover:not(:disabled) {
-  background: rgba(100, 255, 218, 0.1);
+  background: var(--primary-10);
   border-color: var(--accent-cyan);
 }
 
