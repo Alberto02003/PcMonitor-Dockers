@@ -51,10 +51,15 @@ describe('Fase 2.1 - Almacenamiento Seguro', () => {
           password: 'secret123',
           keyPath: null,
           notes: 'Main production server',
+          group: 'default',
+          tags: [],
+          color: '#64ffda',
           isFavorite: true,
           isDefault: false,
           status: 'connected',
           updatedAt: '2024-01-01T00:00:00.000Z',
+          createdAt: null,
+          lastConnectedAt: null,
         }
       })
     })

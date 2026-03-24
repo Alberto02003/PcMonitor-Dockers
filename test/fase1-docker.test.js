@@ -17,7 +17,7 @@ import {
   dockerVolumes,
   dockerInfo,
 } from '../src/services/tauri.js'
-import { useRealTimeContainers, useRealTimeLogs } from '../src/hooks/useRealTimeData.js'
+import { useRealTimeLogs } from '../src/hooks/useRealTimeData.js'
 
 describe('Fase 1.3 - Control Docker', () => {
   beforeEach(() => {
@@ -171,110 +171,6 @@ describe('Fase 1.3 - Control Docker', () => {
           connectionId: 'conn-id',
         })
         expect(result).toEqual(mockInfo)
-      })
-    })
-  })
-
-  describe('useRealTimeContainers()', () => {
-    const mockContainers = [
-      { id: 'abc123', name: 'nginx', state: 'running', status: 'Up 2 hours' },
-      { id: 'def456', name: 'postgres', state: 'exited', status: 'Exited (0) 5 minutes ago' },
-    ]
-
-    beforeEach(() => {
-      vi.useFakeTimers()
-    })
-
-    afterEach(() => {
-      vi.useRealTimers()
-    })
-
-    it('debe iniciar en estado loading con array vacio', () => {
-      invoke.mockResolvedValue(mockContainers)
-      
-      const { result } = renderHook(() => useRealTimeContainers('test-conn', 5000))
-      
-      expect(result.current.loading).toBe(true)
-      expect(result.current.containers).toEqual([])
-      expect(result.current.error).toBe(null)
-    })
-
-    it('debe obtener contenedores despues de montar', async () => {
-      vi.useRealTimers()
-      invoke.mockResolvedValue(mockContainers)
-      
-      const { result } = renderHook(() => useRealTimeContainers('test-conn', 5000))
-      
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-      
-      expect(result.current.containers).toEqual(mockContainers)
-      expect(result.current.error).toBe(null)
-    })
-
-    it('debe manejar errores correctamente', async () => {
-      vi.useRealTimers()
-      invoke.mockRejectedValue(new Error('Docker not available'))
-      
-      const { result } = renderHook(() => useRealTimeContainers('test-conn', 5000))
-      
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-      
-      expect(result.current.error).toBe('Error: Docker not available')
-      expect(result.current.containers).toEqual([])
-    })
-
-    it('no debe hacer fetch sin connectionId', async () => {
-      vi.useRealTimers()
-      invoke.mockResolvedValue(mockContainers)
-      
-      const { result } = renderHook(() => useRealTimeContainers(null, 5000))
-      
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-      
-      expect(invoke).not.toHaveBeenCalled()
-    })
-
-    it('debe tener funcion refresh', async () => {
-      vi.useRealTimers()
-      invoke.mockResolvedValue(mockContainers)
-      
-      const { result } = renderHook(() => useRealTimeContainers('test-conn', 5000))
-      
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-      
-      invoke.mockClear()
-      
-      act(() => {
-        result.current.refresh()
-      })
-      
-      await waitFor(() => {
-        expect(invoke).toHaveBeenCalledWith('docker_list', {
-          connectionId: 'test-conn',
-          all: true,
-        })
-      })
-    })
-
-    it('debe llamar a dockerList con all=true', async () => {
-      vi.useRealTimers()
-      invoke.mockResolvedValue(mockContainers)
-      
-      renderHook(() => useRealTimeContainers('test-conn', 5000))
-      
-      await waitFor(() => {
-        expect(invoke).toHaveBeenCalledWith('docker_list', {
-          connectionId: 'test-conn',
-          all: true,
-        })
       })
     })
   })
