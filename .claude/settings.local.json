@@ -21,7 +21,8 @@
       "Bash(grep -r \"formatBytes\\\\|formatSpeed\\\\|formatUptime\\\\|getUsageColor\\\\|getProcessState\" C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src --include=*.js --include=*.jsx)",
       "Bash(grep -r \"export.*function\\\\|export.*const\" C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/hooks --include=*.js)",
       "Bash(find C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/components -type f \\\\\\(-name *.jsx -o -name *.css \\\\\\))",
-      "Bash(wc -l \"C:\\\\Users\\\\amartin\\\\Documents\\\\ALBERTO\\\\PcMonitor-Dockers/src/styles\"/*.css)"
+      "Bash(wc -l \"C:\\\\Users\\\\amartin\\\\Documents\\\\ALBERTO\\\\PcMonitor-Dockers/src/styles\"/*.css)",
+      "Bash(node -p \"require\\(''./package.json''\\).version\")"
     ]
   }
 }
