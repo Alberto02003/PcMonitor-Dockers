@@ -2,6 +2,7 @@ import { useTranslation } from '../../../../hooks/useTranslation.jsx'
 import './MonitoringHeader.css'
 
 // Sub-tabs disponibles para System
+// eslint-disable-next-line react-refresh/only-export-components
 export const SYSTEM_TABS = ['overview', 'cpu', 'memory', 'disk', 'processes']
 
 function MonitoringHeader({ 

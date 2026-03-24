@@ -11,6 +11,7 @@ function useMetricsHistory(value, maxLength = 20) {
 
   useEffect(() => {
     if (value !== null && value !== undefined && value !== prevValue.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- updating history when value changes is intentional
       setHistory(prev => {
         const newHistory = [...prev, value]
         if (newHistory.length > maxLength) {

@@ -130,9 +130,10 @@ export function useWebSocket() {
 
   // Cleanup on unmount
   useEffect(() => {
+    const timeoutRef = reconnectTimeoutRef
     return () => {
       // Copy refs to local variables for cleanup
-      const timeout = reconnectTimeoutRef.current
+      const timeout = timeoutRef.current
       if (timeout) {
         clearTimeout(timeout)
       }

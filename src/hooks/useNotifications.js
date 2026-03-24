@@ -108,6 +108,7 @@ export function useNotifications() {
   const queueRef = useRef([])
   const processingRef = useRef(false)
   const permissionCheckedRef = useRef(false)
+  const processQueueRef = useRef(null)
 
   // Verificar y solicitar permisos al iniciar
   useEffect(() => {
@@ -168,9 +169,14 @@ export function useNotifications() {
 
     // Procesar siguiente después de un pequeño delay
     if (queueRef.current.length > 0) {
-      setTimeout(processQueue, 100)
+      setTimeout(() => processQueueRef.current?.(), 100)
     }
   }, [])
+
+  // Keep ref in sync with the callback
+  useEffect(() => {
+    processQueueRef.current = processQueue
+  }, [processQueue])
 
   /**
    * Solicitar permisos
@@ -259,7 +265,7 @@ export function useNotifications() {
 
     // Procesar cola
     processQueue()
-  }, [preferences, permission, processQueue])
+  }, [preferences, processQueue])
 
   /**
    * Enviar notificación directamente (sin verificar preferencias)

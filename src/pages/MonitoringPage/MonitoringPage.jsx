@@ -39,11 +39,11 @@ function MonitoringPage({ connection, onBack }) {
   } = useAlertsConfig(connection?.id)
 
   const {
-    widgetOrder,
-    draggingId,
-    dragOverId,
-    handleDragStart,
-    handleDragEnter,
+    widgetOrder: _widgetOrder,
+    draggingId: _draggingId,
+    dragOverId: _dragOverId,
+    handleDragStart: _handleDragStart,
+    handleDragEnter: _handleDragEnter,
   } = useWidgetOrder(connection?.id)
 
   const {
@@ -63,7 +63,7 @@ function MonitoringPage({ connection, onBack }) {
   const {
     metrics,
     metricsLoading,
-    metricsError,
+    metricsError: _metricsError,
     advancedMetrics,
     advancedLoading,
     advancedError,
@@ -222,10 +222,10 @@ function MonitoringPage({ connection, onBack }) {
       />
 
       {/* Show error banner if there are errors */}
-      {(metricsError || containersError || advancedError) && (
+      {(_metricsError || containersError || advancedError) && (
         <div className="monitoring-error">
           <span className="error-icon">!</span>
-          <span>{metricsError || containersError || advancedError}</span>
+          <span>{_metricsError || containersError || advancedError}</span>
         </div>
       )}
 
@@ -236,13 +236,13 @@ function MonitoringPage({ connection, onBack }) {
           advancedMetrics={advancedMetrics}
           metricsLoading={metricsLoading}
           advancedLoading={advancedLoading}
-          metricsError={metricsError}
+          metricsError={_metricsError}
           lastUpdate={lastUpdate}
-          widgetOrder={widgetOrder}
-          draggingId={draggingId}
-          dragOverId={dragOverId}
-          onDragStart={handleDragStart}
-          onDragEnter={handleDragEnter}
+          widgetOrder={_widgetOrder}
+          draggingId={_draggingId}
+          dragOverId={_dragOverId}
+          onDragStart={_handleDragStart}
+          onDragEnter={_handleDragEnter}
         />
       )}
 

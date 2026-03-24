@@ -9,6 +9,7 @@ import './ConnectionStatus.css'
 /**
  * Estados posibles de conexion
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const STATUS = {
   CONNECTED: 'connected',
   DISCONNECTED: 'disconnected',
@@ -62,6 +63,7 @@ function ConnectionStatus({
   // Manejar reintentos automaticos
   useEffect(() => {
     if (status === STATUS.CONNECTED) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting state on status change is intentional
       setRetryCount(0)
       setNextRetryIn(0)
       return

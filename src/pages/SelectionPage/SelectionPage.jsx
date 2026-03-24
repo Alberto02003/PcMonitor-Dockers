@@ -4,7 +4,7 @@ import { useSettings } from '../../components/Settings/Settings.jsx'
 import { useConnectionsStore } from '../../stores/connectionsStore.js'
 import { useTranslation } from '../../hooks/useTranslation.jsx'
 import { useAutoUpdater } from '../../hooks/useAutoUpdater.js'
-import { emptyForm } from './constants/formConfig.js'
+// emptyForm is used indirectly via useConnectionForm
 import { useConnectionForm } from './hooks/useConnectionForm.js'
 import { useConnectionActions } from './hooks/useConnectionActions.js'
 import { useImportExport } from './hooks/useImportExport.js'
@@ -36,6 +36,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   const hasLoaded = !isLoading
 
   // Get existing groups for form
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- connections is needed to trigger recalculation when connections change
   const existingGroups = useMemo(() => getGroups(), [getGroups, connections])
 
   // Local state
@@ -215,7 +216,7 @@ function SelectionPage({ onConnect, allowAutoConnect, onAutoConnectUsed }) {
   }, [updateSettings])
 
   // Group management handlers
-  const handleCreateGroup = useCallback((name, color) => {
+  const handleCreateGroup = useCallback((name, _color) => {
     // Crear grupo se hace automáticamente al asignar una conexión a un nuevo grupo
     showNotification(t('notifications.groupCreated', { name }), 'success')
     setIsGroupModalOpen(false)

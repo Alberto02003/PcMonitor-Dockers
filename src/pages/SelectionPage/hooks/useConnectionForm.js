@@ -32,6 +32,7 @@ export function useConnectionForm({
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing form with selected connection on mount
       setDisplayedConnection(selectedConnection)
       setFormData(connectionToFormData(selectedConnection))
       return
@@ -44,6 +45,7 @@ export function useConnectionForm({
   // Limpiar credenciales si se desactiva storeCredentials
   useEffect(() => {
     if (!storeCredentials) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing credentials when setting changes
       setFormData((prev) => ({ ...prev, password: '', keyPath: '' }))
     }
   }, [storeCredentials])

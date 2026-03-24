@@ -91,6 +91,7 @@ function TerminalSection({
         inputRef.current?.select()
       }, 0)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- setHistory and t are stable refs, adding them causes unnecessary re-creation
   }, [connectionId])
 
   const handleKeyDown = useCallback((e) => {
@@ -123,11 +124,12 @@ function TerminalSection({
       e.preventDefault()
       setHistory([])
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- setHistory and setCommand are stable state setters
   }, [command, commandHistory, historyIndex, executeCommand])
 
   const handleClear = useCallback(() => {
     setHistory([])
-  }, [])
+  }, [setHistory])
 
   const handleTerminalClick = useCallback(() => {
     if (inputRef.current) {

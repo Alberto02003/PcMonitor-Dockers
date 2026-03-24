@@ -29,6 +29,7 @@ function LastUpdate({
   // Actualizar tiempo relativo cada segundo
   useEffect(() => {
     if (!timestamp) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clearing state when timestamp is removed
       setRelativeTime('')
       return
     }
@@ -188,4 +189,5 @@ function ErrorIcon() {
 }
 
 export default LastUpdate
+// eslint-disable-next-line react-refresh/only-export-components
 export { getRelativeTime }

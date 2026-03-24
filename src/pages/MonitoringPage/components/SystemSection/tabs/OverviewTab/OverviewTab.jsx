@@ -4,7 +4,7 @@ import { formatBytes, formatSpeed, getUsageColor } from '../../../../../../utils
 import '../../SystemSection.css'
 import './OverviewTab.css'
 
-function OverviewTab({ metrics, advancedMetrics, basicMetrics, loading }) {
+function OverviewTab({ _metrics, advancedMetrics, basicMetrics, loading }) {
   const { t } = useTranslation()
 
   // Calculate health score (0-100)

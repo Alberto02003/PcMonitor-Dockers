@@ -19,6 +19,7 @@ export function useAlertsConfig(connectionId) {
     try {
       const stored = localStorage.getItem(alertsKey)
       if (!stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting alerts from localStorage is intentional
         setAlerts(defaultAlerts)
         return
       }

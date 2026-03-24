@@ -22,7 +22,12 @@
       "Bash(grep -r \"export.*function\\\\|export.*const\" C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/hooks --include=*.js)",
       "Bash(find C:UsersamartinDocumentsALBERTOPcMonitor-Dockers/src/components -type f \\\\\\(-name *.jsx -o -name *.css \\\\\\))",
       "Bash(wc -l \"C:\\\\Users\\\\amartin\\\\Documents\\\\ALBERTO\\\\PcMonitor-Dockers/src/styles\"/*.css)",
-      "Bash(node -p \"require\\(''./package.json''\\).version\")"
+      "Bash(node -p \"require\\(''./package.json''\\).version\")",
+      "Bash(npx eslint:*)",
+      "Bash(grep -v \"^$\\\\|Effects\\\\|Update\\\\|Subscribe\\\\|Calling\\\\|state\\\\|^>\")",
+      "Bash(grep -E \"\\(^C:.*\\\\.jsx?$|error|warning\\)\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(echo \"Exit code: $?\")"
     ]
   }
 }

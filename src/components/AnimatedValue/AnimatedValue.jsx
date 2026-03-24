@@ -40,8 +40,11 @@ function AnimatedValue({
 
     // Determinar direccion del cambio
     if (colorChange) {
-      setDirection(newValue > previousValue ? 'up' : 'down')
-      
+      // Use queueMicrotask to avoid setting state synchronously in useEffect
+      queueMicrotask(() => {
+        setDirection(newValue > previousValue ? 'up' : 'down')
+      })
+
       // Limpiar direccion despues de la animacion
       timeoutRef.current = setTimeout(() => {
         setDirection(null)
@@ -49,7 +52,9 @@ function AnimatedValue({
     }
 
     if (!animate) {
-      setDisplayValue(newValue)
+      queueMicrotask(() => {
+        setDisplayValue(newValue)
+      })
       previousValueRef.current = newValue
       return
     }

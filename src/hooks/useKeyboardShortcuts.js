@@ -115,7 +115,6 @@ export function useKeyboardShortcuts(shortcuts = {}, options = {}) {
 
     // Iterar sobre los atajos registrados
     const currentShortcuts = shortcutsRef.current
-    const currentOptions = optionsRef.current
 
     for (const [combo, handler] of Object.entries(currentShortcuts)) {
       // Verificar si este atajo está habilitado

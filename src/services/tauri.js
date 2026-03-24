@@ -31,10 +31,15 @@ export async function secureStorageSave(connection) {
       password: connection.password || null,
       keyPath: connection.keyPath || null,
       notes: connection.notes || '',
+      group: connection.group || 'default',
+      tags: connection.tags || [],
+      color: connection.color || '#64ffda',
       isFavorite: connection.isFavorite || false,
       isDefault: connection.isDefault || false,
       status: connection.status || 'unknown',
       updatedAt: connection.updatedAt || new Date().toISOString(),
+      createdAt: connection.createdAt || null,
+      lastConnectedAt: connection.lastConnectedAt || null,
     }
   })
 }

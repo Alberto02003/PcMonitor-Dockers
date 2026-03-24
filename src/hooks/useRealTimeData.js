@@ -255,6 +255,7 @@ export function useRealTimeData(connectionId, options = {}) {
         clearInterval(intervalRef.current)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- interval values are captured via fetchAllData's closure
   }, [connectionId, fetchAllData])
 
   /**
@@ -289,7 +290,6 @@ export function useRealTimeData(connectionId, options = {}) {
         setContainersLoading(false)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {
@@ -366,12 +366,12 @@ export function useRealTimeLogs(connectionId, containerId, intervalMs = 1000) {
         setLoading(false)
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     isMountedRef.current = true
     lastLogCountRef.current = 0
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting state on dependency change is intentional
     setLogs([])
     setError(null)
 

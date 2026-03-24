@@ -24,6 +24,7 @@ function GroupModal({
   // Reset al abrir
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting form state when modal opens is intentional
       setMode('list')
       setSelectedGroup(null)
       setGroupName('')
@@ -131,7 +132,7 @@ function GroupModal({
     return connections.filter(c => (c.group || 'default') === groupName).length
   }
 
-  const isPredefined = (groupName) => {
+  const _isPredefined = (groupName) => {
     return DEFAULT_GROUPS.some(g => g.name === groupName)
   }
 

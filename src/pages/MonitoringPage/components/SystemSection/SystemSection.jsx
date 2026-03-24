@@ -13,13 +13,13 @@ function SystemSection({
   advancedMetrics,
   metricsLoading,
   advancedLoading,
-  metricsError,
-  lastUpdate,
-  widgetOrder,
-  draggingId,
-  dragOverId,
-  onDragStart,
-  onDragEnter,
+  _metricsError,
+  _lastUpdate,
+  _widgetOrder,
+  _draggingId,
+  _dragOverId,
+  _onDragStart,
+  _onDragEnter,
 }) {
   const { t } = useTranslation()
 

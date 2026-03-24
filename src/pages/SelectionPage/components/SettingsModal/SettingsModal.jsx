@@ -10,8 +10,8 @@ function SettingsModal({
   onClose,
   onUpdateSettings,
   onStoreCredentialsChange,
-  onExport,
-  onImport,
+  _onExport,
+  _onImport,
   onCheckUpdates,
 }) {
   const { t } = useTranslation()

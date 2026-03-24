@@ -106,6 +106,7 @@ function PatchNotesModal({ open, onClose, whatsNewMode = false, whatsNewVersion 
     } finally {
       setIsLoading(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- currentVersion is set inside this callback, not an external dep
   }, [lang, savedNotes, whatsNewVersion])
 
   useEffect(() => {

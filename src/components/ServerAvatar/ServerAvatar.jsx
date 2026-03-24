@@ -159,4 +159,5 @@ function ServerAvatarWithInfo({
 }
 
 export default ServerAvatar
+// eslint-disable-next-line react-refresh/only-export-components
 export { ServerAvatarGroup, ServerAvatarWithInfo, stringToColor, getInitials }

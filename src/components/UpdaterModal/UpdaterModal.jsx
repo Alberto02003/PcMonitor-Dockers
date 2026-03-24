@@ -21,6 +21,7 @@ function UpdaterModal({ open, onClose, updateInfo, isChecking, error: checkError
   // Reset download state when modal reopens
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting download state when modal opens is intentional
       setDownloading(false)
       setInstalled(false)
       setProgress({ downloaded: 0, total: 0 })

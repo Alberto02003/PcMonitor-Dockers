@@ -36,12 +36,25 @@ pub struct StoredConnection {
     pub username: String,
     pub auth_type: String,
     pub notes: String,
+    #[serde(default = "default_group")]
+    pub group: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default = "default_color")]
+    pub color: String,
     pub is_favorite: bool,
     pub is_default: bool,
     pub status: String,
     pub updated_at: String,
+    #[serde(default)]
+    pub created_at: Option<String>,
+    #[serde(default)]
+    pub last_connected_at: Option<String>,
     // Sensitive fields stored separately in stronghold
 }
+
+fn default_group() -> String { "default".to_string() }
+fn default_color() -> String { "#64ffda".to_string() }
 
 /// Sensitive credentials stored securely
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,10 +76,20 @@ pub struct FullConnection {
     pub password: Option<String>,
     pub key_path: Option<String>,
     pub notes: String,
+    #[serde(default = "default_group")]
+    pub group: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default = "default_color")]
+    pub color: String,
     pub is_favorite: bool,
     pub is_default: bool,
     pub status: String,
     pub updated_at: String,
+    #[serde(default)]
+    pub created_at: Option<String>,
+    #[serde(default)]
+    pub last_connected_at: Option<String>,
 }
 
 /// Secure storage manager for credentials
@@ -148,10 +171,15 @@ impl SecureStorage {
             username: connection.username.clone(),
             auth_type: connection.auth_type.clone(),
             notes: connection.notes.clone(),
+            group: connection.group.clone(),
+            tags: connection.tags.clone(),
+            color: connection.color.clone(),
             is_favorite: connection.is_favorite,
             is_default: connection.is_default,
             status: connection.status.clone(),
             updated_at: connection.updated_at.clone(),
+            created_at: connection.created_at.clone(),
+            last_connected_at: connection.last_connected_at.clone(),
         };
 
         // Update or add connection
@@ -187,21 +215,7 @@ impl SecureStorage {
                 SecureCredentials { password: None, key_path: None }
             });
 
-        Ok(FullConnection {
-            id: stored.id.clone(),
-            name: stored.name.clone(),
-            host: stored.host.clone(),
-            port: stored.port,
-            username: stored.username.clone(),
-            auth_type: stored.auth_type.clone(),
-            password: credentials.password,
-            key_path: credentials.key_path,
-            notes: stored.notes.clone(),
-            is_favorite: stored.is_favorite,
-            is_default: stored.is_default,
-            status: stored.status.clone(),
-            updated_at: stored.updated_at.clone(),
-        })
+        Ok(Self::merge_stored_and_credentials(&stored, credentials))
     }
 
     /// Load all full connections with credentials
@@ -213,24 +227,33 @@ impl SecureStorage {
             let credentials = self.load_credentials(&stored.id)
                 .unwrap_or(SecureCredentials { password: None, key_path: None });
 
-            full_connections.push(FullConnection {
-                id: stored.id.clone(),
-                name: stored.name.clone(),
-                host: stored.host.clone(),
-                port: stored.port,
-                username: stored.username.clone(),
-                auth_type: stored.auth_type.clone(),
-                password: credentials.password,
-                key_path: credentials.key_path,
-                notes: stored.notes.clone(),
-                is_favorite: stored.is_favorite,
-                is_default: stored.is_default,
-                status: stored.status.clone(),
-                updated_at: stored.updated_at.clone(),
-            });
+            full_connections.push(Self::merge_stored_and_credentials(&stored, credentials));
         }
 
         Ok(full_connections)
+    }
+
+    fn merge_stored_and_credentials(stored: &StoredConnection, credentials: SecureCredentials) -> FullConnection {
+        FullConnection {
+            id: stored.id.clone(),
+            name: stored.name.clone(),
+            host: stored.host.clone(),
+            port: stored.port,
+            username: stored.username.clone(),
+            auth_type: stored.auth_type.clone(),
+            password: credentials.password,
+            key_path: credentials.key_path,
+            notes: stored.notes.clone(),
+            group: stored.group.clone(),
+            tags: stored.tags.clone(),
+            color: stored.color.clone(),
+            is_favorite: stored.is_favorite,
+            is_default: stored.is_default,
+            status: stored.status.clone(),
+            updated_at: stored.updated_at.clone(),
+            created_at: stored.created_at.clone(),
+            last_connected_at: stored.last_connected_at.clone(),
+        }
     }
 
     /// Delete a connection and its credentials

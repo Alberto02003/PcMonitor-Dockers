@@ -82,7 +82,7 @@ function shouldDisplayPort(scheme, port) {
  * @param {string} protocol - Protocolo (tcp/udp)
  * @returns {string}
  */
-function generateLabel(containerPort, hostPort, protocol) {
+function generateLabel(containerPort, hostPort, _protocol) {
   const portLabels = {
     80: 'HTTP',
     443: 'HTTPS',
