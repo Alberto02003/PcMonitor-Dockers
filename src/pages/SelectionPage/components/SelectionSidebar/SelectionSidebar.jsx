@@ -78,7 +78,6 @@ function SelectionSidebar({
         </span>
         <div className="sidebar-summary-right">
           {defaultId && <span className="summary-dot">{t('selection.defaultLabel')}</span>}
-          <span className="app-version">v{import.meta.env.VITE_APP_VERSION || '0.1.5'}</span>
         </div>
       </div>
 
